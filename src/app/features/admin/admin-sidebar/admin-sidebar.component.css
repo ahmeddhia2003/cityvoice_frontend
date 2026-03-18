@@ -1,0 +1,119 @@
+.admin-sidebar {
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  border-right: 1px solid rgba(255,255,255,.06);
+}
+
+/* Texture */
+.admin-sidebar::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg, transparent, transparent 40px,
+    rgba(255,255,255,.015) 40px, rgba(255,255,255,.015) 41px
+  );
+  pointer-events: none;
+}
+
+/* Bottom orb */
+.admin-sidebar::after {
+  content: ''; position: absolute;
+  bottom: -60px; left: -40px;
+  width: 240px; height: 240px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,155,118,.1), transparent 70%);
+  pointer-events: none;
+}
+
+/* Logo */
+.sb-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0; position: relative; z-index: 1;
+}
+.sb-logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--coral);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 4px 16px rgba(232,83,42,.4);
+}
+.sb-logo-text {
+  font-family: var(--fd); font-size: 21px; font-weight: 800;
+  color: #F7F4EF; letter-spacing: -.02em;
+}
+.sb-admin-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba(232,83,42,.15); border: 1px solid rgba(232,83,42,.25);
+  color: rgba(232,83,42,.9); padding: 2px 8px; border-radius: 100px;
+  align-self: flex-end; margin-bottom: 1px;
+}
+
+/* Nav */
+.sb-nav { flex: 1; overflow-y: auto; padding: 6px 0; position: relative; z-index: 1; }
+.sb-nav::-webkit-scrollbar { width: 3px; }
+.sb-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+.sb-section { padding: 10px 12px 4px; }
+.sb-section-label {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(236,232,225,.22);
+  padding: 0 8px; margin-bottom: 5px;
+}
+
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: var(--r);
+  font-size: 13px; font-weight: 500;
+  color: rgba(236,232,225,.5);
+  cursor: pointer; transition: all .18s;
+  margin-bottom: 2px; position: relative;
+}
+.sb-icon { flex-shrink: 0; opacity: .6; transition: opacity .18s; }
+.sb-item:hover { background: rgba(255,255,255,.07); color: rgba(236,232,225,.85); }
+.sb-item:hover .sb-icon { opacity: .9; }
+
+.sb-item.active {
+  background: linear-gradient(135deg, rgba(232,83,42,.18), rgba(232,83,42,.07));
+  color: #F7F4EF; border: 1px solid rgba(232,83,42,.2);
+}
+.sb-item.active .sb-icon { opacity: 1; color: var(--coral); }
+.sb-item.active::before {
+  content: ''; position: absolute; left: -12px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 18px; background: var(--coral); border-radius: 0 3px 3px 0;
+}
+
+/* Badges */
+.sb-badge {
+  margin-left: auto; min-width: 20px; height: 18px;
+  border-radius: 100px; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.badge-coral { background: var(--coral); color: #fff; }
+.badge-teal  { background: var(--teal);  color: #fff; }
+
+/* User */
+.sb-user {
+  margin-top: auto; padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; position: relative; z-index: 1;
+  transition: background .18s;
+}
+.sb-user:hover { background: rgba(255,255,255,.05); }
+.sb-user-av {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--coral-d, #C4431E), var(--coral));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(232,83,42,.3);
+}
+.sb-user-name { font-size: 13px; font-weight: 600; color: #F7F4EF; line-height: 1.2; }
+.sb-user-role { font-size: 11px; color: rgba(236,232,225,.35); margin-top: 1px; }
+.sb-user-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #4ADE80; box-shadow: 0 0 6px #4ADE80;
+  position: absolute; bottom: 17px; left: 41px;
+}

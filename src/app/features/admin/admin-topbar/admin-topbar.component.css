@@ -1,0 +1,57 @@
+.admin-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 28px; height: 58px;
+  box-shadow: 0 1px 6px rgba(12,31,63,.06);
+}
+.tb-title { font-family: var(--fd); font-size: 18px; font-weight: 800; color: var(--navy); letter-spacing: -.02em; }
+.tb-sub   { font-size: 11.5px; color: var(--ink-3); margin-top: 1px; }
+.tb-spacer { flex: 1; }
+
+.live-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 100px;
+  background: var(--teal-l); border: 1px solid rgba(13,155,118,.2);
+  font-size: 11.5px; font-weight: 600; color: var(--teal);
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--teal);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+.tb-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 7px 14px; width: 210px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.tb-search:focus-within { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(12,31,63,.07); }
+.tb-search svg { color: var(--ink-3); flex-shrink: 0; }
+.tb-search input {
+  background: none; border: none; outline: none;
+  font-size: 13px; font-family: var(--fb); color: var(--ink); width: 100%;
+}
+.tb-search input::placeholder { color: var(--ink-3); }
+
+.tb-icon {
+  width: 36px; height: 36px; border-radius: var(--r);
+  background: var(--cream); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--ink-2); position: relative;
+  transition: all .18s;
+}
+.tb-icon:hover { background: var(--cream-2, #EDE8E0); color: var(--navy); }
+
+.notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--coral); border: 1.5px solid var(--white);
+}
+
+.tb-date {
+  font-size: 12px; color: var(--ink-3);
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 6px 12px; white-space: nowrap;
+}

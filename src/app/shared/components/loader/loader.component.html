@@ -1,0 +1,81 @@
+<!-- ══ MADINA PARTICLE LOADER ══════════════════════════════ -->
+<div class="ld-container">
+
+  <!-- Full-screen canvas (particle system) -->
+  <canvas #canvasRef class="ld-canvas"></canvas>
+
+  <!-- CRT scanlines aesthetic overlay -->
+  <div class="ld-scanlines"></div>
+
+  <!-- Glitch overlay -->
+  <div class="ld-glitch"></div>
+
+  <!-- ── CENTER UI ─────────────────────────────────────── -->
+  <div class="ld-center">
+
+    <!-- Concentric ring meter -->
+    <div class="ld-ring">
+      <svg viewBox="0 0 200 200" class="ld-ring-svg">
+        <!-- Tick marks -->
+        <g class="ld-ticks">
+          <line *ngFor="let tick of getTicks()"
+                [attr.x1]="tick.x1" [attr.y1]="tick.y1"
+                [attr.x2]="tick.x2" [attr.y2]="tick.y2"
+                [class.ld-tick-major]="tick.major"
+                class="ld-tick"/>
+        </g>
+        <!-- Tracks -->
+        <circle class="ld-ring-track" cx="100" cy="100" r="90"/>
+        <circle class="ld-ring-track ld-ring-track--mid" cx="100" cy="100" r="76"/>
+        <circle class="ld-ring-track ld-ring-track--inner" cx="100" cy="100" r="62"/>
+        <!-- Fills -->
+        <circle class="ld-rf1" cx="100" cy="100" r="90"/>
+        <circle class="ld-rf2" cx="100" cy="100" r="76"/>
+        <circle class="ld-rf3" cx="100" cy="100" r="62"/>
+      </svg>
+
+      <!-- Center of ring -->
+      <div class="ld-ring-center">
+        <span class="ld-ring-pct" [class.ld-ring-pct--ready]="ringReady">{{ pct }}%</span>
+        <span class="ld-ring-label" [class.ld-ring-label--ready]="ringReady">{{ ringLabel }}</span>
+      </div>
+    </div>
+
+    <!-- Logo (bursts in mid-animation) -->
+    <div class="ld-logo-wrap">
+      <div class="ld-logo-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white"/>
+        </svg>
+        <!-- Hex ring SVG -->
+        <svg class="ld-hex-ring" viewBox="0 0 96 96">
+          <polygon class="ld-hex-poly" points="48,4 88,26 88,70 48,92 8,70 8,26"/>
+        </svg>
+      </div>
+      <div class="ld-logo-text">Madina</div>
+      <div class="ld-logo-sub">Signalement Urbain · Tunis</div>
+    </div>
+
+    <!-- Message -->
+    <div class="ld-msg-wrap">
+      <div class="ld-msg-text" [class.ld-msg-text--ready]="msgReady">
+        <span class="ld-msg-dot" [class.ld-msg-dot--ready]="msgReady"></span>
+        {{ currentMsg }}
+      </div>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="ld-dots-row">
+      <div class="ld-dot"
+           *ngFor="let active of dots; let i = index"
+           [class.ld-dot--active]="active"
+           [class.ld-dot--done]="active && i < dots.indexOf(true) + 1">
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Portal circle (exit animation) -->
+  <div class="ld-portal"></div>
+
+</div>

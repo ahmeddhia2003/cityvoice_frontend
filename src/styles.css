@@ -1,1 +1,139 @@
 /* You can add global styles to this file, and also import other style files */
+/* ═══════════════════════════════════════════════════════════
+   MADINA v3 — Civic Premium Warm
+   Playfair Display (serif editorial) + Plus Jakarta Sans (body)
+   ═══════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --cream:   #F7F4EF;
+  --cream2:  #EDE8E0;
+  --navy:    #0C1F3F;
+  --navy2:   #162B5C;
+  --coral:   #E8532A;
+  --coral-l: #FDF1EC;
+  --teal:    #0D9B76;
+  --teal-l:  #E6F7F2;
+  --gold:    #C9973E;
+  --gold-l:  #FBF4E8;
+  --ink:     #1A1A2E;
+  --ink2:    #4A4A6A;
+  --ink3:    #8888A8;
+  --white:   #FFFFFF;
+  --border:  rgba(12,31,63,.1);
+  --border2: rgba(12,31,63,.06);
+  --shadow:  0 2px 12px rgba(12,31,63,.08);
+  --shadow-m:0 8px 32px rgba(12,31,63,.12);
+  --shadow-l:0 20px 60px rgba(12,31,63,.16);
+  --r:       12px;
+  --r2:      20px;
+  --r3:      32px;
+  --fd:      'Playfair Display', Georgia, serif;
+  --fb:      'Plus Jakarta Sans', sans-serif;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; font-size:16px; }
+body {
+  font-family:var(--fb);
+  background:var(--cream);
+  color:var(--ink);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection { background:var(--coral); color:#fff; }
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--cream2); }
+::-webkit-scrollbar-thumb { background:var(--navy2); border-radius:3px; }
+
+/* Scroll progress */
+.scroll-progress {
+  position:fixed; top:0; left:0; height:3px;
+  background:linear-gradient(90deg,var(--coral),var(--teal));
+  z-index:999; transform-origin:left;
+  border-radius:0 2px 2px 0;
+}
+
+/* ── Container ─────────────────────────────────────── */
+.container { max-width:1240px; margin:0 auto; padding:0 40px; }
+
+/* ── Eyebrow pills ──────────────────────────────────── */
+.pill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 14px; border-radius:100px;
+  font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+}
+.pill-coral { background:var(--coral-l); color:var(--coral); }
+.pill-teal  { background:var(--teal-l);  color:var(--teal); }
+.pill-gold  { background:var(--gold-l);  color:var(--gold); }
+.pill-navy  { background:rgba(12,31,63,.08); color:var(--navy); }
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 30px; border-radius:100px;
+  font-family:var(--fb); font-size:14px; font-weight:600;
+  text-decoration:none; border:none; cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.btn:hover { transform:translateY(-2px); }
+.btn:active { transform:translateY(0) scale(.97); }
+
+.btn-primary {
+  background:var(--coral); color:#fff;
+  box-shadow:0 6px 24px rgba(232,83,42,.35);
+}
+.btn-primary:hover { box-shadow:0 10px 32px rgba(232,83,42,.5); }
+
+.btn-ghost {
+  background:rgba(255,255,255,.08); color:rgba(255,255,255,.85);
+  border:1.5px solid rgba(255,255,255,.15);
+}
+.btn-ghost:hover { background:rgba(255,255,255,.14); }
+
+.btn-outline {
+  background:transparent; color:var(--navy);
+  border:1.5px solid var(--border);
+}
+.btn-outline:hover { background:var(--cream); border-color:var(--navy); }
+
+/* ── Sections ───────────────────────────────────────── */
+.section { padding:130px 0; }
+.section-white { background:var(--white); }
+.section-cream { background:var(--cream); }
+.section-navy  { background:var(--navy); }
+
+/* ── Section headings ───────────────────────────────── */
+.heading-display {
+  font-family:var(--fd);
+  font-size:clamp(40px,4.5vw,62px);
+  font-weight:800; color:var(--navy);
+  line-height:1.1; letter-spacing:-.025em;
+}
+.heading-display .italic { font-style:italic; color:var(--ink3); }
+.heading-display .coral  { color:var(--coral); }
+
+/* ── Leaflet ────────────────────────────────────────── */
+.leaflet-container { font-family:var(--fb) !important; }
+.leaflet-popup-content-wrapper {
+  border-radius:12px !important; font-family:var(--fb) !important;
+  box-shadow:var(--shadow-m) !important; border:1px solid var(--border) !important;
+}
+.leaflet-control-zoom {
+  border:1.5px solid var(--border) !important;
+  border-radius:10px !important; overflow:hidden; box-shadow:var(--shadow) !important;
+}
+.leaflet-control-zoom a {
+  background:var(--white) !important; color:var(--navy) !important;
+  border-bottom:1px solid var(--border) !important;
+}
+
+@keyframes pin-pulse {
+  0%   { transform:scale(1); opacity:.7; }
+  100% { transform:scale(2.2); opacity:0; }
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width:1024px) { .container { padding:0 24px; } .section { padding:90px 0; } }
+@media (max-width:768px)  { .heading-display { font-size:clamp(34px,7vw,50px); } }

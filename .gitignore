@@ -40,3 +40,20 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files (contiennent parfois des secrets)
+src/environments/environment.local.ts
+
+# Package lock (choisir l'un ou l'autre selon l'équipe)
+# package-lock.json   ← décommente si vous utilisez yarn
+
+# OS
+*.log
+*.swp
+*.swo
+
+# Tests
+/coverage
+
+# Build
+/dist

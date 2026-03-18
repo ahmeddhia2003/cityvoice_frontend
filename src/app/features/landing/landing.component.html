@@ -1,0 +1,225 @@
+<div class="scroll-progress" #progEl></div>
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-left">
+    <span class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      {{ lang.t.hero_badge }}
+    </span>
+
+    <h1 class="hero-title">
+      <span class="hero-title-line"><span class="hero-title-word">{{ lang.t.hero_title1 }}</span></span>
+      <span class="hero-title-line"><span class="hero-title-word italic">{{ lang.t.hero_title2 }}</span></span>
+      <span class="hero-title-line">
+        <span class="hero-title-word">{{ lang.t.hero_title3a }}<span class="coral">{{ lang.t.hero_title3b }}</span></span>
+      </span>
+    </h1>
+
+    <p class="hero-desc">{{ lang.t.hero_desc }}</p>
+
+    <div class="hero-buttons">
+      <a routerLink="/signaler" class="btn btn-primary btn-pulse" (click)="sound.click()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        {{ lang.t.hero_btn1 }}
+      </a>
+      <a href="#map-section" class="btn btn-ghost" (click)="sound.nav()">{{ lang.t.hero_btn2 }}</a>
+    </div>
+
+    <div class="hero-trust">
+      <div class="trust-item"><span class="trust-check">✓</span> {{ lang.t.hero_trust1 }}</div>
+      <div class="trust-item"><span class="trust-check">✓</span> {{ lang.t.hero_trust2 }}</div>
+      <div class="trust-item"><span class="trust-check">✓</span> {{ lang.t.hero_trust3 }}</div>
+    </div>
+  </div>
+
+  <!-- ── LIVE DASHBOARD PANEL ─────────────────────────────── -->
+  <div class="hero-right">
+    <div class="live-panel">
+
+      <!-- Panel header -->
+      <div class="live-header">
+        <div class="live-header-left">
+          <div class="live-dot"></div>
+          <span class="live-title">{{ lang.t.live_title }}</span>
+        </div>
+        <span class="live-subtitle">{{ lang.t.live_subtitle }}</span>
+      </div>
+
+      <!-- Stats row -->
+      <div class="live-stats">
+        <div class="live-stat-card live-stat-resolved">
+          <div class="live-stat-num">{{ liveResolved }}</div>
+          <div class="live-stat-label">{{ lang.t.live_resolved }}</div>
+          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="liveResolved * 20"></div></div>
+        </div>
+        <div class="live-stat-card live-stat-progress">
+          <div class="live-stat-num">{{ liveProgress }}</div>
+          <div class="live-stat-label">{{ lang.t.live_inprogress }}</div>
+          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="liveProgress * 20"></div></div>
+        </div>
+        <div class="live-stat-card live-stat-pending">
+          <div class="live-stat-num">{{ livePending }}</div>
+          <div class="live-stat-label">{{ lang.t.live_pending }}</div>
+          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="livePending * 20"></div></div>
+        </div>
+      </div>
+
+      <!-- Divider with label -->
+      <div class="live-divider">
+        <span>{{ lang.t.live_feed_title }}</span>
+      </div>
+
+      <!-- Live feed -->
+      <div class="live-feed">
+        <div class="live-item" *ngFor="let item of liveFeed; trackBy: trackItem"
+             [class.live-item--new]="item.isNew">
+          <div class="live-item-emoji">{{ item.emoji }}</div>
+          <div class="live-item-body">
+            <p class="live-item-type">{{ item.type }}</p>
+            <p class="live-item-addr">{{ item.address }}</p>
+          </div>
+          <div class="live-item-right">
+            <span class="live-item-badge"
+                  [class.badge-resolved]="item.status === 'resolved'"
+                  [class.badge-progress]="item.status === 'in-progress'"
+                  [class.badge-pending]="item.status === 'pending'">
+              {{ statusLabel(item.status) }}
+            </span>
+            <span class="live-item-time">{{ item.time }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA bar -->
+      <div class="live-footer">
+        <a routerLink="/signaler" class="live-cta-btn" (click)="sound.click()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          {{ lang.t.hero_btn1 }}
+        </a>
+        <span class="live-footer-note">{{ lang.t.live_today }} · {{ liveFeed.length }} signalements</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="marquee-track">
+    <span class="marquee-item" *ngFor="let item of marqueeItems">{{ item }} <span class="marquee-sep">·</span></span>
+    <span class="marquee-item" *ngFor="let item of marqueeItems">{{ item }} <span class="marquee-sep">·</span></span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section section-white" id="how-it-works">
+  <div class="container">
+    <div class="pill pill-coral reveal-heading" style="margin-bottom:16px">{{ lang.t.how_pill }}</div>
+    <h2 class="heading-display reveal-heading" style="margin-bottom:16px">{{ lang.t.how_title }}</h2>
+    <p class="section-sub reveal-heading">{{ lang.t.how_sub }}</p>
+    <div class="steps-row">
+      <div class="step-card" *ngFor="let s of steps; let i = index">
+        <div class="step-top">
+          <div class="step-num-badge" [class]="'badge-'+['coral','teal','gold'][i]">{{ s.num }}</div>
+          <div class="step-icon-box">
+            <svg *ngIf="s.icon==='camera'" width="22" height="22" fill="none" stroke="var(--ink2)" stroke-width="1.8" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <svg *ngIf="s.icon==='cpu'"    width="22" height="22" fill="none" stroke="var(--ink2)" stroke-width="1.8" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+            <svg *ngIf="s.icon==='tool'"   width="22" height="22" fill="none" stroke="var(--ink2)" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+        </div>
+        <h3>{{ [lang.t.how_s1_title, lang.t.how_s2_title, lang.t.how_s3_title][i] }}</h3>
+        <p>{{ [lang.t.how_s1_desc, lang.t.how_s2_desc, lang.t.how_s3_desc][i] }}</p>
+        <div class="step-bar" [class]="'bar-'+['coral','teal','gold'][i]"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" id="stats">
+  <div class="container">
+    <div class="stats-header">
+      <h2 class="stats-title reveal-heading">{{ lang.t.stats_title }} <em>réel</em><br>sur votre quotidien.</h2>
+      <p class="stats-desc">{{ lang.t.stats_sub }}</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-cell" *ngFor="let s of stats; let i=index" [class.stat-cell-featured]="i===0">
+        <div class="stat-number" [class]="s.cls">{{ statCurrents[i]|number }}<span class="stat-suf">{{ s.suffix }}</span></div>
+        <div class="stat-label">{{ [lang.t.stat1_label,lang.t.stat2_label,lang.t.stat3_label,lang.t.stat4_label][i] }}</div>
+        <div class="stat-trend" *ngIf="s.trend">↑ {{ lang.t.stat_trend }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="section section-cream" id="map-section">
+  <div class="container">
+    <div class="map-top">
+      <div>
+        <div class="pill pill-teal reveal-heading" style="margin-bottom:12px">{{ lang.t.map_pill }}</div>
+        <h2 class="heading-display reveal-heading">{{ lang.t.map_title }}<br><span class="italic" style="color:var(--ink3)">{{ lang.t.map_dim }}</span></h2>
+      </div>
+      <div class="map-pills">
+        <button class="map-pill active" (click)="sound.nav()">{{ lang.t.map_all }}</button>
+        <button class="map-pill" (click)="sound.nav()"><span class="mp-dot" style="background:#E8532A"></span>{{ lang.t.map_pending }}</button>
+        <button class="map-pill" (click)="sound.nav()"><span class="mp-dot" style="background:#3B82F6"></span>{{ lang.t.map_progress }}</button>
+        <button class="map-pill" (click)="sound.nav()"><span class="mp-dot" style="background:#0D9B76"></span>{{ lang.t.map_resolved }}</button>
+      </div>
+    </div>
+    <div class="map-shell">
+      <div class="map-el" #mapEl></div>
+      <div class="map-legend-card">
+        <div class="mlc-title">Légende</div>
+        <div class="mlc-row"><span class="mlc-dot" style="background:#E8532A"></span>{{ lang.t.map_pending }}</div>
+        <div class="mlc-row"><span class="mlc-dot" style="background:#3B82F6"></span>{{ lang.t.map_progress }}</div>
+        <div class="mlc-row"><span class="mlc-dot" style="background:#0D9B76"></span>{{ lang.t.map_resolved }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section section-white" id="testimonials">
+  <div class="container">
+    <div class="pill pill-navy reveal-heading" style="margin-bottom:16px">{{ lang.t.testi_pill }}</div>
+    <h2 class="heading-display reveal-heading">{{ lang.t.testi_title }}<em>{{ lang.t.testi_dim }}</em><br>de Madina.</h2>
+    <div class="testi-grid">
+      <div class="testi-card" *ngFor="let t of testimonials" [class]="'accent-'+t.accent">
+        <div class="testi-quote">"</div>
+        <p class="testi-text">{{ getTestiText(t) }}</p>
+        <div class="testi-author">
+          <div class="testi-av" [class]="'av-'+t.accent">{{ t.av }}</div>
+          <div><div class="testi-name">{{ t.name }}</div><div class="testi-loc">{{ t.loc }}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-counters">
+      <div class="cta-cnt" *ngFor="let s of ctaStats; let i=index">
+        <div class="cta-cnt-num">{{ ctaCurrents[i]|number }}<span *ngIf="s.suffix">{{ s.suffix }}</span></div>
+        <div class="cta-cnt-label">{{ [lang.t.cta_stat1,lang.t.cta_stat2,lang.t.cta_stat3][i] }}</div>
+      </div>
+    </div>
+    <span class="pill pill-coral" style="margin-bottom:24px">{{ lang.t.cta_pill }}</span>
+    <h2 class="cta-title">{{ lang.t.cta_title1 }}<br><em>{{ lang.t.cta_title2 }}</em> <span class="coral">{{ lang.t.cta_title3 }}</span></h2>
+    <p class="cta-sub">{{ lang.t.cta_sub }}</p>
+    <div class="cta-btns">
+      <a routerLink="/signaler" class="btn btn-primary btn-pulse" (click)="sound.click()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        {{ lang.t.cta_btn1 }}
+      </a>
+      <a routerLink="/auth/register" class="btn btn-ghost" (click)="sound.nav()">{{ lang.t.cta_btn2 }}</a>
+    </div>
+    <p class="cta-note">{{ lang.t.cta_note }}</p>
+  </div>
+</section>

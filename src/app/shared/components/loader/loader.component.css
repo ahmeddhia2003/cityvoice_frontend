@@ -1,0 +1,284 @@
+/* ═══════════════════════════════════════════════════════════
+   MADINA — Particle Loader Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Shell ─────────────────────────────────────────────── */
+.ld-container {
+  position: fixed;
+  inset: 0;
+  background: #060D1F;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.ld-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* CRT scanlines */
+.ld-scanlines {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Glitch */
+.ld-glitch {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 30;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(13,155,118,0.015) 2px, rgba(13,155,118,0.015) 4px
+  );
+}
+
+/* ── Center stack ──────────────────────────────────────── */
+.ld-center {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* ── Ring meter ────────────────────────────────────────── */
+.ld-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 28px;
+  opacity: 0;
+}
+
+.ld-ring-svg {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+
+/* Tick marks */
+.ld-tick { stroke: rgba(236,232,225,0.1); stroke-width: 1; fill: none; }
+.ld-tick-major { stroke: rgba(236,232,225,0.2); stroke-width: 1.5; }
+
+/* Track circles */
+.ld-ring-track {
+  fill: none;
+  stroke: rgba(236,232,225,0.06);
+  stroke-width: 1.5;
+}
+.ld-ring-track--mid   { stroke-opacity: 0.5; }
+.ld-ring-track--inner { stroke-opacity: 0.3; }
+
+/* Fill circles */
+.ld-rf1, .ld-rf2, .ld-rf3 {
+  fill: none;
+  stroke-linecap: round;
+}
+.ld-rf1 {
+  stroke: #0D9B76;
+  stroke-width: 1.5;
+  stroke-dasharray: 565;
+  stroke-dashoffset: 565;
+  filter: drop-shadow(0 0 4px rgba(13,155,118,0.5));
+}
+.ld-rf2 {
+  stroke: #E8532A;
+  stroke-width: 1.5;
+  stroke-dasharray: 477;
+  stroke-dashoffset: 477;
+  filter: drop-shadow(0 0 3px rgba(232,83,42,0.4));
+}
+.ld-rf3 {
+  stroke: #C9973E;
+  stroke-width: 1.5;
+  stroke-dasharray: 389;
+  stroke-dashoffset: 389;
+  filter: drop-shadow(0 0 3px rgba(201,151,62,0.4));
+}
+
+/* Ring center readout */
+.ld-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ld-ring-pct {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 38px;
+  font-weight: 800;
+  color: #ECE8E1;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  transition: color 0.5s ease;
+  font-variant-numeric: tabular-nums;
+}
+.ld-ring-pct--ready { color: #0D9B76; }
+
+.ld-ring-label {
+  font-size: 9px;
+  color: rgba(236,232,225,0.3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 5px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: color 0.4s ease;
+}
+.ld-ring-label--ready { color: #0D9B76; }
+
+/* ── Logo ──────────────────────────────────────────────── */
+.ld-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.ld-logo-icon {
+  width: 64px; height: 64px;
+  background: #E8532A;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  position: relative;
+  box-shadow: 0 0 0 0 rgba(232,83,42,0);
+}
+
+/* Hex ring overlay */
+.ld-hex-ring {
+  position: absolute;
+  inset: -16px;
+  width: calc(100% + 32px);
+  height: calc(100% + 32px);
+  pointer-events: none;
+}
+
+.ld-hex-poly {
+  fill: none;
+  stroke: rgba(232,83,42,0.3);
+  stroke-width: 1;
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: ld-hex-draw 0.8s ease-out 2.3s forwards;
+}
+
+@keyframes ld-hex-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.ld-logo-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #ECE8E1;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  clip-path: inset(0 100% 0 0);
+}
+
+.ld-logo-sub {
+  font-size: 10.5px;
+  color: rgba(236,232,225,0.28);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 7px;
+  font-weight: 500;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  opacity: 0;
+}
+
+/* ── Message ────────────────────────────────────────────── */
+.ld-msg-wrap {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  opacity: 0;
+}
+
+.ld-msg-text {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11.5px;
+  color: rgba(236,232,225,0.42);
+  letter-spacing: 0.07em;
+  font-weight: 500;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+  transition: color 0.4s ease;
+}
+.ld-msg-text--ready { color: rgba(13,155,118,0.9); }
+
+.ld-msg-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #0D9B76;
+  flex-shrink: 0;
+  animation: ld-blink 1s ease-in-out infinite;
+}
+.ld-msg-dot--ready {
+  box-shadow: 0 0 6px #0D9B76;
+  animation: none;
+}
+@keyframes ld-blink { 0%,100%{opacity:1}50%{opacity:.2} }
+
+/* ── Progress dots ─────────────────────────────────────── */
+.ld-dots-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  opacity: 0;
+}
+
+.ld-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(236,232,225,0.15);
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ld-dot--active {
+  background: #0D9B76;
+  box-shadow: 0 0 8px #0D9B76;
+  transform: scale(1.6);
+}
+.ld-dot--done {
+  background: rgba(13,155,118,0.45);
+  transform: scale(1);
+}
+
+/* ── Portal ────────────────────────────────────────────── */
+.ld-portal {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: #F7F4EF;
+  z-index: 50;
+  pointer-events: none;
+  transition: none;
+}

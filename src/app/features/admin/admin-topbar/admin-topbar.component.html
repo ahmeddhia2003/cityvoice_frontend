@@ -1,0 +1,39 @@
+<header class="admin-topbar">
+  <div>
+    <div class="tb-title">Vue d'ensemble</div>
+    <div class="tb-sub">Municipalité de Tunis · Mis à jour il y a 30s</div>
+  </div>
+  <div class="tb-spacer"></div>
+
+  <!-- Live chip -->
+  <div class="live-chip">
+    <span class="live-dot"></span>
+    Temps réel
+  </div>
+
+  <!-- Search -->
+  <div class="tb-search">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" [(ngModel)]="search" placeholder="Rechercher…">
+  </div>
+
+  <!-- Sound -->
+  <button class="tb-icon" (click)="sound.toggle()" [title]="sound.isEnabled ? 'Couper le son' : 'Activer le son'">
+    <svg *ngIf="sound.isEnabled"  width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+    <svg *ngIf="!sound.isEnabled" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+  </button>
+
+  <!-- Notif -->
+  <button class="tb-icon" (click)="sound.nav()">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 01-3.46 0"/>
+    </svg>
+    <div class="notif-dot"></div>
+  </button>
+
+  <!-- Date -->
+  <div class="tb-date">{{ today }}</div>
+</header>
