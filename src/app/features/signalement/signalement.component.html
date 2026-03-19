@@ -1,0 +1,132 @@
+<!-- ── Page header ─────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="page-header__inner">
+      <div>
+        <h1 class="page-header__title">Signalements</h1>
+        <p class="page-header__sub">{{ signalements.length }} signalements sur votre territoire</p>
+      </div>
+      <div class="page-header__actions">
+        <!-- Switcher vue liste / carte -->
+        <div class="view-switcher">
+          <button [class.active]="viewMode === 'list'" (click)="setView('list')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Liste
+          </button>
+          <button [class.active]="viewMode === 'map'" (click)="setView('map')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-10l6-3m0 13l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4"/>
+            </svg>
+            Carte
+          </button>
+        </div>
+        <a routerLink="/signaler/new" class="btn btn--primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Nouveau signalement
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:24px;padding-bottom:60px">
+
+  <!-- ── Barre de filtres + recherche ──────────────────────── -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button
+        *ngFor="let f of filters"
+        class="filter-tab"
+        [class.active]="activeFilter === f.key"
+        (click)="setFilter(f.key)">
+        {{ f.label }}
+        <span class="filter-tab__count">{{ f.count }}</span>
+      </button>
+    </div>
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        placeholder="Rechercher un signalement…"
+        [(ngModel)]="searchQuery">
+    </div>
+  </div>
+
+  <!-- ── Vue liste ─────────────────────────────────────────── -->
+  <div *ngIf="viewMode === 'list'">
+    <p class="results-count">{{ filtered.length }} résultat{{ filtered.length !== 1 ? 's' : '' }}</p>
+
+    <div class="signalements-grid">
+      <div class="sig-card" *ngFor="let s of filtered">
+        <!-- En-tête de la card -->
+        <div class="sig-card__header">
+          <div class="sig-card__type">
+            <span class="sig-card__type-dot"
+              [style.background]="s.status === 'resolved' ? '#00C9A7' : s.status === 'in-progress' ? '#1A56DB' : '#FF6B35'">
+            </span>
+            {{ s.type }}
+          </div>
+          <span class="sig-card__priorite"
+            [class.priorite--urgente]="s.priorite === 'urgente'"
+            [class.priorite--haute]="s.priorite === 'haute'"
+            [class.priorite--moyenne]="s.priorite === 'moyenne'"
+            [class.priorite--faible]="s.priorite === 'faible'">
+            {{ prioriteLabel(s.priorite) }}
+          </span>
+        </div>
+
+        <!-- Corps -->
+        <p class="sig-card__description">{{ s.description }}</p>
+
+        <!-- Localisation -->
+        <div class="sig-card__location">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="10" r="3"/><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+          </svg>
+          <span>{{ s.adresse }}, {{ s.quartier }}</span>
+        </div>
+
+        <!-- Footer de la card -->
+        <div class="sig-card__footer">
+          <span class="sig-card__status"
+            [class.status--resolved]="s.status === 'resolved'"
+            [class.status--in-progress]="s.status === 'in-progress'"
+            [class.status--pending]="s.status === 'pending'">
+            {{ statusLabel(s.status) }}
+          </span>
+          <div class="sig-card__meta">
+            <span class="sig-card__votes">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="18 15 12 9 6 15"/>
+              </svg>
+              {{ s.votes }}
+            </span>
+            <span class="sig-card__date">{{ s.date | date:'dd MMM' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="filtered.length === 0">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ink-4)" stroke-width="1.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <p>Aucun signalement ne correspond à votre recherche.</p>
+      <button class="btn btn--outline" (click)="searchQuery=''; setFilter('all')">Réinitialiser les filtres</button>
+    </div>
+  </div>
+
+  <!-- ── Vue carte ──────────────────────────────────────────── -->
+  <div *ngIf="viewMode === 'map'">
+    <div class="full-map" #mapEl></div>
+  </div>
+
+</div>
