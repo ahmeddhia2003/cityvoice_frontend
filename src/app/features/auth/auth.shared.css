@@ -244,6 +244,8 @@
 .terms-row input { width:16px;height:16px;border-radius:4px;cursor:pointer;margin-top:1px;accent-color:#0C1F3F;flex-shrink:0; }
 .terms-row a { color:#0C1F3F;font-weight:600;text-decoration:none; }
 .terms-row a:hover { text-decoration:underline; }
+.terms-content {display: flex;flex-direction: column;}
+.terms-error {margin-top: 4px;}
 
 /* Submit button */
 .auth-submit {
@@ -265,7 +267,7 @@
 .auth-submit:hover::after { transform:translateX(100%); }
 .auth-submit:active { transform:scale(.98); }
 .auth-submit.success { background:#0D9B76 !important;box-shadow:0 4px 20px rgba(13,155,118,.4) !important; }
-.auth-submit.loading { opacity:.7;cursor:not-allowed; }
+.auth-submit.loading { opacity:0.7;cursor:not-allowed;pointer-events: none; }
 
 /* Spinner in button */
 .btn-spinner { width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite; }
@@ -288,6 +290,19 @@
   white-space:nowrap;
 }
 .toast-dot { width:7px;height:7px;border-radius:50%;background:#0D9B76; }
+
+.auth-toast.success {
+  background: #0C1F3F;
+}
+
+.auth-toast.error {
+  background: #7F1D1D;
+  box-shadow: 0 8px 28px rgba(127,29,29,.4);
+}
+
+.auth-toast.error .toast-dot {
+  background: #EF4444;
+}
 
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width:900px) {
@@ -481,4 +496,254 @@
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; color: #E8532A; font-weight: 500;
   margin-top: 7px;
+}
+
+.field-error {
+  font-size: 11.5px;
+  color: #E8532A;
+  margin-top: 5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-error::before {
+  content: "⚠";
+  font-size: 12px;
+}
+
+/* ── Role selection ────────────────────────────────────── */
+.role-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--role-border, rgba(12,31,63,.1));
+  background: var(--role-bg, #fff);
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+
+.role-card:hover {
+  border-color: var(--role-color, #0C1F3F);
+  box-shadow: 0 4px 16px rgba(12,31,63,.08);
+  transform: translateY(-1px);
+}
+
+.role-card--selected {
+  border-color: var(--role-color) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--role-color) 15%, transparent) !important;
+}
+
+.role-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--role-bg);
+  border: 1px solid var(--role-border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--role-color);
+  flex-shrink: 0;
+}
+
+.role-info { flex: 1; }
+.role-name { font-size: 14px; font-weight: 700; color: #1A1A2E; margin-bottom: 2px; }
+.role-desc { font-size: 12px; color: #8888A8; line-height: 1.4; }
+
+.role-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--role-color);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  transform: scale(.6);
+  flex-shrink: 0;
+}
+.role-card--selected .role-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Stepper header ────────────────────────────────────── */
+.stepper-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stepper-back {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(12,31,63,.12);
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #4A4A6A;
+  transition: all .18s;
+  flex-shrink: 0;
+}
+.stepper-back:hover { background: rgba(12,31,63,.05); border-color: rgba(12,31,63,.25); }
+
+.stepper-info { flex: 1; }
+.stepper-label { font-size: 15px; font-weight: 700; color: #0C1F3F; }
+.stepper-sub   { font-size: 12px; color: #8888A8; margin-top: 1px; }
+
+.stepper-count {
+  font-size: 12px; font-weight: 600;
+  color: #8888A8;
+  background: rgba(12,31,63,.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Progress dots */
+.stepper-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.stepper-dot {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(12,31,63,.1);
+  transition: background .3s, transform .2s;
+}
+.stepper-dot.active { background: #E8532A; transform: scaleY(1.5); }
+.stepper-dot.done   { background: #0D9B76; }
+
+/* Role badge (rappel du rôle choisi) */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(12,31,63,.05);
+  border: 1px solid rgba(12,31,63,.08);
+  font-size: 12px;
+  font-weight: 600;
+  color: #4A4A6A;
+  margin-bottom: 18px;
+}
+
+.role-badge-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Field error */
+.field-error {
+  font-size: 11.5px;
+  color: #E8532A;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Toast types */
+.auth-toast.error .toast-dot   { background: #E8532A; }
+.auth-toast.success .toast-dot { background: #0D9B76; }
+
+/* ── User type cards ───────────────────────────────────── */
+.usertype-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.usertype-card {
+  padding: 22px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(12,31,63,.1);
+  background: #fff;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+.usertype-card:hover {
+  border-color: rgba(12,31,63,.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(12,31,63,.08);
+}
+.usertype-icon {
+  width: 58px; height: 58px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.usertype-label { font-size: 13px; font-weight: 700; color: #0C1F3F; }
+.usertype-desc  { font-size: 11.5px; color: #8888A8; line-height: 1.5; }
+.usertype-tag   { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+/* ── Agent notice ──────────────────────────────────────── */
+.agent-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: rgba(59,130,246,.07);
+  border: 1px solid rgba(59,130,246,.15);
+  font-size: 12px;
+  color: #3B82F6;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+/* ── Invite info ───────────────────────────────────────── */
+.invite-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(59,130,246,.07);
+  border: 1px solid rgba(59,130,246,.15);
+  font-size: 12px;
+  color: #3B82F6;
+  line-height: 1.5;
+}
+.pwd-match {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.auth-input option { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+/* ── Login with google ───────────────────────────────────────── */
+.google-btn-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+/* Override style Google pour matcher le design */
+#google-btn-container > div {
+  width: 100% !important;
 }

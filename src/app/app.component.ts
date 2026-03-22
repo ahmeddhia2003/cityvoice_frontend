@@ -1,34 +1,98 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from './core/services/auth.service';
+declare const gsap: any;
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-
 export class AppComponent implements OnInit {
 
-  showLoader   = true;
-  isAdminRoute = false;
+  showLoader     = true;
+  isAdminRoute   = false;
+  showAuthLoader = false;
+  authLoaderMsg  = '';
 
-  constructor(private router: Router) {}
+  // ── Toast sur le loading screen ──────────────────────
+  showLoaderToast    = false;
+  loaderToastMsg     = '';
+  loaderToastType: 'success' | 'error' = 'success';
+
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+    private ngZone: NgZone,
+  ) {}
 
   ngOnInit(): void {
     if (sessionStorage.getItem('madina_loaded')) {
       this.showLoader = false;
     }
 
-    /* Écouter les changements de route pour masquer navbar/footer sur /admin */
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
     ).subscribe((e: any) => {
       this.isAdminRoute = (e.urlAfterRedirects as string).startsWith('/admin');
     });
 
-    /* Vérifier la route initiale */
     this.isAdminRoute = this.router.url.startsWith('/admin');
+
+    // ── Auth loading screen ──────────────────────────
+    this.authService.authLoading$.subscribe(({ loading, message, toastMsg, toastType }) => {
+      this.ngZone.run(() => {
+        if (loading) {
+          this.authLoaderMsg  = message || '';
+          this.showAuthLoader = true;
+
+          // Attendre le rendu Angular puis animer
+          setTimeout(() => {
+            if (typeof gsap !== 'undefined') {
+              const el = document.querySelector('.auth-loader');
+              if (el) {
+                gsap.killTweensOf(el);
+                gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: .35 });
+              }
+            }
+          }, 30);
+
+        } else {
+          // Afficher le toast AVANT de fermer le loader
+          if (toastMsg) {
+            this.loaderToastMsg  = toastMsg;
+            this.loaderToastType = toastType ?? 'success';
+            this.showLoaderToast = true;
+          }
+
+          if (typeof gsap !== 'undefined') {
+            const el = document.querySelector('.auth-loader');
+            if (el) {
+              gsap.killTweensOf(el);
+              // Délai pour laisser le toast visible sur le loader
+              setTimeout(() => {
+                gsap.to(el, {
+                  opacity: 0, duration: .4, delay: toastMsg ? .8 : 0,
+                  onComplete: () => {
+                    this.ngZone.run(() => {
+                      this.showAuthLoader  = false;
+                      this.showLoaderToast = false;
+                    });
+                  }
+                });
+              }, 50);
+            } else {
+              this.showAuthLoader  = false;
+              this.showLoaderToast = false;
+            }
+          } else {
+            this.showAuthLoader  = false;
+            this.showLoaderToast = false;
+          }
+        }
+      });
+    });
   }
 
   onLoadingComplete(): void {
@@ -36,4 +100,3 @@ export class AppComponent implements OnInit {
     sessionStorage.setItem('madina_loaded', '1');
   }
 }
-
