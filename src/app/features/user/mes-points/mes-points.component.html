@@ -1,0 +1,117 @@
+<app-navbar></app-navbar>
+
+<div class="points-shell">
+
+  <div class="points-loading" *ngIf="loading">
+    <div class="pl-spinner"></div>
+  </div>
+
+  <ng-container *ngIf="!loading && user">
+
+    <!-- ══ HERO ══════════════════════════════════════════════ -->
+    <div class="points-hero">
+      <div class="ph-bg"></div>
+      <div class="ph-content">
+
+        <button class="ph-back" routerLink="/user/profile">
+          <svg width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour au profil
+        </button>
+
+        <div class="ph-main">
+          <div class="ph-star">⭐</div>
+          <div class="ph-numbers">
+            <div class="ph-total">{{ user.points | number }}</div>
+            <div class="ph-unit">points accumulés</div>
+          </div>
+        </div>
+
+        <div class="ph-stats">
+          <div class="phs-card">
+            <div class="phs-dot" style="background:#0D9B76"></div>
+            <div class="phs-info">
+              <div class="phs-num" style="color:#0D9B76">+{{ totalGained | number }}</div>
+              <div class="phs-label">Points gagnés</div>
+            </div>
+          </div>
+          <div class="phs-card">
+            <div class="phs-dot" style="background:#E8532A"></div>
+            <div class="phs-info">
+              <div class="phs-num" style="color:#E8532A">{{ totalLost | number }}</div>
+              <div class="phs-label">Points perdus</div>
+            </div>
+          </div>
+          <div class="phs-card">
+            <div class="phs-dot" style="background:#3B82F6"></div>
+            <div class="phs-info">
+              <div class="phs-num" style="color:#3B82F6">{{ transactions.length }}</div>
+              <div class="phs-label">Transactions</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ BODY ══════════════════════════════════════════════ -->
+    <div class="points-body">
+
+      <div class="section-header">
+        <div class="section-title">Historique</div>
+        <div class="section-count">{{ transactions.length }} transaction{{ transactions.length > 1 ? 's' : '' }}</div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline" *ngIf="transactions.length > 0">
+        <div class="tl-item"
+             *ngFor="let t of transactions; trackBy: trackById"
+             [class.tl-gain]="t.points > 0"
+             [class.tl-loss]="t.points < 0">
+
+          <div class="tl-connector">
+            <div class="tl-icon-wrap">{{ reasonIcon(t.reason) }}</div>
+            <div class="tl-line-seg"></div>
+          </div>
+
+          <div class="tl-card">
+            <div class="tl-card-header">
+              <div class="tl-reason">{{ reasonLabel(t.reason) }}</div>
+              <div class="tl-pts" [class.gain]="t.points > 0" [class.loss]="t.points < 0">
+                {{ t.points > 0 ? '+' : '' }}{{ t.points }} pts
+              </div>
+            </div>
+            <div class="tl-desc" *ngIf="t.description">{{ t.description }}</div>
+            <div class="tl-date">
+              <svg width="12" height="12" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              {{ formatDate(t.createdAt) }}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="tl-empty" *ngIf="transactions.length === 0">
+        <div class="tl-empty-icon">⭐</div>
+        <p>Aucune transaction</p>
+        <span>Complétez votre profil pour gagner vos premiers points !</span>
+        <a class="tl-empty-btn" routerLink="/user/profile">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          Compléter mon profil
+        </a>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

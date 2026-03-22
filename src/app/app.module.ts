@@ -8,6 +8,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {CommonModule} from '@angular/common';
 import {SharedModule} from './shared/shared.module';
 import { LandingComponent } from './features/landing/landing.component';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { LandingComponent } from './features/landing/landing.component';
     CommonModule,
     AppRoutingModule,
     CoreModule,
-    SharedModule
+    SharedModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -5,13 +5,19 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { AdminSidebarComponent } from './admin-sidebar/admin-sidebar.component';
 import { AdminTopbarComponent } from './admin-topbar/admin-topbar.component';
+import { UsersComponent } from './users/users.component';
+import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
+import { InvitationCodesComponent } from './invitation-codes/invitation-codes.component';
 
 
 @NgModule({
   declarations: [
+    AdminLayoutComponent,
     AdminDashboardComponent,
     AdminSidebarComponent,
-    AdminTopbarComponent
+    AdminTopbarComponent,
+    UsersComponent,
+    InvitationCodesComponent,
   ],
   imports: [
     CommonModule,

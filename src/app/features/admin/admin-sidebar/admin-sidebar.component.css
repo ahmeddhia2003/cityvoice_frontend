@@ -117,3 +117,139 @@
   background: #4ADE80; box-shadow: 0 0 6px #4ADE80;
   position: absolute; bottom: 17px; left: 41px;
 }
+
+/* ── User wrap ──────────────────────────────────────────── */
+.sb-user-wrap {
+  position: relative;
+  margin-top: auto;
+}
+
+/* ── Drop-up menu ───────────────────────────────────────── */
+.sb-dropup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 12px;
+  right: 12px;
+  background: #1a2f4a;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px rgba(0,0,0,.3);
+  opacity: 0;
+  transform: translateY(8px) scale(.97);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 100;
+}
+
+.sb-dropup.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* Header du drop-up */
+.sdu-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 12px;
+}
+
+.sdu-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--coral), #C93E1A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.sdu-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F7F4EF;
+  line-height: 1.2;
+}
+
+.sdu-email {
+  font-size: 11px;
+  color: rgba(255,255,255,.35);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.sdu-divider {
+  height: 1px;
+  background: rgba(255,255,255,.07);
+  margin: 4px 0;
+}
+
+/* Items du drop-up */
+.sdu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: rgba(236,232,225,.6);
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+}
+
+.sdu-item:hover {
+  background: rgba(255,255,255,.07);
+  color: #F7F4EF;
+  padding-left: 18px;
+}
+
+.sdu-item svg {
+  flex-shrink: 0;
+  opacity: .7;
+}
+
+.sdu-item:hover svg {
+  opacity: 1;
+}
+
+.sdu-logout {
+  color: rgba(232,83,42,.7);
+}
+
+.sdu-logout:hover {
+  background: rgba(232,83,42,.1);
+  color: var(--coral);
+  padding-left: 14px;
+}
+
+/* Modifier sb-user pour indiquer qu'il est cliquable */
+.sb-user {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  transition: background .18s;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+}
+
+.sb-user:hover {
+  background: rgba(255,255,255,.05);
+}
