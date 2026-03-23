@@ -10,7 +10,7 @@ import { CameraModalComponent } from '../../../shared/components/camera-modal/ca
 
 declare const gsap: any;
 declare const L: any;
-
+import { SignalementService } from '../../../core/services/signalement.service';
 export type GeoStatus   = 'idle' | 'loading' | 'success' | 'error';
 export type VoiceStatus = 'idle' | 'listening' | 'done' | 'unsupported';
 export type AiStatus    = 'idle' | 'loading' | 'ready' | 'error';
@@ -83,6 +83,7 @@ export class SignalerFormComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private ngZone: NgZone,
     private ai:     AiService,
+    private sigService: SignalementService,
     public  sound:  SoundService,
   ) {}
 
@@ -474,33 +475,76 @@ export class SignalerFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /* ── Submit ───────────────────────────────────────── */
   onSubmit(): void {
+    console.log('valid:', this.form.valid);
+    console.log('values:', this.form.value);
+    Object.keys(this.form.controls).forEach(key => {
+      const ctrl = this.form.get(key);
+      if (ctrl?.invalid) console.log('INVALIDE:', key, ctrl.errors);
+    });
     if (this.form.invalid || this.submitting) return;
     this.submitting = true;
     this.sound.click();
 
-    setTimeout(() => {
-      this.ai.analyze({
-        description:  this.form.get('description')?.value,
-        latitude:     this.form.get('latitude')?.value,
-        longitude:    this.form.get('longitude')?.value,
-        image_base64: this.previewB64 ?? undefined,
-      }).subscribe({
-        next: (res) => {
-          this.ngZone.run(() => {
-            this.analyzeResult = res;
-            this.submitting    = false;
-            this.submitted     = true;
-            this.sound.success();
-            if (typeof gsap !== 'undefined') {
-              gsap.fromTo('.success-card', { opacity:0, scale:.92, y:24 }, { opacity:1, scale:1, y:0, duration:.6, ease:'back.out(1.4)' });
-            }
-          });
-        },
-        error: () => {
-          this.ngZone.run(() => { this.submitting = false; this.submitted = true; this.sound.success(); });
-        },
-      });
-    }, 1200);
+    const typeMap: Record<string, string> = {
+      trou_chaussee:   'TROU_CHAUSSEE',
+      lampadaire_casse:'LAMPADAIRE_CASSE',
+      fuite_eau:       'FUITE_EAU',
+      dechets:         'DECHETS_NON_COLLECTES',
+      poteau_endommage:'POTEAU_ENDOMMAGE',
+      signalisation:   'SIGNALISATION_MANQUANTE',
+      caniveau:        'CANIVEAU_BOUCHE',
+      autre:           'AUTRE',
+    };
+
+    const prioMap: Record<string, string> = {
+      faible:'FAIBLE', moyenne:'MOYENNE', haute:'HAUTE', urgente:'URGENTE',
+    };
+
+    const request = {
+      type:            typeMap[this.form.get('type')?.value] ?? 'AUTRE',
+      description:     this.form.get('description')?.value,
+      latitude:        this.form.get('latitude')?.value,
+      longitude:       this.form.get('longitude')?.value,
+      adresse:         this.form.get('adresse')?.value,
+      prioriteCitoyen: prioMap[this.form.get('priorite')?.value] ?? 'MOYENNE',
+      estAnonyme:      this.form.get('anonyme')?.value ?? false,
+      imageBase64:     this.previewB64 ?? undefined,
+    };
+
+    const userId = 1; // TODO: remplacer par AuthService.currentUser.id
+
+    this.sigService.create(request, userId).subscribe({
+      next: (sig) => {
+        this.ngZone.run(() => {
+          this.analyzeResult = {
+            categorie:      sig.type?.toLowerCase() ?? '',
+            priorite:       sig.prioriteIA?.toLowerCase() ?? sig.prioriteCitoyen?.toLowerCase() ?? 'moyenne',
+            priorite_score: 2,
+            equipe:         sig.equipeIA ?? '',
+            equipe_label:   sig.equipeIALabel ?? 'Affectation en cours',
+            delai_heures:   sig.delaiEstimeHeures ?? 48,
+            confidences:    { categorie: sig.confidenceIA ?? 0.85 },
+            processing_ms:  0,
+          };
+          this.submitting = false;
+          this.submitted  = true;
+          this.sound.success();
+          if (typeof gsap !== 'undefined') {
+            gsap.fromTo('.success-card',
+              { opacity:0, scale:.92, y:24 },
+              { opacity:1, scale:1, y:0, duration:.6, ease:'back.out(1.4)' }
+            );
+          }
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          this.submitting = false;
+          console.error('[Signalement] Erreur:', err);
+          alert('Erreur envoi. Vérifiez que Spring Boot tourne sur :8082');
+        });
+      },
+    });
   }
 
   goHome(): void         { this.router.navigate(['/']); }

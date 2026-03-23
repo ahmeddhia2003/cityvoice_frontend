@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════
+   CAMERA MODAL — Design dark premium
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────── */
+.cam-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(8,14,28,.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Modal box ───────────────────────────────────────────── */
+.cam-modal-box {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: min(680px, 96vw);
+  background: #0A1628;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08),
+    0 32px 80px rgba(0,0,0,.7);
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.cam-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.cam-header-left { display: flex; align-items: center; gap: 9px; }
+.cam-header-dot  {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 8px #4ADE80;
+  animation: hd-blink 2s ease-in-out infinite;
+}
+@keyframes hd-blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+.cam-header-title { font-size: 14px; font-weight: 600; color: rgba(255,255,255,.85); letter-spacing:.01em; }
+.cam-header-right { display: flex; gap: 8px; }
+
+.cam-ctrl-btn {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.6); cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.cam-ctrl-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+.cam-ctrl-close:hover { background: rgba(232,83,42,.25); color: #E8532A; }
+
+/* ── Zone vidéo ──────────────────────────────────────────── */
+.cam-video-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #060D1A;
+  overflow: hidden;
+}
+
+/* Loading */
+.cam-loading {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; color: rgba(255,255,255,.45); font-size: 13.5px;
+}
+.cam-loading-ring {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.1);
+  border-top-color: var(--coral,#E8532A);
+  animation: spin .8s linear infinite;
+}
+
+/* Erreur */
+.cam-error {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; text-align: center;
+  color: rgba(255,255,255,.55); font-size: 13.5px; line-height: 1.6;
+}
+.cam-retry-btn {
+  padding: 8px 22px; border-radius: 100px;
+  background: var(--coral,#E8532A); color: #fff;
+  border: none; cursor: pointer;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  transition: transform .18s;
+}
+.cam-retry-btn:hover { transform: translateY(-1px); }
+
+/* Vidéo */
+.cam-video-wrap {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cam-hidden { opacity: 0 !important; pointer-events: none; }
+.cam-video  { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Viseur (viewfinder) ─────────────────────────────────── */
+.cam-viewfinder {
+  position: absolute; inset: 20px;
+  z-index: 3; pointer-events: none;
+}
+
+.vf-corner {
+  position: absolute;
+  width: 22px; height: 22px;
+  border-color: rgba(255,255,255,.6);
+  border-style: solid;
+}
+.vf-tl { top:0; left:0;  border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.vf-tr { top:0; right:0; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.vf-bl { bottom:0; left:0;  border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.vf-br { bottom:0; right:0; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+/* Ligne de scan */
+.vf-scan-line {
+  position: absolute;
+  left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(13,155,118,.7), transparent);
+  animation: scan 3s ease-in-out infinite;
+  top: 0;
+}
+@keyframes scan {
+  0%,100% { top: 0; opacity: .8; }
+  50%      { top: 100%; opacity: .4; }
+}
+
+/* ── Obturateur overlay ──────────────────────────────────── */
+.cam-shutter-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
+.cam-blade {
+  position: absolute;
+  width: 0; height: 0;
+  top: 50%; left: 50%;
+  transform-origin: 0 0;
+  border-left:  350px solid transparent;
+  border-right: 350px solid transparent;
+  border-top:   280px solid #0A1628;
+  margin-left: -350px;
+}
+
+/* Flash blanc */
+.cam-flash {
+  position: absolute; inset: 0; z-index: 11;
+  background: #fff; opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Contrôles bas ───────────────────────────────────────── */
+.cam-controls {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px 16px;
+  background: #0A1628;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+/* Bouton galerie */
+.cam-gallery-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.55); cursor: pointer;
+  transition: background .18s, color .18s, transform .18s;
+}
+.cam-gallery-btn:hover { background: rgba(255,255,255,.15); color: #fff; transform: scale(1.08); }
+
+/* ── Bouton capture (grand obturateur) ───────────────────── */
+.cam-capture-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 0; outline: none;
+  transition: transform .15s;
+}
+.cam-capture-btn:hover  { transform: scale(1.06); }
+.cam-capture-btn:active { transform: scale(.95); }
+.cam-capture-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.ccb-outer {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: 3px solid rgba(255,255,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 0 rgba(255,255,255,.2);
+  animation: capture-pulse 2.5s ease-in-out infinite;
+}
+@keyframes capture-pulse {
+  0%,100% { box-shadow: 0 0 0 0   rgba(255,255,255,.15); }
+  50%      { box-shadow: 0 0 0 10px rgba(255,255,255,.0); }
+}
+
+.ccb-inner {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #0C1F3F, #1a3260);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid rgba(255,255,255,.15);
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.4),
+              0 4px 16px rgba(12,31,63,.5);
+}
+
+/* Lames décoratives sur le bouton capture */
+.ccb-blades {
+  position: absolute; inset: 0;
+  border-radius: 50%; overflow: hidden;
+}
+.ccb-blade {
+  position: absolute;
+  width: 50%; height: 50%;
+  top: 0; left: 50%;
+  transform-origin: 0 100%;
+  background: rgba(255,255,255,.05);
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+
+.ccb-lens {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Hint bas */
+.cam-hint {
+  text-align: center; font-size: 12px;
+  color: rgba(255,255,255,.28);
+  padding: 0 20px 14px;
+  background: #0A1628;
+  font-style: italic;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .cam-modal-box {
+    width: 100vw; height: 100dvh;
+    border-radius: 0; top: 0; left: 0;
+    transform: none;
+  }
+  .cam-video-area { aspect-ratio: unset; flex: 1; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -9,7 +9,7 @@ import { filter } from 'rxjs/operators';
 })
 
 export class AppComponent implements OnInit {
-
+title = 'Madina';
   showLoader   = true;
   isAdminRoute = false;
 

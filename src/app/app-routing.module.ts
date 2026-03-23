@@ -25,10 +25,10 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'signalements',
+    path: 'signaler',
     loadChildren: () =>
       import('./features/signalement/signalement.module').then(m => m.SignalementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'evenements',
@@ -48,6 +48,7 @@ const routes: Routes = [
       import('./features/actualite/actualite.module').then(m => m.ActualiteModule),
     canActivate: [AuthGuard],
   },
+  
   {
     path: 'personnel',
     loadChildren: () =>

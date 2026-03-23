@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.cityvoice.tn'
+  apiUrl: 'https://api.cityvoice.tn',
+  aiUrl:  'https://ai.cityvoice.tn',
+
 };
