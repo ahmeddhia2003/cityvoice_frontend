@@ -1,0 +1,94 @@
+/* ─── Shell ──────────────────────────────────────────── */
+.ev-map-shell {
+  background: var(--white);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ─── Header ─────────────────────────────────────────── */
+.ev-map-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  border-bottom: 1px solid var(--border2);
+  background: var(--cream);
+}
+
+.ev-map-header svg {
+  color: var(--coral);
+  flex-shrink: 0;
+}
+
+/* ─── Map ────────────────────────────────────────────── */
+.ev-map-el {
+  height: 280px;
+  width: 100%;
+  z-index: 1;
+}
+
+/* ─── Footer ─────────────────────────────────────────── */
+.ev-map-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border2);
+  background: var(--cream);
+  font-size: 13px;
+  color: var(--ink2);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ev-map-directions {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--coral);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color .18s;
+  white-space: nowrap;
+}
+.ev-map-directions:hover { color: var(--navy); }
+
+/* ─── Pas de localisation ────────────────────────────── */
+.ev-map-no-location {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  background: var(--cream);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r2);
+  font-size: 13px;
+  color: var(--ink3);
+  font-style: italic;
+}
+
+.ev-map-no-location svg {
+  color: var(--ink3);
+  flex-shrink: 0;
+}
+
+/* ─── Leaflet overrides ──────────────────────────────── */
+.ev-map-shell .leaflet-container {
+  font-family: var(--fb, Arial, sans-serif) !important;
+}
+
+.ev-map-shell .leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(12,31,63,.15) !important;
+  border: 1px solid rgba(12,31,63,.08) !important;
+}
+
+.ev-map-shell .leaflet-popup-tip {
+  box-shadow: none !important;
+}

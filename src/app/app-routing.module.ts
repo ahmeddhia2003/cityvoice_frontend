@@ -34,7 +34,7 @@ const routes: Routes = [
     path: 'evenements',
     loadChildren: () =>
       import('./features/evenement/evenement.module').then(m => m.EvenementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'projets',

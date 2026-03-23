@@ -1,0 +1,44 @@
+<div class="card shadow mt-4">
+  <div class="card-header">
+    <h5>🤝 Ajouter un sponsor</h5>
+  </div>
+  <div class="card-body">
+
+    <div *ngIf="succes" class="alert alert-success">{{ succes }}</div>
+    <div *ngIf="erreur" class="alert alert-danger">{{ erreur }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="soumettre()">
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Nom entreprise *</label>
+          <input type="text" class="form-control" formControlName="nomEntreprise">
+        </div>
+        <div class="col">
+          <label class="form-label">Niveau</label>
+          <select class="form-select" formControlName="niveauSponsorat">
+            <option value="">-- Choisir --</option>
+            <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Site web</label>
+          <input type="url" class="form-control" formControlName="siteWeb">
+        </div>
+        <div class="col">
+          <label class="form-label">Montant (TND)</label>
+          <input type="number" class="form-control" formControlName="montantSponsorat">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-warning"
+              [disabled]="form.invalid || loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        Ajouter le sponsor
+      </button>
+    </form>
+
+  </div>
+</div>

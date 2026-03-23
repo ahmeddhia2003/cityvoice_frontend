@@ -1,0 +1,195 @@
+<div class="ev-shell">
+
+  <button class="ev-back" (click)="annuler()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Retour
+  </button>
+
+  <div class="ev-form-page">
+
+    <!-- Left — Form -->
+    <div class="ev-form-main">
+      <div class="ev-form-header">
+        <span class="pill pill-coral" style="margin-bottom:12px">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Nouvel événement
+        </span>
+        <h2 class="heading-display">Créer un <span class="italic" style="color:var(--ink3)">événement</span></h2>
+        <p class="ev-form-sub">Remplissez les informations pour créer votre événement</p>
+      </div>
+
+      <div *ngIf="succes" class="ev-alert ev-alert-success">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ succes }}
+      </div>
+      <div *ngIf="erreur" class="ev-alert ev-alert-danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+        </svg>
+        {{ erreur }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form">
+
+        <!-- Titre -->
+        <div class="ev-form-group">
+          <label class="ev-label">Titre de l'événement *</label>
+          <input type="text" class="ev-input" formControlName="titre"
+                 placeholder="Ex: Séminaire sur l'intelligence artificielle"
+                 [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.invalid && form.get('titre')?.touched">
+            Le titre est obligatoire (min. 3 caractères)
+          </span>
+        </div>
+
+        <!-- Description -->
+        <div class="ev-form-group">
+          <label class="ev-label">Description</label>
+          <textarea class="ev-textarea" formControlName="description"
+                    placeholder="Décrivez l'événement, le programme, les intervenants…"
+                    rows="4"></textarea>
+        </div>
+
+        <!-- Type + Lieu -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">Type d'événement *</label>
+            <select class="ev-select-input" formControlName="type">
+              <option value="">-- Sélectionner --</option>
+              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">Lieu *</label>
+            <input type="text" class="ev-input" formControlName="lieu"
+                   placeholder="Ex: Tunis, Cité des Sciences">
+          </div>
+        </div>
+        <!-- ➕ Coordonnées GPS -->
+        <div class="ev-form-group">
+          <label class="ev-label">Localisation sur la carte</label>
+          <div class="ev-map-picker">
+            <div #miniMap class="ev-mini-map"></div>
+            <p class="ev-map-hint">
+              <svg width="12" height="12" fill="none" stroke="currentColor"
+                  stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Cliquez sur la carte pour placer l'événement
+            </p>
+            <div class="ev-coords-row">
+              <div class="ev-coord-item">
+                <span class="ev-coord-label">Latitude</span>
+                <input type="number" class="ev-input ev-coord-input"
+                      formControlName="latitude"
+                      placeholder="36.8065" step="0.0001">
+              </div>
+              <div class="ev-coord-item">
+                <span class="ev-coord-label">Longitude</span>
+                <input type="number" class="ev-input ev-coord-input"
+                      formControlName="longitude"
+                      placeholder="10.1815" step="0.0001">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">Date et heure de début *</label>
+            <input type="datetime-local" class="ev-input" formControlName="dateDebut">
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">Date et heure de fin</label>
+            <input type="datetime-local" class="ev-input" formControlName="dateFin">
+          </div>
+        </div>
+
+        <!-- Capacité + Payant -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">Capacité maximale</label>
+            <input type="number" class="ev-input" formControlName="capaciteMax"
+                   placeholder="Ex: 100" min="1">
+          </div>
+          <div class="ev-form-group ev-form-group-check">
+            <label class="ev-label">Type d'accès</label>
+            <label class="ev-toggle">
+              <input type="checkbox" formControlName="estPayant">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('estPayant')?.value ? 'Événement payant' : 'Entrée gratuite' }}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Prix (si payant) -->
+        <div class="ev-form-group" *ngIf="form.get('estPayant')?.value">
+          <label class="ev-label">Prix (TND) *</label>
+          <div class="ev-input-prefix">
+            <span class="ev-prefix">TND</span>
+            <input type="number" class="ev-input ev-input-with-prefix"
+                   formControlName="prix" placeholder="0.000" min="0" step="0.001">
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="ev-form-footer">
+          <button type="button" class="btn btn-outline" (click)="annuler()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="form.invalid || loading">
+            <span *ngIf="loading" class="ev-btn-spinner"></span>
+            <svg *ngIf="!loading" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Créer l'événement
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Right — Tips -->
+    <div class="ev-form-tips">
+      <div class="ev-tips-card">
+        <h4 class="ev-tips-title">💡 Conseils</h4>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">📝</div>
+          <div>
+            <div class="ev-tip-label">Titre accrocheur</div>
+            <p class="ev-tip-text">Un bon titre augmente de 3x le taux d'inscription</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">📍</div>
+          <div>
+            <div class="ev-tip-label">Lieu précis</div>
+            <p class="ev-tip-text">Précisez l'adresse complète pour faciliter l'accès</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">👥</div>
+          <div>
+            <div class="ev-tip-label">Capacité</div>
+            <p class="ev-tip-text">Limitez les places pour créer un sentiment d'urgence</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

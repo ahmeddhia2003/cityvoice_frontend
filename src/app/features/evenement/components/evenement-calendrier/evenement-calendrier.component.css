@@ -1,0 +1,317 @@
+/* ─── Shell principal ────────────────────────────────── */
+.ev-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 110px 40px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ─── Bouton retour ──────────────────────────────────── */
+.ev-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink2);
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-family: var(--fb);
+  transition: all .18s;
+  width: fit-content;
+}
+.ev-back:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+/* ─── Loading ────────────────────────────────────────── */
+.ev-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px;
+  color: var(--ink3);
+  font-size: 14px;
+}
+.ev-spinner {
+  width: 36px; height: 36px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Shell calendrier ───────────────────────────────── */
+.ev-cal-shell {
+  background: var(--white);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* ─── Header ─────────────────────────────────────────── */
+.ev-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border2);
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--cream);
+}
+
+.ev-cal-title {
+  font-family: var(--fd);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy);
+  margin: 0 0 4px;
+  letter-spacing: -.02em;
+}
+
+.ev-cal-sub {
+  font-size: 13px;
+  color: var(--ink3);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* ─── Légende ────────────────────────────────────────── */
+.ev-cal-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ev-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink2);
+  font-weight: 500;
+}
+
+.ev-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── Body ───────────────────────────────────────────── */
+.ev-cal-body {
+  padding: 24px 28px;
+}
+
+/* ─── FullCalendar overrides ─────────────────────────── */
+.ev-cal-body .fc {
+  font-family: var(--fb, Arial, sans-serif) !important;
+}
+
+.ev-cal-body .fc-toolbar-title {
+  font-family: var(--fd, Georgia, serif) !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: var(--navy) !important;
+  letter-spacing: -.02em !important;
+}
+
+/* Boutons toolbar */
+.ev-cal-body .fc-button {
+  background: var(--white) !important;
+  border: 1.5px solid var(--border) !important;
+  color: var(--ink2) !important;
+  font-family: var(--fb, Arial, sans-serif) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  box-shadow: none !important;
+  transition: all .18s !important;
+}
+
+.ev-cal-body .fc-button:hover {
+  background: var(--cream) !important;
+  border-color: var(--navy) !important;
+  color: var(--navy) !important;
+}
+
+.ev-cal-body .fc-button-active,
+.ev-cal-body .fc-button-primary:not(:disabled).fc-button-active {
+  background: var(--navy) !important;
+  border-color: var(--navy) !important;
+  color: #fff !important;
+}
+
+/* Bouton aujourd'hui */
+.ev-cal-body .fc-today-button {
+  background: var(--coral) !important;
+  border-color: var(--coral) !important;
+  color: #fff !important;
+}
+.ev-cal-body .fc-today-button:hover {
+  background: var(--navy) !important;
+  border-color: var(--navy) !important;
+}
+.ev-cal-body .fc-today-button:disabled {
+  opacity: .4 !important;
+}
+
+/* Boutons prev/next */
+.ev-cal-body .fc-prev-button,
+.ev-cal-body .fc-next-button {
+  padding: 6px 10px !important;
+}
+
+/* Groupe de boutons */
+.ev-cal-body .fc-button-group .fc-button {
+  border-radius: 0 !important;
+}
+.ev-cal-body .fc-button-group .fc-button:first-child {
+  border-radius: 8px 0 0 8px !important;
+}
+.ev-cal-body .fc-button-group .fc-button:last-child {
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* Jour aujourd'hui */
+.ev-cal-body .fc-daygrid-day.fc-day-today {
+  background: rgba(232,83,42,.06) !important;
+}
+.ev-cal-body .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  background: var(--coral) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  width: 26px !important;
+  height: 26px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Numéros de jours */
+.ev-cal-body .fc-daygrid-day-number {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: var(--ink2) !important;
+  padding: 6px 8px !important;
+  text-decoration: none !important;
+}
+
+/* En-têtes colonnes */
+.ev-cal-body .fc-col-header-cell-cushion {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--ink3) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  text-decoration: none !important;
+  padding: 10px 8px !important;
+}
+
+/* Événements */
+.ev-cal-body .fc-event {
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border: none !important;
+  transition: transform .15s, opacity .15s !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.15) !important;
+}
+.ev-cal-body .fc-event:hover {
+  opacity: .9 !important;
+  transform: scale(1.02) !important;
+}
+
+/* Vue liste */
+.ev-cal-body .fc-list-event:hover td {
+  background: var(--cream) !important;
+  cursor: pointer !important;
+}
+.ev-cal-body .fc-list-event-title a {
+  color: var(--navy) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  text-decoration: none !important;
+}
+.ev-cal-body .fc-list-event-time {
+  color: var(--ink3) !important;
+  font-size: 12px !important;
+}
+.ev-cal-body .fc-list-day-cushion {
+  background: var(--cream) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: var(--navy) !important;
+}
+
+/* Bordures */
+.ev-cal-body .fc-theme-standard td,
+.ev-cal-body .fc-theme-standard th {
+  border-color: var(--border2) !important;
+}
+.ev-cal-body .fc-theme-standard .fc-scrollgrid {
+  border-color: var(--border2) !important;
+  border-radius: var(--r) !important;
+  overflow: hidden !important;
+}
+
+/* Indicateur maintenant */
+.ev-cal-body .fc-timegrid-now-indicator-line {
+  border-color: var(--coral) !important;
+  border-width: 2px !important;
+}
+.ev-cal-body .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--coral) !important;
+  border-bottom-color: var(--coral) !important;
+}
+
+/* More link */
+.ev-cal-body .fc-daygrid-more-link {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--coral) !important;
+}
+
+/* ─── Responsive ─────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .ev-shell { padding: 100px 24px 60px; }
+  .ev-cal-body { padding: 16px; }
+}
+@media (max-width: 640px) {
+  .ev-shell { padding: 90px 16px 60px; }
+  .ev-cal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+  }
+  .ev-cal-body {
+    padding: 12px 8px;
+  }
+  .ev-cal-body .fc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .ev-cal-body .fc-toolbar-title {
+    font-size: 16px !important;
+  }
+  .ev-cal-legend {
+    gap: 10px;
+  }
+}

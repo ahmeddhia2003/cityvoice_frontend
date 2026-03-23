@@ -1,0 +1,124 @@
+<div class="ev-shell">
+
+  <button class="ev-back" (click)="retour()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Retour aux événements
+  </button>
+
+  <div class="ev-form-page">
+    <div class="ev-form-main">
+
+      <div class="ev-form-header">
+        <span class="pill pill-gold" style="margin-bottom:12px">💡 Proposition citoyenne</span>
+        <h2 class="heading-display">
+          Suggérer un <span class="italic" style="color:var(--ink3)">événement</span>
+        </h2>
+        <p class="ev-form-sub">
+          Votre idée peut devenir réalité — proposez un événement à votre municipalité
+        </p>
+      </div>
+
+      <div *ngIf="succes" class="ev-alert ev-alert-success">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ succes }}
+      </div>
+      <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form">
+
+        <div class="ev-form-group">
+          <label class="ev-label">Titre de votre suggestion *</label>
+          <input type="text" class="ev-input" formControlName="titre"
+                 placeholder="Ex: Atelier de recyclage pour les jeunes"
+                 [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.invalid && form.get('titre')?.touched">
+            Le titre est obligatoire
+          </span>
+        </div>
+
+        <div class="ev-form-group">
+          <label class="ev-label">Description</label>
+          <textarea class="ev-textarea" formControlName="description"
+                    placeholder="Décrivez votre idée, les objectifs, le public cible…"
+                    rows="4"></textarea>
+        </div>
+
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">Type souhaité</label>
+            <select class="ev-select-input" formControlName="typeSouhaite">
+              <option value="">-- Sélectionner --</option>
+              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">Lieu souhaité</label>
+            <input type="text" class="ev-input" formControlName="lieuSouhaite"
+                   placeholder="Ex: Sfax, Parc Ennahli">
+          </div>
+        </div>
+
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">Date souhaitée</label>
+            <input type="date" class="ev-input" formControlName="dateSouhaitee">
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">Votre email</label>
+            <input type="email" class="ev-input" formControlName="emailCitoyen"
+                   placeholder="vous@exemple.com"
+                   [class.ev-input-error]="form.get('emailCitoyen')?.invalid && form.get('emailCitoyen')?.touched">
+          </div>
+        </div>
+
+        <div class="ev-form-footer">
+          <button type="button" class="btn btn-outline" (click)="retour()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="form.invalid || loading">
+            <span *ngIf="loading" class="ev-btn-spinner"></span>
+            <svg *ngIf="!loading" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Soumettre ma suggestion
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Info sidebar -->
+    <div class="ev-form-tips">
+      <div class="ev-tips-card">
+        <h4 class="ev-tips-title">🗳️ Comment ça marche ?</h4>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">1️⃣</div>
+          <div>
+            <div class="ev-tip-label">Soumettez votre idée</div>
+            <p class="ev-tip-text">Remplissez ce formulaire avec votre proposition</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">2️⃣</div>
+          <div>
+            <div class="ev-tip-label">Examen municipal</div>
+            <p class="ev-tip-text">La municipalité examine les suggestions reçues</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">3️⃣</div>
+          <div>
+            <div class="ev-tip-label">Notification</div>
+            <p class="ev-tip-text">Vous serez notifié par email de la décision</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
