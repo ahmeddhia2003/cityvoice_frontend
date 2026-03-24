@@ -1,13 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {AdminDashboardComponent} from './admin-dashboard/admin-dashboard.component';
+import { AdminLayoutComponent }    from './admin-layout/admin-layout.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { UsersComponent }          from './users/users.component';
+import {InvitationCodesComponent} from './invitation-codes/invitation-codes.component';
 
 const routes: Routes = [
   {
-    path: '', redirectTo: 'dashboard', pathMatch: 'full'
-  },
-  {
-    path: 'dashboard', component: AdminDashboardComponent
+    path: '',
+    component: AdminLayoutComponent,   // ← layout parent
+    children: [
+      { path: '',          redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: AdminDashboardComponent },
+      { path: 'users',     component: UsersComponent },
+      { path: 'invitation-codes', component: InvitationCodesComponent }
+      // Ajoute ici tes futures pages admin
+    ]
   }
 ];
 
@@ -15,4 +23,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class AdminRoutingModule { }
+export class AdminRoutingModule {}

@@ -5,16 +5,23 @@ import { AuthRoutingModule } from './auth-routing.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { SigninComponent } from './signin/signin.component';
 import { SignupComponent } from './signup/signup.component';
-
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import {RouterModule} from '@angular/router';
+import {OAuth2CallbackComponent} from './oauth2-callback/oauth2-callback.component';
 
 @NgModule({
   declarations: [
     SigninComponent,
-    SignupComponent
+    SignupComponent,
+    ForgotPasswordComponent,
+    ResetPasswordComponent,
+    OAuth2CallbackComponent
   ],
   imports: [
     CommonModule,
     AuthRoutingModule,
+    RouterModule,
     FormsModule,
     ReactiveFormsModule
   ]
