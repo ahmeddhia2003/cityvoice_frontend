@@ -1,0 +1,150 @@
+<app-navbar></app-navbar>
+
+<div class="lb-shell">
+
+  <div class="lb-loading" *ngIf="loading">
+    <div class="lbl-spinner"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ══ HERO ══════════════════════════════════════════════ -->
+    <div class="lb-hero">
+      <div class="lb-hero-bg"></div>
+      <div class="lb-hero-content">
+
+        <button class="lb-back" (click)="goBack()">
+          <svg width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour
+        </button>
+
+        <div class="lb-hero-title">
+          <div class="lb-trophy">🏆</div>
+          <div>
+            <h1 class="lb-title">Classement</h1>
+            <p class="lb-subtitle">Les citoyens les plus engagés de Tunis</p>
+          </div>
+        </div>
+
+        <!-- Mon rang -->
+        <div class="lb-my-rank" *ngIf="currentRank > 0">
+          <div class="lbmr-label">Votre rang</div>
+          <div class="lbmr-rank">#{{ currentRank }}</div>
+          <div class="lbmr-pts" *ngIf="currentUser">
+            ⭐ {{ currentUser.points }} pts
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ PODIUM ════════════════════════════════════════════ -->
+    <div class="lb-podium-wrap" *ngIf="top3.length >= 3">
+      <div class="lb-podium">
+
+        <!-- Ordre visuel : 2ème, 1er, 3ème -->
+        <ng-container *ngFor="let user of podiumOrder(); let vi = index">
+          <div class="podium-item"
+               [class.podium-first]="vi === 1"
+               [routerLink]="['/user/profil', user.id]"
+               style="cursor:pointer">
+
+            <div class="podium-user">
+              <!-- Medal -->
+              <div class="podium-medal">
+                {{ vi === 0 ? '🥈' : vi === 1 ? '🥇' : '🥉' }}
+              </div>
+
+              <!-- Avatar -->
+              <div class="podium-av"
+                   [class.podium-av--me]="isCurrentUser(user)"
+                   [style.border-color]="vi === 1 ? '#C9973E' : vi === 0 ? '#9CA3AF' : '#CD7F32'">
+                <img *ngIf="user.photo" [src]="user.photo" [alt]="user.nom">
+                <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
+              </div>
+
+              <div class="podium-name" style="cursor:pointer"
+                   [routerLink]="['/user/profil', user.id]">
+                {{ user.nom.split(' ')[0] }}
+              </div>
+              <div class="podium-pts">⭐ {{ user.points }}</div>
+            </div>
+
+            <!-- Podium base -->
+            <div class="podium-base"
+                 [style.height]="vi === 1 ? '120px' : vi === 0 ? '90px' : '70px'"
+                 [style.background]="vi === 1
+                   ? 'linear-gradient(180deg, #C9973E, #A37832)'
+                   : vi === 0
+                   ? 'linear-gradient(180deg, #9CA3AF, #6B7280)'
+                   : 'linear-gradient(180deg, #CD7F32, #A0622A)'">
+              <div class="podium-rank">{{ vi === 0 ? 2 : vi === 1 ? 1 : 3 }}</div>
+            </div>
+
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+    <!-- ══ TABLE ══════════════════════════════════════════════ -->
+    <div class="lb-body">
+      <div class="lb-table-wrap">
+
+        <div class="lb-table-header">
+          <span>Rang</span>
+          <span>Citoyen</span>
+          <span>Points</span>
+          <span>Badges</span>
+        </div>
+
+        <div class="lb-row"
+             *ngFor="let user of rest; let i = index"
+             [class.lb-row--me]="isCurrentUser(user)"
+             [routerLink]="['/user/profil', user.id]"
+             style="cursor:pointer">
+
+          <div class="lb-rank">
+            <span class="lb-rank-num">{{ i + 4 }}</span>
+          </div>
+
+          <div class="lb-user">
+            <div class="lb-av">
+              <img *ngIf="user.photo" [src]="user.photo" [alt]="user.nom">
+              <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
+            </div>
+            <div class="lb-user-info">
+              <div class="lb-user-name" style="cursor:pointer"
+                   [routerLink]="['/user/profil', user.id]">
+                {{ user.nom }}
+                <span class="lb-you" *ngIf="isCurrentUser(user)">Vous</span>
+              </div>
+              <div class="lb-user-loc" *ngIf="user.ville">
+                📍 {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="lb-points">
+            <span class="lb-pts-num">{{ user.points | number }}</span>
+            <span class="lb-pts-label">pts</span>
+          </div>
+
+          <div class="lb-badges">
+            <span class="lb-badge-dot" style="background:#C9973E">⭐</span>
+          </div>
+
+        </div>
+
+        <div class="lb-empty" *ngIf="rest.length === 0 && leaders.length < 4">
+          <p>Soyez parmi les premiers à monter dans le classement !</p>
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+</div>

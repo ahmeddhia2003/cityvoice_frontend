@@ -7,6 +7,10 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
 
+// ============================================================
+// INTERFACES
+// ============================================================
+
 export interface RegisterRequest {
   nom:             string;
   email:           string;
@@ -19,18 +23,32 @@ export interface RegisterRequest {
   codePostal?:     string;
 }
 
+
+// ============================================================
+// SERVICE
+// ============================================================
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+
+  // ============================================================
+  // CONSTANTS
+  // ============================================================
 
   private readonly AUTH_URL  = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'cv_token';
   private readonly USER_KEY  = 'cv_user';
 
-  // ── Auth state (navbar refresh) ───────────────────────
-  private authStateSubject  = new Subject<void>();
+
+  // ============================================================
+  // STATE SUBJECTS
+  // ============================================================
+
+  // Auth state for navbar refresh
+  private authStateSubject = new Subject<void>();
   authState$ = this.authStateSubject.asObservable();
 
-  // ── Auth loading screen ───────────────────────────────
+  // Auth loading screen state
   private authLoadingSubject = new Subject<{
     loading:   boolean;
     message?:  string;
@@ -39,7 +57,20 @@ export class AuthService {
   }>();
   authLoading$ = this.authLoadingSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {}
+
+  // ============================================================
+  // CONSTRUCTOR
+  // ============================================================
+
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
+
+
+  // ============================================================
+  // PRIVATE METHODS
+  // ============================================================
 
   private setLoading(
     loading: boolean,
@@ -50,7 +81,14 @@ export class AuthService {
     this.authLoadingSubject.next({ loading, message, toastMsg, toastType });
   }
 
-  // ── Login ──────────────────────────────────────────────
+
+  // ============================================================
+  // AUTHENTICATION CORE
+  // ============================================================
+
+  /**
+   * Login user and store token
+   */
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials)
       .pipe(
@@ -61,44 +99,56 @@ export class AuthService {
             role:   res.role,
             email:  credentials.email,
           }));
+
           this.setLoading(true, 'Connexion en cours…');
+
           setTimeout(() => {
             this.authStateSubject.next();
             this.setLoading(false, undefined, 'Bienvenue sur CityVoice 🎉', 'success');
-            // ── Redirection selon le rôle ──────────────────────
+
+            // Redirect based on role
             setTimeout(() => {
               if (res.role === 'ADMIN_VILLE') {
                 this.router.navigate(['/admin']);
               } else {
                 this.router.navigate(['/landing']);
               }
-            }, 400);
+            }, 800);
           }, 1200);
         })
       );
   }
 
-  // ── Register ───────────────────────────────────────────
+  /**
+   * Register new user
+   */
   register(data: RegisterRequest): Observable<any> {
     return this.http.post(`${this.AUTH_URL}/register`, data);
   }
 
-  // ── Logout ─────────────────────────────────────────────
+  /**
+   * Logout user and clear session
+   */
   logout(): void {
-    this.setLoading(true, 'Déconnexion…');   // ← déclenché immédiatement
+    this.setLoading(true, 'Déconnexion…');
+
     setTimeout(() => {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
       this.authStateSubject.next();
       this.setLoading(false, undefined, 'À bientôt 👋', 'success');
-      // Navigation après la fermeture du loader
+
       setTimeout(() => {
         this.router.navigate(['/']);
-      }, 600);
-    }, 1000);
+      }, 800);
+    }, 1200);
   }
 
-// ── Helpers ────────────────────────────────────────────
+
+  // ============================================================
+  // PASSWORD MANAGEMENT
+  // ============================================================
+
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.AUTH_URL}/forgot-password`, { email });
   }
@@ -107,12 +157,35 @@ export class AuthService {
     return this.http.post(`${this.AUTH_URL}/reset-password`, { token, password });
   }
 
+
+  // ============================================================
+  // EMAIL VERIFICATION
+  // ============================================================
+
+  verifyEmail(token: string): Observable<any> {
+    return this.http.get(`${this.AUTH_URL}/verify-email?token=${token}`);
+  }
+
+  resendVerification(email: string): Observable<any> {
+    return this.http.post(`${this.AUTH_URL}/resend-verification`, { email });
+  }
+
+
+  // ============================================================
+  // USER PROFILE
+  // ============================================================
+
   updatePhoto(userId: string, base64Photo: string): Observable<any> {
     return this.http.put(
       `${environment.apiUrl}/api/users/${userId}/photo`,
       { photo: base64Photo }
     );
   }
+
+
+  // ============================================================
+  // AUTH STATE HELPERS
+  // ============================================================
 
   refreshAuthState(): void {
     this.authStateSubject.next();
@@ -135,10 +208,21 @@ export class AuthService {
     return this.getCurrentUser()?.role ?? null;
   }
 
-  isAdmin():   boolean { return this.getRole() === 'ADMIN_VILLE'; }
-  isAgent():   boolean {
+
+  // ============================================================
+  // ROLE CHECKERS
+  // ============================================================
+
+  isAdmin(): boolean {
+    return this.getRole() === 'ADMIN_VILLE';
+  }
+
+  isAgent(): boolean {
     const r = this.getRole();
     return r === 'CHEF_EQUIPE' || r === 'MEMBRE_EQUIPE' || r === 'MODERATEUR';
   }
-  isCitoyen(): boolean { return this.getRole() === 'CITOYEN'; }
+
+  isCitoyen(): boolean {
+    return this.getRole() === 'CITOYEN';
+  }
 }

@@ -1,0 +1,114 @@
+<div class="auth-shell">
+  <div class="auth-left">
+    <div class="auth-orb-1"></div>
+    <div class="auth-orb-2"></div>
+    <a routerLink="/" class="auth-logo">
+      <div class="auth-logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white"/>
+        </svg>
+      </div>
+      <span class="auth-logo-text">CityVoice</span>
+    </a>
+    <div class="auth-headline">
+      <div class="auth-tag">
+        <span class="auth-tag-dot"></span>Vérification · CityVoice
+      </div>
+      <h1 class="auth-title">
+        <span class="lt-line"><span class="lt-word">Vérifiez</span></span>
+        <span class="lt-line"><span class="lt-word lt-accent">votre email.</span></span>
+      </h1>
+      <p class="auth-desc">
+        Une dernière étape pour rejoindre la communauté CityVoice et commencer à améliorer votre ville.
+      </p>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-right-deco"></div>
+    <div class="auth-card" style="opacity:1">
+
+      <!-- Icône email animée -->
+      <div class="ep-icon-wrap">
+        <div class="ep-icon">📧</div>
+        <div class="ep-ring ep-ring-1"></div>
+        <div class="ep-ring ep-ring-2"></div>
+      </div>
+
+      <h2 class="auth-form-title" style="text-align:center">
+        Confirmez votre <span class="coral">email</span>
+      </h2>
+
+      <p class="auth-form-sub" style="text-align:center;margin-bottom:24px">
+        Nous avons envoyé un lien de confirmation à :
+      </p>
+
+      <!-- Email affiché -->
+      <div class="ep-email-badge">
+        <svg width="15" height="15" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        {{ email }}
+      </div>
+
+      <!-- Info spam -->
+      <div class="ep-hint">
+        <svg width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>Pensez à vérifier votre dossier <strong>spam</strong> si vous ne trouvez pas l'email.</p>
+      </div>
+
+      <!-- Divider -->
+      <div class="ep-divider">
+        <span>Pas reçu l'email ?</span>
+      </div>
+
+      <!-- Bouton renvoyer -->
+      <button class="auth-submit ep-resend-btn"
+              [class.loading]="resending"
+              [style.background]="justSent ? '#0D9B76' : '#E8532A'"
+              [style.box-shadow]="justSent
+                ? '0 4px 20px rgba(13,155,118,.3)'
+                : '0 4px 20px rgba(232,83,42,.3)'"
+              (click)="resend()">
+
+        <!-- Loading spinner -->
+        <span class="btn-spinner" *ngIf="resending"></span>
+
+        <!-- Sent state -->
+        <ng-container *ngIf="!resending && justSent">
+          <span class="sent-badge">
+            <svg width="15" height="15" fill="none" stroke="white"
+                 stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+          Lien envoyé !
+        </ng-container>
+
+        <!-- Default state -->
+        <ng-container *ngIf="!resending && !justSent">
+          <svg width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M23 4v6h-6"/>
+            <path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          Renvoyer le lien
+        </ng-container>
+
+      </button>
+
+      <p class="switch-link" style="margin-top:20px">
+        <a (click)="goSignin()" style="cursor:pointer">← Retour à la connexion</a>
+      </p>
+
+    </div>
+  </div>
+</div>

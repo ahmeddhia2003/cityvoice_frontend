@@ -1,0 +1,119 @@
+.onboarding-widget {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  width: 320px; z-index: 900;
+  background: #0C1F3F;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(12,31,63,.35),
+  0 0 0 1px rgba(255,255,255,.08);
+  overflow: hidden;
+  transition: width .3s ease;
+}
+
+.onboarding-widget.minimized {
+  width: 220px;
+}
+
+/* Header */
+.ow-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px; cursor: pointer;
+  background: rgba(255,255,255,.04);
+  transition: background .15s;
+}
+.ow-header:hover { background: rgba(255,255,255,.07); }
+
+.ow-header-left {
+  display: flex; align-items: center; gap: 10px;
+}
+.ow-emoji { font-size: 22px; line-height: 1; }
+.ow-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px; font-weight: 700; color: #F7F4EF;
+}
+.ow-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 1px; }
+
+.ow-header-right {
+  display: flex; align-items: center; gap: 6px;
+}
+.ow-chevron, .ow-close {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.5); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.ow-chevron:hover { background: rgba(255,255,255,.15); color: white; }
+.ow-close:hover   { background: #E8532A; color: white; }
+
+/* Progress bar */
+.ow-prog-bar {
+  height: 3px; background: rgba(255,255,255,.08);
+}
+.ow-prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #E8532A, #0D9B76);
+  transition: width .6s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Body */
+.ow-body { padding: 14px 16px 16px; }
+
+/* All done */
+.ow-done {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 12px;
+  background: rgba(13,155,118,.1);
+  border: 1px solid rgba(13,155,118,.2);
+}
+
+/* Steps */
+.ow-steps { display: flex; flex-direction: column; gap: 8px; }
+
+.ow-step {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.06);
+  transition: all .2s;
+}
+.ow-step:hover { background: rgba(255,255,255,.07); }
+.ow-step--done {
+  opacity: .6;
+  background: rgba(13,155,118,.06);
+  border-color: rgba(13,155,118,.15);
+}
+
+.ow-step-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.ow-step--done .ow-step-icon { background: rgba(13,155,118,.15); }
+
+.ow-step-text { flex: 1; min-width: 0; }
+.ow-step-title {
+  font-size: 12.5px; font-weight: 600;
+  color: rgba(255,255,255,.85); line-height: 1.2;
+}
+.ow-step-desc {
+  font-size: 11px; color: rgba(255,255,255,.35);
+  margin-top: 2px;
+}
+
+.ow-step-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 8px; border: none;
+  background: #E8532A; color: white;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11.5px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s; flex-shrink: 0;
+}
+.ow-step-btn:hover { background: #C93E1A; transform: scale(1.03); }
+
+.ow-done-badge {
+  font-size: 13px; color: #0D9B76; font-weight: 700; flex-shrink: 0;
+}

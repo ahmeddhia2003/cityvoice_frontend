@@ -1,0 +1,94 @@
+<app-navbar></app-navbar>
+
+<div class="pp-shell">
+
+  <div class="pp-loading" *ngIf="loading">
+    <div class="pp-spinner"></div>
+  </div>
+
+  <ng-container *ngIf="!loading && user">
+
+    <!-- Hero -->
+    <div class="pp-hero">
+      <div class="pp-hero-bg"></div>
+      <div class="pp-hero-content">
+
+        <button class="pp-back" (click)="goBack()">
+          <svg width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Retour
+        </button>
+
+        <div class="pp-identity">
+          <div class="pp-avatar">
+            <img *ngIf="user.photo" [src]="user.photo" [alt]="user.nom">
+            <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
+          </div>
+          <div class="pp-info">
+            <h1 class="pp-name">{{ user.nom }}</h1>
+            <div class="pp-meta">
+              <span class="pp-role"
+                    [style.background]="roleBg(user.role)"
+                    [style.color]="roleColor(user.role)">
+                {{ roleLabel(user.role) }}
+              </span>
+              <span class="pp-location" *ngIf="user.ville">
+                📍 {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              </span>
+            </div>
+            <div class="pp-since">
+              Membre depuis {{ formatDate(user.dateInscription) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="pp-stats">
+          <div class="pp-stat pp-card">
+            <div class="pp-stat-num" style="color:#C9973E">
+              ⭐ {{ user.points }}
+            </div>
+            <div class="pp-stat-label">Points</div>
+          </div>
+          <div class="pp-stat pp-card" *ngIf="rank > 0">
+            <div class="pp-stat-num" style="color:#E8532A">
+              #{{ rank }}
+            </div>
+            <div class="pp-stat-label">Classement</div>
+          </div>
+          <div class="pp-stat pp-card" *ngIf="user.loginStreak > 1">
+            <div class="pp-stat-num" style="color:#F97316">
+              🔥 {{ user.loginStreak }}
+            </div>
+            <div class="pp-stat-label">Jours consécutifs</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="pp-body">
+      <div class="pp-section pp-card" *ngIf="badges.length > 0">
+        <div class="pp-section-title">Badges obtenus</div>
+        <div class="pp-badges-grid">
+          <div class="pp-badge-item" *ngFor="let ub of badges"
+               [title]="ub.badge.name">
+            <div class="pp-badge-icon">{{ ub.badge.emoji }}</div>
+            <div class="pp-badge-name">{{ ub.badge.name }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pp-section pp-card" *ngIf="badges.length === 0">
+        <div class="pp-empty">
+          <span style="font-size:32px">🏅</span>
+          <p>Aucun badge encore obtenu</p>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

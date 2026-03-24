@@ -75,18 +75,91 @@
         <!-- Stats -->
         <div class="hero-stats">
           <div class="hs-card" routerLink="/user/mes-points"
-               style="color:#C9973E; cursor:pointer">
+               style="cursor:pointer;color:#C9973E">
             <div class="hs-num">{{ user.points }}</div>
             <div class="hs-label">Points →</div>
+          </div>
+          <div class="hs-card" routerLink="/user/mes-badges"
+               style="cursor:pointer;color:#8B5CF6">
+            <div class="hs-num">🏅</div>
+            <div class="hs-label">Badges →</div>
+          </div>
+          <div class="hs-card" routerLink="/user/leaderboard"
+               style="cursor:pointer;color:#E8532A">
+            <div class="hs-num">🏆</div>
+            <div class="hs-label">Classement →</div>
           </div>
           <div class="hs-card" style="color:#0D9B76">
             <div class="hs-num">0</div>
             <div class="hs-label">Signalements</div>
           </div>
-          <div class="hs-card" style="color:#3B82F6">
-            <div class="hs-num">0</div>
-            <div class="hs-label">Résolus</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ AI SUGGESTION BANNER ═════════════════════════════ -->
+    <div class="ai-banner" *ngIf="!loading && user"
+         [class.ai-banner--open]="showAiSuggestion">
+
+      <!-- Trigger button -->
+      <div class="ai-trigger" *ngIf="!showAiSuggestion" (click)="getAiSuggestion()">
+        <div class="ai-trigger-icon">✨</div>
+        <div class="ai-trigger-text">
+          <div class="ai-trigger-title">Conseil personnalisé</div>
+          <div class="ai-trigger-sub">
+            Obtenir une suggestion IA pour améliorer votre profil
           </div>
+        </div>
+        <div class="ai-trigger-arrow">
+          <svg width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Suggestion panel -->
+      <div class="ai-panel" *ngIf="showAiSuggestion">
+        <div class="ai-panel-header">
+          <div class="ai-panel-icon">✨</div>
+          <div class="ai-panel-title">Conseil personnalisé</div>
+          <button class="ai-close" (click)="closeAiSuggestion()">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <div class="ai-loading" *ngIf="aiLoading">
+          <div class="ai-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span>L'IA analyse votre profil…</span>
+        </div>
+
+        <!-- Message -->
+        <div class="ai-message" *ngIf="!aiLoading && aiSuggestion">
+          {{ aiSuggestion }}
+        </div>
+
+        <!-- Actions -->
+        <div class="ai-actions" *ngIf="!aiLoading && aiSuggestion">
+          <button class="ai-refresh" (click)="getAiSuggestion()">
+            <svg width="13" height="13" fill="none" stroke="currentColor"
+                 stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+            Nouveau conseil
+          </button>
+          <button class="ai-goto" (click)="setTab('info')">
+            Compléter mon profil
+          </button>
         </div>
 
       </div>
@@ -167,8 +240,11 @@
                     <polyline points="22,6 12,13 2,6"/>
                   </svg>
                   <input class="field-input" type="email"
-                         formControlName="email" placeholder="vous@exemple.com">
+                         formControlName="email" placeholder="vous@exemple.com"
+                         [disabled]="true">
+                  <span class="lock-icon">🔒</span>
                 </div>
+                <small class="field-hint">L'email ne peut pas être modifié</small>
               </div>
 
               <div class="field-group">

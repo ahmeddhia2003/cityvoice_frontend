@@ -5,8 +5,7 @@
     <div>
       <div class="page-title">Utilisateurs</div>
       <div class="page-sub">
-        {{ filtered.length }} utilisateur{{ filtered.length > 1 ? 's' : '' }}
-        · {{ users.length }} total
+        {{ totalElements }} utilisateur{{ totalElements > 1 ? 's' : '' }}
       </div>
     </div>
     <div class="search-wrap">
@@ -31,7 +30,7 @@
             [style.background]="roleColor(r)"></span>
       {{ r === 'ALL' ? 'Tous' : roleLabel(r) }}
       <span class="rf-count">
-        {{ r === 'ALL' ? users.length : countByRole(r) }}
+        {{ countByRole(r) }}
       </span>
     </button>
   </div>
@@ -47,25 +46,17 @@
     <table class="users-table">
       <thead>
       <tr>
-        <th class="th-sort" (click)="sort('nom')">
-          Utilisateur
-          <svg *ngIf="sortField==='nom'" width="11" height="11"
-               fill="none" stroke="currentColor" stroke-width="2.5"
-               viewBox="0 0 24 24">
-            <polyline *ngIf="sortDir==='asc'"  points="18 15 12 9 6 15"/>
-            <polyline *ngIf="sortDir==='desc'" points="6 9 12 15 18 9"/>
-          </svg>
-        </th>
+        <th>Utilisateur</th>
         <th>Contact</th>
-        <th class="th-sort" (click)="sort('role')">Rôle</th>
-        <th class="th-sort" (click)="sort('points')">Points</th>
+        <th>Rôle</th>
+        <th>Points</th>
         <th>Localisation</th>
-        <th class="th-sort" (click)="sort('dateInscription')">Inscription</th>
+        <th>Inscription</th>
         <th>Actions</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let u of filtered; trackBy: trackById"
+      <tr *ngFor="let u of users; trackBy: trackById"
           [class.tr-highlight]="deleteConfirm === u.id">
 
         <td>
@@ -79,7 +70,10 @@
             <img class="user-av-img" *ngIf="u.photo"
                  [src]="u.photo" [alt]="u.nom">
             <div>
-              <div class="user-name">{{ u.nom }}</div>
+              <div class="user-name">
+                {{ u.nom }}
+                <span class="banned-tag" *ngIf="u.banned">Banni</span>
+              </div>
               <div class="user-id">#{{ u.id | slice:0:8 }}</div>
             </div>
           </div>
@@ -93,11 +87,11 @@
         </td>
 
         <td>
-            <span class="role-badge"
-                  [style.background]="roleBg(u.role)"
-                  [style.color]="roleColor(u.role)">
-              {{ roleLabel(u.role) }}
-            </span>
+          <span class="role-badge"
+                [style.background]="roleBg(u.role)"
+                [style.color]="roleColor(u.role)">
+            {{ roleLabel(u.role) }}
+          </span>
         </td>
 
         <td>
@@ -159,7 +153,7 @@
         </td>
       </tr>
 
-      <tr *ngIf="filtered.length === 0 && !loading">
+      <tr *ngIf="users.length === 0 && !loading">
         <td colspan="7" class="empty-state">
           <svg width="32" height="32" fill="none" stroke="currentColor"
                stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3">
@@ -172,6 +166,37 @@
       </tr>
       </tbody>
     </table>
+
+    <!-- ── Pagination ── -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="pg-btn" [disabled]="currentPage === 0"
+              (click)="goToPage(currentPage - 1)">
+        <svg width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <button class="pg-num"
+              *ngFor="let p of pages"
+              [class.active]="p === currentPage"
+              (click)="goToPage(p)">
+        {{ p + 1 }}
+      </button>
+
+      <button class="pg-btn" [disabled]="currentPage === totalPages - 1"
+              (click)="goToPage(currentPage + 1)">
+        <svg width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      <span class="pg-info">
+        Page {{ currentPage + 1 }} / {{ totalPages }} · {{ totalElements }} utilisateurs
+      </span>
+    </div>
+
   </div>
 
 </div>
@@ -200,7 +225,10 @@
         <img class="dp-av-img" *ngIf="selectedUser.photo"
              [src]="selectedUser.photo" [alt]="selectedUser.nom">
         <div>
-          <div class="dp-name">{{ selectedUser.nom }}</div>
+          <div class="dp-name">
+            {{ selectedUser.nom }}
+            <span class="banned-tag" *ngIf="selectedUser.banned">Banni</span>
+          </div>
           <span class="role-badge"
                 [style.background]="roleBg(selectedUser.role)"
                 [style.color]="roleColor(selectedUser.role)">
@@ -253,8 +281,86 @@
         </select>
       </div>
 
-      <div class="dp-actions">
-        <button class="dp-delete-btn"
+      <!-- ── Actions ── -->
+      <div class="detail-actions">
+
+        <!-- Ban / Unban -->
+        <ng-container *ngIf="!selectedUser.banned">
+
+          <!-- Formulaire de ban -->
+          <div class="ban-form" *ngIf="banConfirm === selectedUser.id">
+            <div class="ban-form-title">
+              <svg width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              Motif du bannissement
+            </div>
+            <input class="ban-input" type="text" [(ngModel)]="banReason"
+                   placeholder="Ex: Comportement abusif…">
+            <div class="ban-form-actions">
+              <button class="ban-confirm-btn"
+                      [disabled]="banLoading"
+                      (click)="doBan()">
+                <span *ngIf="banLoading" class="btn-mini-spinner"></span>
+                {{ banLoading ? '…' : 'Confirmer le ban' }}
+              </button>
+              <button class="ban-cancel-btn" (click)="cancelBan()">Annuler</button>
+            </div>
+          </div>
+
+          <button class="action-ban-btn"
+                  *ngIf="banConfirm !== selectedUser.id"
+                  (click)="confirmBan(selectedUser.id)">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Bannir l'utilisateur
+          </button>
+
+        </ng-container>
+
+        <!-- Unban -->
+        <div class="banned-notice" *ngIf="selectedUser.banned">
+          <div class="bn-header">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Compte suspendu
+          </div>
+          <div class="bn-reason" *ngIf="selectedUser.banReason">
+            {{ selectedUser.banReason }}
+          </div>
+          <button class="unban-btn"
+                  *ngIf="unbanConfirm !== selectedUser.id"
+                  (click)="confirmUnban(selectedUser.id)">
+            Débannir l'utilisateur
+          </button>
+          <div class="unban-confirm" *ngIf="unbanConfirm === selectedUser.id">
+            <span>Confirmer le déban ?</span>
+            <button class="confirm-yes" (click)="doUnban()">Oui</button>
+            <button class="confirm-no" (click)="unbanConfirm = null">Non</button>
+          </div>
+        </div>
+
+        <!-- Suppression -->
+        <div class="delete-confirm-wrap" *ngIf="deleteConfirm === selectedUser.id">
+          <p>Supprimer définitivement ce compte ?</p>
+          <div style="display:flex;gap:8px">
+            <button class="confirm-yes" [disabled]="deleteLoading" (click)="doDelete()">
+              <span *ngIf="deleteLoading" class="btn-mini-spinner"></span>
+              Supprimer
+            </button>
+            <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
+          </div>
+        </div>
+
+        <button class="action-delete-btn"
                 *ngIf="deleteConfirm !== selectedUser.id"
                 (click)="confirmDelete(selectedUser.id)">
           <svg width="14" height="14" fill="none" stroke="currentColor"
@@ -262,16 +368,9 @@
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
           </svg>
-          Supprimer l'utilisateur
+          Supprimer le compte
         </button>
-        <div class="delete-confirm" *ngIf="deleteConfirm === selectedUser.id">
-          <button class="confirm-yes"
-                  [disabled]="deleteLoading"
-                  (click)="doDelete()">
-            {{ deleteLoading ? '…' : 'Confirmer la suppression' }}
-          </button>
-          <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
-        </div>
+
       </div>
 
     </ng-container>

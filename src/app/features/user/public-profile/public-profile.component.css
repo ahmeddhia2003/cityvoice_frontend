@@ -1,0 +1,149 @@
+.pp-shell {
+  min-height: 100vh;
+  background: #F7F4EF;
+  padding-top: 72px;
+}
+
+.pp-loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 80vh;
+}
+.pp-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(12,31,63,.1);
+  border-top-color: #E8532A;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Hero */
+.pp-hero {
+  background: #0C1F3F;
+  position: relative; overflow: hidden;
+}
+.pp-hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 80% at 80% 30%, rgba(232,83,42,.18), transparent),
+    radial-gradient(ellipse 40% 60% at 20% 70%, rgba(13,155,118,.1), transparent);
+}
+.pp-hero-content {
+  position: relative; z-index: 2;
+  max-width: 860px; margin: 0 auto;
+  padding: 36px 40px 44px;
+}
+
+.pp-back {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; color: rgba(255,255,255,.35);
+  cursor: pointer; margin-bottom: 28px;
+  border: none; background: none; padding: 0;
+  transition: color .2s;
+}
+.pp-back:hover { color: rgba(255,255,255,.7); }
+
+.pp-identity {
+  display: flex; align-items: center; gap: 24px;
+  margin-bottom: 28px; flex-wrap: wrap;
+}
+
+.pp-avatar {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: linear-gradient(135deg, #E8532A, #C93E1A);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 30px; font-weight: 700; color: white;
+  overflow: hidden; flex-shrink: 0;
+  box-shadow: 0 12px 32px rgba(232,83,42,.3);
+}
+.pp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.pp-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 700;
+  color: #F7F4EF; margin: 0 0 10px;
+  letter-spacing: -.02em;
+}
+.pp-meta {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 6px;
+}
+.pp-role {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; letter-spacing: .04em;
+}
+.pp-location { font-size: 12.5px; color: rgba(255,255,255,.45); }
+.pp-since    { font-size: 12px; color: rgba(255,255,255,.3); }
+
+.pp-stats {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.pp-stat {
+  text-align: center; min-width: 100px;
+  padding: 12px 20px !important;
+}
+.pp-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px;
+}
+.pp-stat-label {
+  font-size: 11px; color: rgba(255,255,255,.35); letter-spacing: .04em;
+}
+
+/* Body */
+.pp-body {
+  max-width: 860px; margin: 0 auto;
+  padding: 32px 40px 80px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.pp-card {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.pp-section {
+  background: white !important;
+  border: 1px solid rgba(12,31,63,.08) !important;
+  border-radius: 20px; padding: 24px;
+}
+.pp-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 700;
+  color: #0C1F3F; margin-bottom: 20px;
+}
+
+.pp-badges-grid {
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.pp-badge-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 12px 14px; border-radius: 14px;
+  background: rgba(12,31,63,.03);
+  border: 1px solid rgba(12,31,63,.07);
+  min-width: 72px; transition: all .2s; cursor: default;
+}
+.pp-badge-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(12,31,63,.08);
+}
+.pp-badge-icon { font-size: 26px; line-height: 1; }
+.pp-badge-name {
+  font-size: 10.5px; font-weight: 600; color: #6B7280;
+  text-align: center; max-width: 70px; line-height: 1.3;
+}
+
+.pp-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; padding: 20px; text-align: center;
+  color: #9CA3AF; font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .pp-hero-content { padding: 28px 24px 32px; }
+  .pp-body { padding: 24px 24px 60px; }
+}
