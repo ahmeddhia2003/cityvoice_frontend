@@ -6,10 +6,11 @@ import { EvenementFormComponent } from './components/evenement-form/evenement-fo
 import { EvenementDetailComponent } from './components/evenement-detail/evenement-detail.component';
 import { SuggestionFormComponent } from './components/suggestion-form/suggestion-form.component';
 import { SponsorFormComponent } from './components/sponsor-form/sponsor-form.component';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms'; 
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { EvenementMapComponent } from './components/evenement-map/evenement-map.component';
-import { FullCalendarModule } from '@fullcalendar/angular'; 
+import { FullCalendarModule } from '@fullcalendar/angular';
 import { EvenementCalendrierComponent } from './components/evenement-calendrier/evenement-calendrier.component';
+import { EvenementQrcodeComponent } from './components/evenement-qrcode/evenement-qrcode.component';
 
 @NgModule({
   declarations: [
@@ -19,14 +20,15 @@ import { EvenementCalendrierComponent } from './components/evenement-calendrier/
     SuggestionFormComponent,
     SponsorFormComponent,
     EvenementMapComponent,
-    EvenementCalendrierComponent
+    EvenementCalendrierComponent,
+    EvenementQrcodeComponent
   ],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     EvenementRoutingModule,
-    FormsModule, 
-    FullCalendarModule   
+    FormsModule,
+    FullCalendarModule
   ]
 })
 export class EvenementModule {}
