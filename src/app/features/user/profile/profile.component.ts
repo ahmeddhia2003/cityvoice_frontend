@@ -36,6 +36,11 @@ export class ProfileComponent implements OnInit {
   toastMsg  = '';
   toastType: 'success' | 'error' = 'success';
 
+  // Ajouter dans les propriétés
+  aiSuggestion:    string  = '';
+  aiLoading:       boolean = false;
+  showAiSuggestion: boolean = false;
+
   readonly gouvernorats = [
     'Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba',
     'Kairouan','Kasserine','Kébili','Le Kef','Mahdia','La Manouba',
@@ -53,7 +58,7 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.infoForm = this.fb.group({
       nom:         ['', Validators.required],
-      email:       ['', [Validators.required, Validators.email]],
+      email:       [{ value: '', disabled: true }, [Validators.required, Validators.email]],
       telephone:   ['', [Validators.pattern(/^[0-9+\s]{8,15}$/)]],
       gouvernorat: [''],
       ville:       [''],
@@ -152,9 +157,16 @@ export class ProfileComponent implements OnInit {
     if (this.infoForm.invalid || !this.user) return;
     this.savingInfo = true;
 
+    const formValues = this.infoForm.getRawValue();
+
     const payload = {
-      ...this.infoForm.value,
-      photo: this.photoPreview || undefined,
+      nom:         formValues.nom,
+      telephone:   formValues.telephone,
+      gouvernorat: formValues.gouvernorat,
+      ville:       formValues.ville,
+      codePostal:  formValues.codePostal,
+      photo:       this.photoPreview || undefined,
+      // email is NOT included
     };
 
     this.userService.update(this.user.id, payload).subscribe({
@@ -243,6 +255,54 @@ export class ProfileComponent implements OnInit {
     return new Date(d).toLocaleDateString('fr-FR', {
       day: '2-digit', month: 'long', year: 'numeric'
     });
+  }
+
+  //AI
+  // Ajouter la méthode
+  async getAiSuggestion(): Promise<void> {
+    if (!this.user || this.aiLoading) return;
+    this.aiLoading        = true;
+    this.showAiSuggestion = true;
+    this.aiSuggestion     = '';
+
+    const missingFields: string[] = [];
+    if (!this.user.telephone)   missingFields.push('numéro de téléphone');
+    if (!this.user.gouvernorat) missingFields.push('gouvernorat');
+    if (!this.user.ville)       missingFields.push('ville');
+    if (!this.user.photo)       missingFields.push('photo de profil');
+
+    const prompt = `Tu es un assistant sympathique pour CityVoice, une plateforme civique tunisienne.
+L'utilisateur ${this.user.nom} a un profil complété à ${this.profileCompletion}%.
+${missingFields.length > 0
+      ? `Il manque : ${missingFields.join(', ')}.`
+      : 'Son profil est complet !'}
+Rôle : ${this.user.role === 'CITOYEN' ? 'Citoyen' : 'Agent municipal'}.
+Points : ${this.user.points}.
+
+Génère un message d'encouragement court (2-3 phrases max), chaleureux et personnalisé en français.
+${missingFields.length > 0
+      ? 'Encourage-le à compléter son profil en mentionnant les bénéfices concrets.'
+      : 'Félicite-le pour son profil complet et ses points.'}
+Utilise des emojis. Sois direct et authentique.`;
+
+    this.http.post<{ suggestion: string }>(
+      `${environment.apiUrl}/api/ai/suggest`,
+      { prompt }
+    ).subscribe({
+      next: (res) => {
+        this.aiSuggestion = res.suggestion;
+        this.aiLoading    = false;
+      },
+      error: () => {
+        this.aiSuggestion = 'Continuez à améliorer votre profil pour avoir plus d\'impact dans votre ville ! 🏙️';
+        this.aiLoading    = false;
+      }
+    });
+  }
+
+  closeAiSuggestion(): void {
+    this.showAiSuggestion = false;
+    this.aiSuggestion     = '';
   }
 
   showToast(msg: string, type: 'success' | 'error'): void {

@@ -267,3 +267,22 @@
   .points-body { padding: 28px 24px 60px; }
   .ph-total { font-size: 48px; }
 }
+
+.ph-links {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-top: 20px;
+}
+.ph-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 50px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,.65);
+  text-decoration: none; transition: all .2s;
+}
+.ph-link:hover {
+  background: rgba(255,255,255,.14);
+  color: white; transform: translateY(-2px);
+}

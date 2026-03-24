@@ -9,6 +9,8 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import {RouterModule} from '@angular/router';
 import {OAuth2CallbackComponent} from './oauth2-callback/oauth2-callback.component';
+import { VerifyEmailComponent } from './verify-email/verify-email.component';
+import { EmailPendingComponent } from './email-pending/email-pending.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,9 @@ import {OAuth2CallbackComponent} from './oauth2-callback/oauth2-callback.compone
     SignupComponent,
     ForgotPasswordComponent,
     ResetPasswordComponent,
-    OAuth2CallbackComponent
+    OAuth2CallbackComponent,
+    VerifyEmailComponent,
+    EmailPendingComponent
   ],
   imports: [
     CommonModule,

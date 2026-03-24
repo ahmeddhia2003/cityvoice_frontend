@@ -116,6 +116,20 @@ export class SigninComponent implements OnInit, AfterViewInit {
           this.loading = false;
           this.sound.toggle2(false);
           gsap.to('.auth-submit', { x:[-6,6,-4,4,-2,2,0], duration:.4 });
+
+          // ── Email non vérifié ──────────────────────────────
+          if (err.status === 403 && err.error?.error === 'EMAIL_NOT_VERIFIED') {
+            this.showToast(err.error?.message, 'error');
+            setTimeout(() => this.router.navigate(['/auth/email-pending']), 2000);
+            return;
+          }
+
+          // ── User Banned ──────────────────────────────
+          if (err.status === 403 && err.error?.error === 'USER_BANNED') {
+            this.showToast(err.error?.message, 'error');
+            return;
+          }
+
           const msg = err.status === 401
             ? 'Email ou mot de passe incorrect ❌'
             : 'Erreur serveur, réessayez !';

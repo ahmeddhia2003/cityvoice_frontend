@@ -406,32 +406,15 @@ export class SignupComponent implements OnInit, AfterViewInit {
       codePostal:     codePostal || undefined,
     }).subscribe({
       next: (registerRes: any) => {
-
-        // ── Auto-login ─────────────────────────────────────
-        this.authService.login({ email, password }).subscribe({
-          next: () => {
-
-            // ── Upload photo seulement si présente ──────────
-            const userId = registerRes?.userId;
-            if (this.photoPreview && userId) {
-              this.authService.updatePhoto(userId, this.photoPreview).subscribe({
-                next:  () => console.log('Photo uploadée'),
-                error: (e) => console.warn('Photo upload échoué:', e)
-              });
-            }
-
-            this.loading = false;
-            this.success = true;
-            this.sound.success();
-            this.showToast('Compte créé avec succès 🎉', 'success');
-            setTimeout(() => this.router.navigate(['/dashboard']), 1800);
-          },
-          error: () => {
-            this.loading = false;
-            this.showToast('Compte créé ! Connectez-vous.', 'success');
-            setTimeout(() => this.router.navigate(['/auth/signin']), 1800);
-          }
-        });
+        this.loading = false;
+        this.success = true;
+        this.sound.success();
+        this.showToast('Vérifiez votre email pour activer votre compte 📧', 'success');
+        setTimeout(() => {
+          this.router.navigate(['/auth/email-pending'], {
+            state: { email: this.form.value.email }  // ← passer l'email
+          });
+        }, 2000);
       },
       error: (err) => {
         this.loading = false;

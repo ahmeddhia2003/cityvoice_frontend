@@ -80,9 +80,6 @@
   font-size: 11px; font-weight: 700; color: var(--ink-3);
   letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
 }
-.th-sort { cursor: pointer; user-select: none; transition: color .15s; }
-.th-sort:hover { color: var(--navy); }
-.th-sort svg { display: inline; vertical-align: middle; margin-left: 4px; }
 
 .users-table td {
   padding: 14px 16px; border-bottom: 1px solid var(--border);
@@ -159,6 +156,7 @@
 .delete-confirm { display: flex; gap: 6px; }
 
 .confirm-yes {
+  display: inline-flex; align-items: center; gap: 5px;
   padding: 4px 10px; border-radius: 6px; border: none;
   background: var(--coral); color: white;
   font-size: 11px; font-weight: 700;
@@ -183,6 +181,39 @@
   display: flex; flex-direction: column;
   align-items: center; gap: 10px;
 }
+
+/* ── Banned tag ─────────────────────────────────────────── */
+.banned-tag {
+  font-size: 10px; font-weight: 700;
+  background: rgba(232,83,42,.1); color: #E8532A;
+  padding: 2px 8px; border-radius: 10px;
+  letter-spacing: .04em; margin-left: 6px;
+}
+
+/* ── Pagination ─────────────────────────────────────────── */
+.pagination {
+  display: flex; align-items: center; gap: 6px;
+  padding: 16px 20px; border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.pg-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: white;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; color: var(--ink-3);
+  transition: all .15s;
+}
+.pg-btn:hover:not(:disabled) { border-color: var(--navy); color: var(--navy); }
+.pg-btn:disabled { opacity: .4; cursor: not-allowed; }
+.pg-num {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: white;
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--ink-2); cursor: pointer; transition: all .15s;
+}
+.pg-num:hover   { border-color: var(--navy); color: var(--navy); }
+.pg-num.active  { background: var(--navy); color: white; border-color: var(--navy); }
+.pg-info { margin-left: auto; font-size: 12px; color: var(--ink-3); }
 
 /* ── Detail panel (slide-in latéral) ───────────────────── */
 .detail-overlay {
@@ -278,18 +309,118 @@
 .dp-role-select:focus { border-color: var(--navy); }
 .dp-role-select:hover { border-color: var(--ink-3); }
 
-/* ── Detail delete button ───────────────────────────────── */
-.dp-actions { padding-top: 4px; }
+/* ── Detail actions ─────────────────────────────────────── */
+.detail-actions { padding-top: 4px; }
 
-.dp-delete-btn {
-  width: 100%; padding: 11px;
-  border-radius: 10px; border: 1.5px solid var(--coral);
-  background: var(--coral-l); color: var(--coral);
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center;
-  justify-content: center; gap: 8px; transition: all .15s;
+/* ── Ban form ───────────────────────────────────────────── */
+.ban-form {
+  background: rgba(232,83,42,.05);
+  border: 1.5px solid rgba(232,83,42,.2);
+  border-radius: 12px; padding: 14px;
+  margin-bottom: 10px;
 }
-.dp-delete-btn:hover { background: var(--coral); color: white; }
+.ban-form-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 700;
+  color: #E8532A; margin-bottom: 10px;
+}
+.ban-input {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid rgba(232,83,42,.2);
+  border-radius: 8px; font-size: 13px;
+  background: white; outline: none;
+  box-sizing: border-box; margin-bottom: 10px;
+  font-family: var(--fb);
+}
+.ban-input:focus { border-color: #E8532A; }
+.ban-form-actions { display: flex; gap: 8px; }
+.ban-confirm-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 8px; border: none;
+  background: #E8532A; color: white;
+  font-family: var(--fb); font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.ban-confirm-btn:hover { background: #C93E1A; }
+.ban-confirm-btn:disabled { opacity: .6; cursor: not-allowed; }
+.ban-cancel-btn {
+  padding: 8px 14px; border-radius: 8px;
+  border: 1.5px solid var(--border); background: white;
+  font-family: var(--fb); font-size: 12.5px;
+  color: var(--ink-3); cursor: pointer;
+}
+
+/* ── Action buttons ─────────────────────────────────────── */
+.action-ban-btn {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid rgba(232,83,42,.2);
+  background: rgba(232,83,42,.04); color: #E8532A;
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s; margin-bottom: 8px;
+}
+.action-ban-btn:hover { background: rgba(232,83,42,.1); }
+
+.action-delete-btn {
+  display: flex; align-items: center; gap: 7px;
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid rgba(12,31,63,.1);
+  background: rgba(12,31,63,.03); color: var(--ink-3);
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+}
+.action-delete-btn:hover {
+  border-color: rgba(232,83,42,.3);
+  color: #E8532A; background: rgba(232,83,42,.04);
+}
+
+/* ── Banned notice ──────────────────────────────────────── */
+.banned-notice {
+  background: rgba(232,83,42,.06);
+  border: 1.5px solid rgba(232,83,42,.2);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+}
+.bn-header {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700;
+  color: #E8532A; margin-bottom: 8px;
+}
+.bn-reason {
+  font-size: 12.5px; color: var(--ink-2);
+  margin-bottom: 12px; line-height: 1.5;
+  font-style: italic;
+}
+.unban-btn {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  background: #0D9B76; color: white;
+  font-family: var(--fb); font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.unban-btn:hover { background: #0a8264; }
+.unban-confirm {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--ink-2);
+}
+
+/* ── Delete confirm (detail panel) ─────────────────────── */
+.delete-confirm-wrap {
+  background: rgba(12,31,63,.04);
+  border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  margin-bottom: 10px;
+}
+.delete-confirm-wrap p {
+  font-size: 13px; color: var(--ink-2);
+  margin: 0 0 12px; font-weight: 500;
+}
+
+/* ── Mini spinner ───────────────────────────────────────── */
+.btn-mini-spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: white;
+  animation: spin .7s linear infinite; display: inline-block;
+}
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {

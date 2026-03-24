@@ -9,6 +9,7 @@ import {CommonModule} from '@angular/common';
 import {SharedModule} from './shared/shared.module';
 import { LandingComponent } from './features/landing/landing.component';
 import {ReactiveFormsModule} from '@angular/forms';
+import {UserModule} from './features/user/user.module';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     CoreModule,
     SharedModule,
     ReactiveFormsModule,
+    UserModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { UserService, UserDto } from '../../../core/services/user.service';
+import { HttpParams } from '@angular/common/http';
+import { UserService, UserDto, PageResponse } from '../../../core/services/user.service';
 import { SoundService } from '../../../core/services/sound.service';
 
 @Component({
@@ -10,127 +10,185 @@ import { SoundService } from '../../../core/services/sound.service';
 })
 export class UsersComponent implements OnInit {
 
-  users:        UserDto[] = [];
-  filtered:     UserDto[] = [];
-  loading       = true;
-  search        = '';
-  selectedRole  = 'ALL';
-  sortField     = 'nom';
-  sortDir: 'asc' | 'desc' = 'asc';
+  users:       UserDto[] = [];
+  loading      = true;
+  search       = '';
+  selectedRole = 'ALL';
+  roleCounts: Record<string, number> = {};
+
+  // Pagination
+  currentPage   = 0;
+  pageSize      = 10;
+  totalPages    = 0;
+  totalElements = 0;
 
   // Suppression
   deleteConfirm: string | null = null;
   deleteLoading = false;
 
-  // Vue détail
+  // Détail
   selectedUser: UserDto | null = null;
   showDetail    = false;
 
-  readonly roles = ['ALL', 'CITOYEN', 'CHEF_EQUIPE', 'MEMBRE_EQUIPE', 'MODERATEUR', 'ADMIN_VILLE'];
+  // Ban
+  banConfirm:  string | null = null;
+  banReason    = '';
+  banLoading   = false;
+  unbanConfirm: string | null = null;
+
+  readonly roles = [
+    'ALL', 'CITOYEN', 'CHEF_EQUIPE',
+    'MEMBRE_EQUIPE', 'MODERATEUR'
+  ];
 
   constructor(
-    private userService: UserService,
-    private router: Router,
     public sound: SoundService,
+    private userService: UserService,
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.loadRoleCounts();
+    this.load();
+  }
 
   load(): void {
     this.loading = true;
-    this.userService.getAll().subscribe({
-      next: (users) => {
-        this.users   = users;
-        this.loading = false;
-        this.applyFilters();
+    this.userService.getPaginated(
+      this.currentPage, this.pageSize,
+      this.search || undefined,
+      this.selectedRole !== 'ALL' ? this.selectedRole : undefined
+    ).subscribe({
+      next: (res) => {
+        this.users         = res.content;
+        this.totalPages    = res.totalPages;
+        this.totalElements = res.totalElements;
+        this.loading       = false;
       },
       error: () => { this.loading = false; }
     });
   }
 
-  applyFilters(): void {
-    let res = [...this.users];
-
-    if (this.selectedRole !== 'ALL') {
-      res = res.filter(u => u.role === this.selectedRole);
-    }
-
-    if (this.search.trim()) {
-      const q = this.search.toLowerCase();
-      res = res.filter(u =>
-        u.nom?.toLowerCase().includes(q) ||
-        u.email?.toLowerCase().includes(q) ||
-        u.ville?.toLowerCase().includes(q)
-      );
-    }
-
-    res.sort((a, b) => {
-      const va = (a as any)[this.sortField] ?? '';
-      const vb = (b as any)[this.sortField] ?? '';
-      return this.sortDir === 'asc'
-        ? String(va).localeCompare(String(vb))
-        : String(vb).localeCompare(String(va));
-    });
-
-    this.filtered = res;
-  }
-
-  sort(field: string): void {
-    this.sortDir = this.sortField === field
-      ? (this.sortDir === 'asc' ? 'desc' : 'asc')
-      : 'asc';
-    this.sortField = field;
-    this.applyFilters();
+  onSearch(): void {
+    this.currentPage = 0;
+    this.load();
   }
 
   setRole(role: string): void {
     this.sound.nav();
     this.selectedRole = role;
-    this.applyFilters();
+    this.currentPage  = 0;
+    this.load();
   }
 
-  onSearch(): void { this.applyFilters(); }
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages) return;
+    this.currentPage = page;
+    this.load();
+  }
 
-  // ── Voir détail ──────────────────────────────────────────
+  get pages(): number[] {
+    const total = this.totalPages;
+    const cur   = this.currentPage;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    // Afficher max 7 pages autour de la page courante
+    const pages: number[] = [];
+    for (let i = Math.max(0, cur - 3); i <= Math.min(total - 1, cur + 3); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  // ── Détail ───────────────────────────────────────────────
   viewUser(user: UserDto): void {
     this.sound.nav();
     this.selectedUser = user;
     this.showDetail   = true;
+    this.deleteConfirm = null;
+    this.banConfirm    = null;
   }
 
   closeDetail(): void {
-    this.showDetail   = false;
-    this.selectedUser = null;
+    this.showDetail    = false;
+    this.selectedUser  = null;
+    this.deleteConfirm = null;
+    this.banConfirm    = null;
   }
 
   // ── Suppression ──────────────────────────────────────────
   confirmDelete(id: string): void {
     this.sound.nav();
     this.deleteConfirm = id;
+    this.banConfirm    = null;
   }
 
-  cancelDelete(): void {
-    this.deleteConfirm = null;
-  }
+  cancelDelete(): void { this.deleteConfirm = null; }
 
   doDelete(): void {
     if (!this.deleteConfirm) return;
     this.deleteLoading = true;
-    const idToDelete   = this.deleteConfirm;
+    const id = this.deleteConfirm;
 
-    this.userService.delete(idToDelete).subscribe({
+    this.userService.delete(id).subscribe({
       next: () => {
-        this.users         = this.users.filter(u => u.id !== idToDelete);
         this.deleteConfirm = null;
         this.deleteLoading = false;
-        this.applyFilters();
-        // Fermer le détail si l'utilisateur supprimé était affiché
-        if (this.selectedUser?.id === idToDelete) {
-          this.closeDetail();
-        }
+        if (this.selectedUser?.id === id) this.closeDetail();
+        this.load();
       },
-      error: () => {
-        this.deleteLoading = false;
+      error: () => { this.deleteLoading = false; }
+    });
+  }
+
+  // ── Ban ──────────────────────────────────────────────────
+  confirmBan(id: string): void {
+    this.sound.nav();
+    this.banConfirm    = id;
+    this.banReason     = '';
+    this.deleteConfirm = null;
+  }
+
+  cancelBan(): void {
+    this.banConfirm = null;
+    this.banReason  = '';
+  }
+
+  doBan(): void {
+    if (!this.banConfirm) return;
+    this.banLoading = true;
+    const id = this.banConfirm;
+    const reason = this.banReason || 'Violation des conditions d\'utilisation';
+
+    this.userService.ban(id, reason).subscribe({
+      next: () => {
+        this.banLoading = false;
+        this.banConfirm = null;
+        this.banReason  = '';
+        // Mettre à jour localement
+        const user = this.users.find(u => u.id === id);
+        if (user) user.banned = true;
+        if (this.selectedUser?.id === id) this.selectedUser.banned = true;
+        this.load();
+      },
+      error: () => { this.banLoading = false; }
+    });
+  }
+
+  confirmUnban(id: string): void {
+    this.sound.nav();
+    this.unbanConfirm = id;
+  }
+
+  doUnban(): void {
+    if (!this.unbanConfirm) return;
+    const id = this.unbanConfirm;
+
+    this.userService.unban(id).subscribe({
+      next: () => {
+        this.unbanConfirm = null;
+        const user = this.users.find(u => u.id === id);
+        if (user) user.banned = false;
+        if (this.selectedUser?.id === id) this.selectedUser.banned = false;
+        this.load();
       }
     });
   }
@@ -141,10 +199,7 @@ export class UsersComponent implements OnInit {
       next: (updated) => {
         const idx = this.users.findIndex(u => u.id === user.id);
         if (idx !== -1) this.users[idx] = updated;
-        if (this.selectedUser?.id === user.id) {
-          this.selectedUser = updated;
-        }
-        this.applyFilters();
+        if (this.selectedUser?.id === user.id) this.selectedUser = updated;
       }
     });
   }
@@ -152,33 +207,24 @@ export class UsersComponent implements OnInit {
   // ── Helpers ──────────────────────────────────────────────
   roleColor(role: string): string {
     const map: Record<string, string> = {
-      CITOYEN:       '#0D9B76',
-      CHEF_EQUIPE:   '#3B82F6',
-      MEMBRE_EQUIPE: '#C9973E',
-      MODERATEUR:    '#E8532A',
-      ADMIN_VILLE:   '#7C3AED',
+      CITOYEN: '#0D9B76', CHEF_EQUIPE: '#3B82F6',
+      MEMBRE_EQUIPE: '#C9973E', MODERATEUR: '#E8532A'
     };
     return map[role] ?? '#8888A8';
   }
 
   roleBg(role: string): string {
     const map: Record<string, string> = {
-      CITOYEN:       'rgba(13,155,118,.1)',
-      CHEF_EQUIPE:   'rgba(59,130,246,.1)',
-      MEMBRE_EQUIPE: 'rgba(201,151,62,.1)',
-      MODERATEUR:    'rgba(232,83,42,.1)',
-      ADMIN_VILLE:   'rgba(124,58,237,.1)',
+      CITOYEN: 'rgba(13,155,118,.1)', CHEF_EQUIPE: 'rgba(59,130,246,.1)',
+      MEMBRE_EQUIPE: 'rgba(201,151,62,.1)', MODERATEUR: 'rgba(232,83,42,.1)',
     };
     return map[role] ?? 'rgba(136,136,168,.1)';
   }
 
   roleLabel(role: string): string {
     const map: Record<string, string> = {
-      CITOYEN:       'Citoyen',
-      CHEF_EQUIPE:   'Chef d\'équipe',
-      MEMBRE_EQUIPE: 'Agent terrain',
-      MODERATEUR:    'Modérateur',
-      ADMIN_VILLE:   'Admin',
+      CITOYEN: 'Citoyen', CHEF_EQUIPE: 'Chef d\'équipe',
+      MEMBRE_EQUIPE: 'Agent terrain', MODERATEUR: 'Modérateur'
     };
     return map[role] ?? role;
   }
@@ -196,7 +242,19 @@ export class UsersComponent implements OnInit {
   }
 
   countByRole(role: string): number {
-    return this.users.filter(u => u.role === role).length;
+    return this.roleCounts[role] ?? 0;
+  }
+  // Add this method:
+  loadRoleCounts(): void {
+    this.userService.getPaginated(0, 1, undefined, undefined).subscribe({
+      next: (res) => { this.roleCounts['ALL'] = res.totalElements; }
+    });
+    const roleList = ['CITOYEN', 'CHEF_EQUIPE', 'MEMBRE_EQUIPE', 'MODERATEUR'];
+    roleList.forEach(role => {
+      this.userService.getPaginated(0, 1, undefined, role).subscribe({
+        next: (res) => { this.roleCounts[role] = res.totalElements; }
+      });
+    });
   }
 
   trackById(_: number, u: UserDto): string { return u.id; }
