@@ -21,6 +21,8 @@ export interface UserDto {
   photo:          string;
   banned:         boolean;
   banReason:      string;
+  loginStreak: number;
+  trustLevel: string;
 }
 
 export interface PageResponse<T> {
@@ -53,6 +55,17 @@ export interface UserBadgeDto {
   id:         string;
   badge:      BadgeDto;
   obtainedAt: string;
+}
+
+export interface TrustInfo {
+  level:       string;
+  label:       string;
+  color:       string;
+  icon:        string;
+  minPts:      number;
+  maxPts:      number;
+  nextLabel:   string;
+  progress:    number;
 }
 
 
@@ -145,6 +158,16 @@ export class UserService {
 
   getPublicProfile(userId: string): Observable<any> {
     return this.http.get(`${this.URL}/${userId}/public`);
+  }
+
+  generateBio(data: {
+    nom: string; ville: string; gouvernorat: string;
+    role: string; points: number; badges: number;
+    streak: number; since: string;
+  }): Observable<{ bio: string }> {
+    return this.http.post<{ bio: string }>(
+      `${environment.apiUrl}/api/ai/generate-bio`, data
+    );
   }
 
 

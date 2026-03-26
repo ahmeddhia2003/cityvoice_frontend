@@ -9,107 +9,177 @@
 
   <ng-container *ngIf="!loading && user">
 
-    <!-- ══ HERO ═══════════════════════════════════════════ -->
+    <!-- ══ HERO ══════════════════════════════════════════ -->
     <div class="profile-hero">
       <div class="hero-bg"></div>
+
       <div class="hero-content">
 
-        <!-- Avatar -->
-        <div class="hero-avatar-wrap">
-          <div class="hero-avatar" *ngIf="!photoPreview">{{ initials }}</div>
-          <img *ngIf="photoPreview" [src]="photoPreview"
-               class="hero-avatar hero-avatar-img" [alt]="user.nom">
-          <div class="hero-avatar-status"></div>
-          <label class="hero-avatar-edit" title="Changer la photo">
-            <input type="file" accept="image/*" style="display:none"
-                   (change)="onPhotoChange($event)">
-            <svg width="13" height="13" fill="none" stroke="white"
-                 stroke-width="2.5" viewBox="0 0 24 24">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </label>
-        </div>
+        <!-- ── Colonne gauche : identité ───────────────── -->
+        <div class="hero-left">
 
-        <!-- Infos -->
-        <div class="hero-info">
-          <h1 class="hero-name">{{ user.nom }}</h1>
-          <div class="hero-badges">
-            <span class="hero-role"
-                  [style.background]="roleBg(user.role)"
-                  [style.color]="roleColor(user.role)">
-              {{ roleLabel(user.role) }}
-            </span>
-            <span class="hero-join">
-              <svg width="12" height="12" fill="none" stroke="currentColor"
-                   stroke-width="2" viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+          <!-- Avatar -->
+          <div class="hero-avatar-wrap">
+            <div class="hero-avatar" *ngIf="!photoPreview">{{ initials }}</div>
+            <img *ngIf="photoPreview" [src]="photoPreview"
+                 class="hero-avatar hero-avatar-img" [alt]="user.nom">
+            <div class="hero-avatar-status"></div>
+            <label class="hero-avatar-edit" title="Changer la photo">
+              <input type="file" accept="image/*" style="display:none"
+                     (change)="onPhotoChange($event)">
+              <svg width="13" height="13" fill="none" stroke="white"
+                   stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
               </svg>
-              Depuis {{ formatDate(user.dateInscription) }}
-            </span>
+            </label>
           </div>
-          <div class="hero-email">
-            <svg width="13" height="13" fill="none" stroke="currentColor"
-                 stroke-width="2" viewBox="0 0 24 24">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            {{ user.email }}
+
+          <!-- Infos identité -->
+          <div class="hero-identity">
+            <h1 class="hero-name">{{ user.nom }}</h1>
+
+            <div class="hero-tags">
+              <span class="hero-role-badge"
+                    [style.background]="roleBg(user.role)"
+                    [style.color]="roleColor(user.role)">
+                {{ roleLabel(user.role) }}
+              </span>
+              <span class="hero-trust-badge"
+                    *ngIf="getTrustInfo(user.points, user.trustLevel) as trust"
+                    [style.color]="trust.color">
+                {{ trust.icon }} {{ trust.label }}
+              </span>
+            </div>
+
+            <div class="hero-meta">
+              <span class="hero-meta-item">
+                <svg width="12" height="12" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                {{ user.email }}
+              </span>
+              <span class="hero-meta-sep">·</span>
+              <span class="hero-meta-item">
+                <svg width="12" height="12" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Membre depuis {{ formatDate(user.dateInscription) }}
+              </span>
+              <span class="hero-meta-sep" *ngIf="user.ville">·</span>
+              <span class="hero-meta-item" *ngIf="user.ville">
+                📍 {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              </span>
+            </div>
+
           </div>
         </div>
 
-        <!-- Progress profil -->
-        <div class="hero-progress">
-          <div class="hp-label">
-            <span>Complétion du profil</span>
-            <span class="hp-pct">{{ profileCompletion }}%</span>
-          </div>
-          <div class="hp-bar">
-            <div class="hp-fill" [style.width.%]="profileCompletion"></div>
-          </div>
-        </div>
+        <!-- ── Colonne droite : stats ───────────────────── -->
+        <div class="hero-right">
 
-        <!-- Stats -->
-        <div class="hero-stats">
-          <div class="hs-card" routerLink="/user/mes-points"
-               style="cursor:pointer;color:#C9973E">
-            <div class="hs-num">{{ user.points }}</div>
-            <div class="hs-label">Points →</div>
-          </div>
-          <div class="hs-card" routerLink="/user/mes-badges"
-               style="cursor:pointer;color:#8B5CF6">
-            <div class="hs-num">🏅</div>
-            <div class="hs-label">Badges →</div>
-          </div>
-          <div class="hs-card" routerLink="/user/leaderboard"
-               style="cursor:pointer;color:#E8532A">
-            <div class="hs-num">🏆</div>
-            <div class="hs-label">Classement →</div>
-          </div>
-          <div class="hs-card" style="color:#0D9B76">
-            <div class="hs-num">0</div>
-            <div class="hs-label">Signalements</div>
-          </div>
+          <!-- Stats citoyens -->
+          <ng-container *ngIf="isCitoyen()">
+            <div class="hero-stat-card" routerLink="/user/mes-points"
+                 style="cursor:pointer">
+              <div class="hsc-num" style="color:#C9973E">{{ user.points }}</div>
+              <div class="hsc-label">Points</div>
+              <div class="hsc-arrow">→</div>
+            </div>
+            <div class="hero-stat-card" routerLink="/user/mes-badges"
+                 style="cursor:pointer">
+              <div class="hsc-num" style="color:#8B5CF6">🏅</div>
+              <div class="hsc-label">Badges</div>
+              <div class="hsc-arrow">→</div>
+            </div>
+            <div class="hero-stat-card" routerLink="/user/leaderboard"
+                 style="cursor:pointer">
+              <div class="hsc-num" style="color:#E8532A">🏆</div>
+              <div class="hsc-label">Classement</div>
+              <div class="hsc-arrow">→</div>
+            </div>
+            <div class="hero-stat-card" (click)="openCivicCard()"
+                 style="cursor:pointer">
+              <div class="hsc-num" style="color:#3B82F6">🪪</div>
+              <div class="hsc-label">Ma Carte</div>
+              <div class="hsc-arrow">→</div>
+            </div>
+          </ng-container>
+
+          <!-- Stats agents -->
+          <ng-container *ngIf="!isCitoyen()">
+            <div class="hero-stat-card">
+              <div class="hsc-num" style="color:#3B82F6">
+                <svg width="22" height="22" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <div class="hsc-label">{{ roleLabel(user.role) }}</div>
+            </div>
+          </ng-container>
+
         </div>
 
       </div>
+
+      <!-- ── Bande profil completion + trust ─────────────── -->
+      <div class="hero-bottom">
+        <div class="hero-bottom-inner">
+
+          <!-- Completion profil -->
+          <div class="hb-completion">
+            <div class="hb-completion-header">
+              <span class="hb-label">Complétion du profil</span>
+              <span class="hb-pct">{{ profileCompletion }}%</span>
+            </div>
+            <div class="hb-bar">
+              <div class="hb-fill" [style.width.%]="profileCompletion"></div>
+            </div>
+          </div>
+
+          <!-- Séparateur -->
+          <div class="hb-sep"></div>
+
+          <!-- Trust level -->
+          <div class="hb-trust"
+               *ngIf="getTrustInfo(user.points, user.trustLevel) as trust">
+            <span class="hbt-icon">{{ trust.icon }}</span>
+            <div class="hbt-info">
+              <div class="hbt-level">{{ trust.label }}</div>
+              <div class="hbt-next" *ngIf="trust.nextLabel">
+                {{ trust.maxPts - user.points + 1 }} pts → {{ trust.nextLabel }}
+              </div>
+              <div class="hbt-next" *ngIf="!trust.nextLabel">Niveau max 🎉</div>
+            </div>
+            <div class="hbt-stars">
+              <span *ngFor="let i of [1,2,3,4,5]"
+                    [style.opacity]="i <= trustStarCount(trust.level) ? '1' : '0.2'">
+                ⭐
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
 
-    <!-- ══ AI SUGGESTION BANNER ═════════════════════════════ -->
-    <div class="ai-banner" *ngIf="!loading && user"
+    <!-- ══ AI SUGGESTION ═════════════════════════════════ -->
+    <div class="ai-banner" *ngIf="isCitoyen()"
          [class.ai-banner--open]="showAiSuggestion">
 
-      <!-- Trigger button -->
       <div class="ai-trigger" *ngIf="!showAiSuggestion" (click)="getAiSuggestion()">
         <div class="ai-trigger-icon">✨</div>
         <div class="ai-trigger-text">
           <div class="ai-trigger-title">Conseil personnalisé</div>
-          <div class="ai-trigger-sub">
-            Obtenir une suggestion IA pour améliorer votre profil
-          </div>
+          <div class="ai-trigger-sub">Obtenir une suggestion IA pour améliorer votre profil</div>
         </div>
         <div class="ai-trigger-arrow">
           <svg width="16" height="16" fill="none" stroke="currentColor"
@@ -120,7 +190,6 @@
         </div>
       </div>
 
-      <!-- Suggestion panel -->
       <div class="ai-panel" *ngIf="showAiSuggestion">
         <div class="ai-panel-header">
           <div class="ai-panel-icon">✨</div>
@@ -133,21 +202,13 @@
             </svg>
           </button>
         </div>
-
-        <!-- Loading -->
         <div class="ai-loading" *ngIf="aiLoading">
-          <div class="ai-dots">
-            <span></span><span></span><span></span>
-          </div>
+          <div class="ai-dots"><span></span><span></span><span></span></div>
           <span>L'IA analyse votre profil…</span>
         </div>
-
-        <!-- Message -->
         <div class="ai-message" *ngIf="!aiLoading && aiSuggestion">
           {{ aiSuggestion }}
         </div>
-
-        <!-- Actions -->
         <div class="ai-actions" *ngIf="!aiLoading && aiSuggestion">
           <button class="ai-refresh" (click)="getAiSuggestion()">
             <svg width="13" height="13" fill="none" stroke="currentColor"
@@ -161,17 +222,16 @@
             Compléter mon profil
           </button>
         </div>
-
       </div>
+
     </div>
 
-    <!-- ══ BODY ════════════════════════════════════════════ -->
+    <!-- ══ BODY ══════════════════════════════════════════ -->
     <div class="profile-body">
 
       <!-- Tabs -->
       <div class="profile-tabs">
-        <button class="ptab" [class.active]="activeTab==='info'"
-                (click)="setTab('info')">
+        <button class="ptab" [class.active]="activeTab==='info'" (click)="setTab('info')">
           <svg width="15" height="15" fill="none" stroke="currentColor"
                stroke-width="2" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
@@ -179,16 +239,14 @@
           </svg>
           Mon profil
         </button>
-        <button class="ptab" [class.active]="activeTab==='security'"
-                (click)="setTab('security')">
+        <button class="ptab" [class.active]="activeTab==='security'" (click)="setTab('security')">
           <svg width="15" height="15" fill="none" stroke="currentColor"
                stroke-width="2" viewBox="0 0 24 24">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
           Sécurité
         </button>
-        <button class="ptab" [class.active]="activeTab==='activity'"
-                (click)="setTab('activity')">
+        <button class="ptab" [class.active]="activeTab==='activity'" (click)="setTab('activity')">
           <svg width="15" height="15" fill="none" stroke="currentColor"
                stroke-width="2" viewBox="0 0 24 24">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -197,11 +255,10 @@
         </button>
       </div>
 
-      <!-- ── Infos ──────────────────────────────────────── -->
+      <!-- ── Tab Infos ──────────────────────────────────── -->
       <div class="tab-panel" *ngIf="activeTab==='info'">
         <form [formGroup]="infoForm" (ngSubmit)="saveInfo()">
 
-          <!-- Identité -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(12,31,63,.06);color:#0C1F3F">
@@ -240,8 +297,7 @@
                     <polyline points="22,6 12,13 2,6"/>
                   </svg>
                   <input class="field-input" type="email"
-                         formControlName="email" placeholder="vous@exemple.com"
-                         [disabled]="true">
+                         formControlName="email" [disabled]="true">
                   <span class="lock-icon">🔒</span>
                 </div>
                 <small class="field-hint">L'email ne peut pas être modifié</small>
@@ -262,7 +318,6 @@
             </div>
           </div>
 
-          <!-- Localisation -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(13,155,118,.08);color:#0D9B76">
@@ -303,7 +358,7 @@
                     <path d="M3 9h18M9 21V9"/>
                   </svg>
                   <input class="field-input" type="text"
-                         formControlName="ville" placeholder="Ex: La Marsa, Lafayette…">
+                         formControlName="ville" placeholder="Ex: La Marsa…">
                 </div>
               </div>
 
@@ -323,7 +378,6 @@
             </div>
           </div>
 
-          <!-- Photo -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(232,83,42,.08);color:#E8532A">
@@ -340,23 +394,41 @@
               </div>
             </div>
 
-            <div class="photo-zone">
+            <div class="photo-zone"
+                 [class.photo-zone--checking]="photoChecking"
+                 [class.photo-zone--error]="photoError">
               <div class="pz-avatar-wrap">
-                <div class="pz-av" *ngIf="!photoPreview">{{ initials }}</div>
-                <img *ngIf="photoPreview" [src]="photoPreview"
+                <div class="pz-checking" *ngIf="photoChecking">
+                  <div class="pz-spinner"></div>
+                </div>
+                <div class="pz-av" *ngIf="!photoPreview && !photoChecking">{{ initials }}</div>
+                <img *ngIf="photoPreview && !photoChecking" [src]="photoPreview"
                      class="pz-av pz-av-img" alt="Photo">
               </div>
+
               <div class="pz-info">
                 <div class="pz-info-title">
-                  {{ photoPreview ? 'Photo de profil active' : 'Aucune photo' }}
+                  <ng-container *ngIf="photoChecking">Vérification en cours…</ng-container>
+                  <ng-container *ngIf="!photoChecking && photoError">Photo refusée</ng-container>
+                  <ng-container *ngIf="!photoChecking && !photoError && photoPreview">Photo active ✓</ng-container>
+                  <ng-container *ngIf="!photoChecking && !photoError && !photoPreview">Aucune photo</ng-container>
                 </div>
-                <div class="pz-info-sub">
-                  Votre photo sera visible par les autres utilisateurs
+                <div class="pz-info-sub" *ngIf="!photoError">
+                  Visible par les autres utilisateurs
+                </div>
+                <div class="pz-error" *ngIf="photoError">
+                  <svg width="14" height="14" fill="none" stroke="currentColor"
+                       stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  {{ photoError }}
                 </div>
                 <div class="pz-btns">
-                  <label class="pz-upload-btn">
+                  <label class="pz-upload-btn" [class.disabled]="photoChecking">
                     <input type="file" accept="image/*" style="display:none"
-                           (change)="onPhotoChange($event)">
+                           (change)="onPhotoChange($event)" [disabled]="photoChecking">
                     <svg width="14" height="14" fill="none" stroke="currentColor"
                          stroke-width="2" viewBox="0 0 24 24">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -366,7 +438,7 @@
                     {{ photoPreview ? 'Changer' : 'Ajouter une photo' }}
                   </label>
                   <button type="button" class="pz-remove-btn"
-                          *ngIf="photoPreview" (click)="removePhoto()">
+                          *ngIf="photoPreview && !photoChecking" (click)="removePhoto()">
                     Supprimer
                   </button>
                 </div>
@@ -388,7 +460,7 @@
         </form>
       </div>
 
-      <!-- ── Sécurité ───────────────────────────────────── -->
+      <!-- ── Tab Sécurité ──────────────────────────────── -->
       <div class="tab-panel" *ngIf="activeTab==='security'">
         <form [formGroup]="pwdForm" (ngSubmit)="changePwd()">
           <div class="form-section">
@@ -406,7 +478,6 @@
             </div>
 
             <div style="display:flex;flex-direction:column;gap:20px;max-width:480px">
-
               <div class="field-group">
                 <label class="field-label">Mot de passe actuel</label>
                 <div class="field-wrap">
@@ -419,11 +490,6 @@
                          formControlName="currentPassword"
                          placeholder="Votre mot de passe actuel">
                 </div>
-                <p class="field-error"
-                   *ngIf="pwdForm.get('currentPassword')?.touched &&
-                          pwdForm.get('currentPassword')?.invalid">
-                  Requis
-                </p>
               </div>
 
               <div class="field-group">
@@ -463,7 +529,6 @@
                   Les mots de passe ne correspondent pas
                 </p>
               </div>
-
             </div>
           </div>
 
@@ -480,7 +545,7 @@
         </form>
       </div>
 
-      <!-- ── Activité ───────────────────────────────────── -->
+      <!-- ── Tab Activité ──────────────────────────────── -->
       <div class="tab-panel" *ngIf="activeTab==='activity'">
         <div class="empty-activity">
           <div class="ea-icon">📍</div>
@@ -490,7 +555,195 @@
       </div>
 
     </div>
+
   </ng-container>
+  <!-- ══ CIVIC CARD MODAL ══════════════════════════════════ -->
+  <div class="cc-overlay" *ngIf="showCivicCard" (click)="closeCivicCard()"></div>
+
+  <div class="cc-modal" *ngIf="showCivicCard">
+
+    <!-- Close -->
+    <button class="cc-close" (click)="closeCivicCard()">
+      <svg width="16" height="16" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- Header -->
+    <div class="cc-modal-header">
+      <div class="cc-modal-icon">🪪</div>
+      <div>
+        <h2 class="cc-modal-title">Carte de Citoyen</h2>
+        <p class="cc-modal-sub">Votre identité civique numérique</p>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="cc-modal-loading" *ngIf="civicCardLoading">
+      <div class="cc-spinner"></div>
+      <span>Génération de la carte…</span>
+    </div>
+
+    <!-- Card -->
+    <ng-container *ngIf="!civicCardLoading && user">
+      <div class="cc-card-stage">
+        <div class="civic-card">
+
+          <!-- ── Holographic overlay ────────────────────── -->
+          <div class="card-holo"></div>
+
+          <!-- ── Background pattern ─────────────────────── -->
+          <div class="card-bg">
+            <div class="card-orb card-orb-1"></div>
+            <div class="card-orb card-orb-2"></div>
+            <div class="card-orb card-orb-3"></div>
+            <div class="card-lines"></div>
+          </div>
+
+          <!-- ── Top bar ────────────────────────────────── -->
+          <div class="card-top">
+            <div class="card-logo">
+              <div class="card-logo-icon">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white"/>
+                </svg>
+              </div>
+              <span class="card-logo-text">CityVoice</span>
+            </div>
+            <div class="card-chip">
+              <div class="card-chip-lines">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Identity section ───────────────────────── -->
+          <div class="card-identity">
+            <!-- Photo -->
+            <div class="card-photo-wrap">
+              <div class="card-photo" *ngIf="!user.photo">
+                <span>{{ initials }}</span>
+              </div>
+              <img *ngIf="user.photo" [src]="user.photo"
+                   class="card-photo" [alt]="user.nom">
+              <div class="card-photo-ring"></div>
+              <div class="card-level-pip">{{ cardTrustIcon }}</div>
+            </div>
+
+            <!-- Info -->
+            <div class="card-id-info">
+              <div class="card-fullname">{{ user.nom }}</div>
+              <div class="card-role-row">
+                <span class="card-role-tag">{{ roleLabel(user.role) }}</span>
+                <span class="card-dot">·</span>
+                <span class="card-trust-tag">{{ cardTrustLabel }}</span>
+              </div>
+              <div class="card-loc" *ngIf="user.ville || user.gouvernorat">
+                <svg width="10" height="10" fill="none" stroke="currentColor"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Stats bar ──────────────────────────────── -->
+          <div class="card-metrics">
+            <div class="card-metric">
+              <div class="cm-value">{{ user.points }}</div>
+              <div class="cm-label">Points</div>
+            </div>
+            <div class="card-metric-sep"></div>
+            <div class="card-metric">
+              <div class="cm-value">{{ civicCardBadges.length }}</div>
+              <div class="cm-label">Badges</div>
+            </div>
+            <div class="card-metric-sep"></div>
+            <div class="card-metric">
+              <div class="cm-value">{{ user.loginStreak || 0 }}</div>
+              <div class="cm-label">Streak</div>
+            </div>
+            <div class="card-metric-sep"></div>
+            <div class="card-metric">
+              <div class="cm-value cm-value--small">{{ cardMemberSince }}</div>
+              <div class="cm-label">Depuis</div>
+            </div>
+          </div>
+
+          <!-- ── Badges showcase ────────────────────────── -->
+          <div class="card-showcase" *ngIf="civicCardBadges.length > 0">
+            <div class="card-showcase-label">Badges obtenus</div>
+            <div class="card-showcase-row">
+              <div class="card-badge-item" *ngFor="let ub of civicCardBadges">
+                <span class="cb-emoji">{{ ub.badge.emoji }}</span>
+                <span class="cb-name">{{ ub.badge.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Bottom bar ─────────────────────────────── -->
+          <div class="card-bottom">
+            <div class="card-serial">
+              <span class="card-serial-label">N°</span>
+              <span class="card-serial-value">{{ user.id.substring(0, 8).toUpperCase() }}</span>
+            </div>
+            <div class="card-verified-badge">
+              <svg width="10" height="10" fill="none" stroke="currentColor"
+                   stroke-width="3" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Vérifié
+            </div>
+            <div class="card-qr">
+              <!-- Real QR Code -->
+              <img [src]="qrCodeUrl" alt="QR Profile"
+                   style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+          </div>
+
+          <!-- ── Accent strip ───────────────────────────── -->
+          <div class="card-accent">
+            <div class="ca-seg" style="background:#E8532A"></div>
+            <div class="ca-seg" style="background:#C9973E"></div>
+            <div class="ca-seg" style="background:#0D9B76"></div>
+            <div class="ca-seg" style="background:#3B82F6"></div>
+            <div class="ca-seg" style="background:#8B5CF6"></div>
+          </div>
+
+        </div>
+
+        <!-- Card shadow/reflection -->
+        <div class="cc-card-shadow"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="cc-modal-actions">
+        <button class="cc-btn cc-btn--primary" (click)="downloadCard()">
+          <svg width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Télécharger PNG
+        </button>
+        <button class="cc-btn cc-btn--secondary" (click)="shareCard()">
+          <svg width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Partager
+        </button>
+      </div>
+    </ng-container>
+  </div>
 </div>
 
 <!-- Toast -->

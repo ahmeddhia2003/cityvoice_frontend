@@ -24,10 +24,10 @@ export class OAuth2CallbackComponent implements OnInit {
     const token  = this.route.snapshot.queryParamMap.get('token');
     const userId = this.route.snapshot.queryParamMap.get('userId');
     const role   = this.route.snapshot.queryParamMap.get('role');
+    const email  = this.route.snapshot.queryParamMap.get('email'); // optional
     const error  = this.route.snapshot.queryParamMap.get('error');
 
     if (error || !token) {
-      // Fermer la popup et signaler l'erreur à la fenêtre parent
       if (window.opener) {
         window.opener.postMessage({ type: 'OAUTH_ERROR' }, '*');
         window.close();
@@ -35,16 +35,41 @@ export class OAuth2CallbackComponent implements OnInit {
       return;
     }
 
-    // Stocker le token dans la fenêtre PARENT
     if (window.opener) {
+      // Store in parent window
       window.opener.localStorage.setItem('cv_token', token);
-      window.opener.localStorage.setItem('cv_user', JSON.stringify({ userId, role }));
-      window.opener.postMessage({ type: 'OAUTH_SUCCESS' }, '*');
+      window.opener.localStorage.setItem(
+        'cv_user',
+        JSON.stringify({
+          userId,
+          role,
+          email: email ?? ''
+        })
+      );
+
+      // 🔥 FIX: send full payload (not just type)
+      window.opener.postMessage({
+        type: 'OAUTH_SUCCESS',
+        token,
+        userId,
+        role,
+        email
+      }, '*');
+
       window.close();
+
     } else {
-      // Fallback si pas de popup (navigation directe)
-      localStorage.setItem('cv_token', token!);
-      localStorage.setItem('cv_user', JSON.stringify({ userId, role }));
+      // fallback (no popup)
+      localStorage.setItem('cv_token', token);
+      localStorage.setItem(
+        'cv_user',
+        JSON.stringify({
+          userId,
+          role,
+          email: email ?? ''
+        })
+      );
+
       window.location.href = '/dashboard';
     }
   }

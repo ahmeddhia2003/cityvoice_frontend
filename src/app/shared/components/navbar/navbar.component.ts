@@ -249,6 +249,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sound.success();
   }
 
+  isCitoyen(): boolean {
+    return this.currentUser?.role === 'CITOYEN';
+  }
+
   showToast(msg: string, type: 'success' | 'error'): void {
     this.toastMsg  = msg;
     this.toastType = type;
