@@ -17,6 +17,11 @@ export class PublicProfileComponent implements OnInit {
   rank:    number = 0;
   loading  = true;
 
+  // ai
+  aiBio:        string  = '';
+  bioLoading:   boolean = false;
+  bioGenerated: boolean = false;
+
   constructor(
     private route:       ActivatedRoute,
     private location:    Location,
@@ -38,8 +43,36 @@ export class PublicProfileComponent implements OnInit {
         this.rank    = leaderboard.findIndex((u: any) => u.id === id) + 1;
         this.loading = false;
         this.animateIn();
+        this.loadBio(profile, badges.length);
       },
       error: () => { this.loading = false; }
+    });
+  }
+
+  // ai
+  loadBio(profile: any, badgeCount: number): void {
+    this.bioLoading = true;
+
+    this.userService.generateBio({
+      nom:         profile.nom,
+      ville:       profile.ville,
+      gouvernorat: profile.gouvernorat,
+      role:        profile.role,
+      points:      profile.points,
+      badges:      badgeCount,
+      streak:      profile.loginStreak ?? 0,
+      since:       profile.dateInscription
+        ? new Date(profile.dateInscription).toLocaleDateString('fr-FR', {
+          month: 'long', year: 'numeric'
+        })
+        : '',
+    }).subscribe({
+      next: (res) => {
+        this.aiBio        = res.bio;
+        this.bioLoading   = false;
+        this.bioGenerated = true;
+      },
+      error: () => { this.bioLoading = false; }
     });
   }
 

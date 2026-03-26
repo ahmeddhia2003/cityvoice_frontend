@@ -84,4 +84,13 @@ export class LeaderboardComponent implements OnInit {
   podiumHeight(rank: number): string {
     return ['140px', '180px', '110px'][rank - 1] ?? '100px';
   }
+
+  formatName(name: string): string {
+    if (!name) return '';
+
+    return name
+      .split(' ')
+      .map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase())
+      .join(' ');
+  }
 }

@@ -102,7 +102,10 @@
              [alt]="getFullName()">
         <div class="user-btn-info">
           <span class="user-name-sm">{{ getFirstName() }}</span>
-          <span class="user-points-sm">⭐ {{ getUserPoints() }} pts</span>
+          <!-- Points only for CITOYEN, otherwise show role -->
+          <span class="user-points-sm" *ngIf="isCitoyen()">⭐ {{ getUserPoints() }} pts</span>
+          <span class="user-role-sm" *ngIf="!isCitoyen()"
+                [style.color]="getRoleColor()">{{ getRoleLabel() }}</span>
         </div>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
              [style.transform]="userMenuOpen ? 'rotate(180deg)' : 'rotate(0)'"
@@ -122,29 +125,33 @@
             <div>
               <div class="ud-name">{{ getFullName() }}</div>
               <div class="ud-email">{{ currentUser?.email }}</div>
-              <!-- ← nouveau : rôle + téléphone -->
               <div class="ud-meta">
-      <span class="ud-role-badge" [style.background]="getRoleBg()" [style.color]="getRoleColor()">
-        {{ getRoleLabel() }}
-      </span>
+            <span class="ud-role-badge" [style.background]="getRoleBg()" [style.color]="getRoleColor()">
+              {{ getRoleLabel() }}
+            </span>
                 <span class="ud-tel" *ngIf="currentUser?.telephone">
-        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-        </svg>
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              </svg>
                   {{ currentUser?.telephone }}
-      </span>
+            </span>
               </div>
             </div>
           </div>
-          <div class="ud-points">⭐ {{ getUserPoints() }} points</div>
+          <!-- Points only for CITOYEN -->
+          <div class="ud-points" *ngIf="isCitoyen()">⭐ {{ getUserPoints() }} points</div>
         </div>
 
         <div class="ud-divider"></div>
-        <a routerLink="/mes-signalements" class="ud-item" (click)="sound.nav(); closeUserMenu()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+
+        <!-- These links only for CITOYEN -->
+        <a *ngIf="isCitoyen()" routerLink="/mes-signalements" class="ud-item" (click)="sound.nav(); closeUserMenu()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+          </svg>
           Mes signalements
         </a>
-        <a routerLink="/user/leaderboard" class="ud-item" (click)="sound.nav(); closeUserMenu()">
+        <a *ngIf="isCitoyen()" routerLink="/user/leaderboard" class="ud-item" (click)="sound.nav(); closeUserMenu()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <line x1="18" y1="20" x2="18" y2="10"/>
             <line x1="12" y1="20" x2="12" y2="4"/>
@@ -152,15 +159,24 @@
           </svg>
           Classement
         </a>
+
+        <!-- Profile link for everyone -->
         <a routerLink="/user/profile" class="ud-item" (click)="sound.nav(); closeUserMenu()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
           Mon profil
         </a>
 
         <div class="ud-divider"></div>
 
         <button class="ud-item ud-logout" (click)="logout()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
           Se déconnecter
         </button>
       </div>

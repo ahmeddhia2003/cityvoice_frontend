@@ -944,3 +944,9 @@ nav.solid {
     right: -30px;
   }
 }
+
+.user-role-sm {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}

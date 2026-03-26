@@ -66,6 +66,23 @@
           </div>
         </div>
 
+
+        <!-- Bio IA -->
+        <div class="pp-bio-wrap" *ngIf="bioLoading || aiBio">
+
+          <div class="pp-bio-loading" *ngIf="bioLoading">
+            <div class="pp-bio-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span>Génération de la biographie…</span>
+          </div>
+
+          <div class="pp-bio" *ngIf="!bioLoading && aiBio">
+            <div class="pp-bio-icon">✨</div>
+            <p class="pp-bio-text">{{ aiBio }}</p>
+          </div>
+
+        </div>
       </div>
     </div>
 

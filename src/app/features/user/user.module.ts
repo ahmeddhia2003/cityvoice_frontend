@@ -19,7 +19,7 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
     MesBadgesComponent,
     LeaderboardComponent,
     PublicProfileComponent,
-    OnboardingComponent
+    OnboardingComponent,
   ],
   exports: [
     OnboardingComponent

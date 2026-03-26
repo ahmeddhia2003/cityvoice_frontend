@@ -43,7 +43,7 @@
 
     <div class="auth-card">
 
-      <!-- ══ STEP 0 : Citoyen ou Agent ══════════════════ -->
+      <!-- ══ STEP 0 ══════════════════════════════════════ -->
       <div class="step-section" *ngIf="step === 0">
         <h2 class="auth-form-title">Qui êtes-<span class="coral">vous ?</span></h2>
         <p class="auth-form-sub">Choisissez votre profil pour personnaliser votre expérience.</p>
@@ -72,7 +72,7 @@
         <p class="switch-link" style="margin-top:20px">Déjà un compte ? <a (click)="goSignin()">Se connecter</a></p>
       </div>
 
-      <!-- ══ STEP -1 : Choix rôle agent ═════════════════ -->
+      <!-- ══ STEP -1 ═════════════════════════════════════ -->
       <div class="step-section" *ngIf="step === -1">
         <div class="stepper-header">
           <button class="stepper-back" (click)="prevStepAgent()">
@@ -99,15 +99,15 @@
                [style.--role-border]="r.border"
                (click)="selectAgentRole(r.key)">
             <div class="role-icon">
-              <svg *ngIf="r.key === 'CHEF_EQUIPE'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <svg *ngIf="r.key==='CHEF_EQUIPE'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
               </svg>
-              <svg *ngIf="r.key === 'MEMBRE_EQUIPE'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <svg *ngIf="r.key==='MEMBRE_EQUIPE'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
               </svg>
-              <svg *ngIf="r.key === 'MODERATEUR'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <svg *ngIf="r.key==='MODERATEUR'" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
             </div>
@@ -135,7 +135,7 @@
         </button>
       </div>
 
-      <!-- ══ STEPS 1-4 : Formulaire ══════════════════════ -->
+      <!-- ══ STEPS 1-4 ════════════════════════════════════ -->
       <div *ngIf="step >= 1">
 
         <div class="stepper-header">
@@ -145,8 +145,8 @@
             </svg>
           </button>
           <div class="stepper-info">
-            <div class="stepper-label">{{ currentStepInfo?.title }}</div>
-            <div class="stepper-sub">{{ currentStepInfo?.subtitle }}</div>
+            <div class="stepper-label">{{ currentStepInfo.title }}</div>
+            <div class="stepper-sub">{{ currentStepInfo.subtitle }}</div>
           </div>
           <div class="stepper-count">{{ step }} / {{ stepsForRole.length }}</div>
         </div>
@@ -172,28 +172,81 @@
               <div>
                 <label class="field-label">Prénom *</label>
                 <div class="field-wrap">
-                  <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                  <input class="auth-input" type="text" formControlName="firstName" placeholder="Ahmed" (input)="onInput()">
+                  <span class="fi">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </span>
+                  <input class="auth-input" type="text" formControlName="firstName"
+                         placeholder="Ahmed" (input)="onInput()">
                 </div>
-                <p class="field-error" *ngIf="form.get('firstName')?.touched && form.get('firstName')?.errors?.['required']">Prénom requis</p>
+                <p class="field-error"
+                   *ngIf="form.get('firstName')?.touched && form.get('firstName')?.errors?.['required']">
+                  Prénom requis
+                </p>
               </div>
+
               <div>
                 <label class="field-label">Nom *</label>
                 <div class="field-wrap">
-                  <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                  <input class="auth-input" type="text" formControlName="lastName" placeholder="Ben Ali" (input)="onInput()">
+                  <span class="fi">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </span>
+                  <input class="auth-input" type="text" formControlName="lastName"
+                         placeholder="Ben Ali" (input)="onInput()">
                 </div>
-                <p class="field-error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.errors?.['required']">Nom requis</p>
+                <p class="field-error"
+                   *ngIf="form.get('lastName')?.touched && form.get('lastName')?.errors?.['required']">
+                  Nom requis
+                </p>
+              </div>
+            </div>
+
+            <!-- Feedback nom — pleine largeur sous les deux champs -->
+            <div class="field-feedback name-feedback" *ngIf="nameChecking">
+              <div class="fb-checking">
+                <span class="fb-dot-pulse"></span>
+                Vérification du nom…
+              </div>
+            </div>
+            <div class="field-feedback name-feedback"
+                 *ngIf="!nameChecking && nameError">
+              <div class="fb-error">
+                <svg width="13" height="13" fill="none" stroke="currentColor"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {{ nameError }}
+              </div>
+            </div>
+            <div class="field-feedback name-feedback"
+                 *ngIf="!nameChecking && nameOk && !nameError">
+              <div class="fb-ok">
+                <svg width="13" height="13" fill="none" stroke="currentColor"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Nom accepté
               </div>
             </div>
 
             <div class="field-row" style="margin-top:10px">
               <label class="field-label">Téléphone *</label>
               <div class="field-wrap">
-                <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg></span>
-                <input class="auth-input" type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX" (input)="onInput()">
+                <span class="fi">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+                  </svg>
+                </span>
+                <input class="auth-input" type="tel" formControlName="telephone"
+                       placeholder="+216 XX XXX XXX" (input)="onInput()">
               </div>
-              <p class="field-error" *ngIf="form.get('telephone')?.touched && form.get('telephone')?.invalid">
+              <p class="field-error"
+                 *ngIf="form.get('telephone')?.touched && form.get('telephone')?.invalid">
                 <span *ngIf="form.get('telephone')?.errors?.['required']">Téléphone requis</span>
                 <span *ngIf="form.get('telephone')?.errors?.['pattern']">Format invalide (ex: +216 12 345 678)</span>
               </p>
@@ -206,11 +259,44 @@
 
             <div class="field-row">
               <label class="field-label">Email *</label>
-              <div class="field-wrap">
-                <span class="fi"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
-                <input class="auth-input" type="email" formControlName="email" placeholder="vous@exemple.com" (input)="onInput()">
+              <div class="field-wrap" [class.field-wrap--checking]="emailChecking">
+                <span class="fi">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                </span>
+                <input class="auth-input" type="email" formControlName="email"
+                       placeholder="vous@exemple.com" (input)="onInput()">
+                <!-- Spinner inline dans le champ -->
+                <span class="field-checking-spinner" *ngIf="emailChecking"></span>
               </div>
-              <p class="field-error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+
+              <!-- Feedback email -->
+              <div class="field-feedback" *ngIf="!emailChecking && emailError">
+                <div class="fb-error">
+                  <svg width="13" height="13" fill="none" stroke="currentColor"
+                       stroke-width="2.5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  {{ emailError }}
+                </div>
+              </div>
+              <div class="field-feedback"
+                   *ngIf="!emailChecking && !emailError && form.get('email')?.valid && form.get('email')?.value">
+                <div class="fb-ok">
+                  <svg width="13" height="13" fill="none" stroke="currentColor"
+                       stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Email disponible
+                </div>
+              </div>
+
+              <p class="field-error"
+                 *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
                 <span *ngIf="form.get('email')?.errors?.['required']">Email requis</span>
                 <span *ngIf="form.get('email')?.errors?.['email']">Format invalide</span>
               </p>
@@ -219,15 +305,26 @@
             <div class="field-row">
               <label class="field-label">Mot de passe *</label>
               <div class="field-wrap">
-                <span class="fi"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+                <span class="fi">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                  </svg>
+                </span>
                 <input class="auth-input" [type]="showPwd ? 'text' : 'password'"
-                       formControlName="password" placeholder="Minimum 8 caractères" (input)="onInput()">
+                       formControlName="password" placeholder="Minimum 8 caractères"
+                       (input)="onInput()">
                 <span class="fs" (click)="togglePwd()">
-                  <svg *ngIf="!showPwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  <svg *ngIf="showPwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg *ngIf="!showPwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg *ngIf="showPwd" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
                 </span>
               </div>
-              <p class="field-error" *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
+              <p class="field-error"
+                 *ngIf="form.get('password')?.touched && form.get('password')?.invalid">
                 <span *ngIf="form.get('password')?.errors?.['required']">Mot de passe requis</span>
                 <span *ngIf="form.get('password')?.errors?.['minlength']">Minimum 8 caractères</span>
               </p>
@@ -245,8 +342,7 @@
                     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
                   </svg>
                 </span>
-                <input class="auth-input"
-                       [type]="showConfirmPwd ? 'text' : 'password'"
+                <input class="auth-input" [type]="showConfirmPwd ? 'text' : 'password'"
                        formControlName="confirmPassword"
                        placeholder="Répétez le mot de passe"
                        (input)="onInput()">
@@ -260,52 +356,53 @@
                   </svg>
                 </span>
               </div>
-
-              <!-- ✅ Un seul bloc d'erreur -->
               <ng-container *ngIf="form.get('confirmPassword')?.touched">
                 <p class="field-error" *ngIf="form.get('confirmPassword')?.errors?.['required']">
                   Confirmation requise
                 </p>
-                <p class="field-error" *ngIf="!form.get('confirmPassword')?.errors?.['required'] && form.errors?.['passwordMismatch']">
+                <p class="field-error"
+                   *ngIf="!form.get('confirmPassword')?.errors?.['required'] && form.errors?.['passwordMismatch']">
                   Les mots de passe ne correspondent pas
                 </p>
               </ng-container>
-
-              <!-- Indicateur visuel -->
               <div class="pwd-match"
                    *ngIf="form.get('confirmPassword')?.value && form.get('password')?.value">
-                <span *ngIf="!form.errors?.['passwordMismatch']" style="color:#0D9B76;display:flex;align-items:center;gap:5px">
+                <span *ngIf="!form.errors?.['passwordMismatch']"
+                      style="color:#0D9B76;display:flex;align-items:center;gap:5px;font-size:12px">
                   <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                   Mots de passe identiques
                 </span>
-                <!--<span *ngIf="form.errors?.['passwordMismatch']" style="color:#E8532A;display:flex;align-items:center;gap:5px">
-                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                  Ne correspondent pas
-                </span>-->
               </div>
             </div>
 
-            <!-- Code invitation — agents uniquement -->
+            <!-- Code invitation agents -->
             <div class="field-row" *ngIf="userType === 'AGENT'">
               <label class="field-label">
                 Code d'invitation *
-                <span style="color:#9CA3AF;font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">fourni par votre responsable</span>
+                <span style="color:#9CA3AF;font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">
+                  fourni par votre responsable
+                </span>
               </label>
               <div class="field-wrap">
-                <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+                <span class="fi">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+                  </svg>
+                </span>
                 <input class="auth-input" type="text" formControlName="invitationCode"
                        placeholder="Ex: A3F7B2C1" (input)="onInput()"
                        style="text-transform:uppercase;letter-spacing:.1em;font-weight:600">
               </div>
-              <p class="field-error" *ngIf="form.get('invitationCode')?.touched && !form.get('invitationCode')?.value">
+              <p class="field-error"
+                 *ngIf="form.get('invitationCode')?.touched && !form.get('invitationCode')?.value">
                 Code d'invitation requis
               </p>
               <div class="invite-info">
-                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
                 Ce code vous a été transmis par votre responsable ou l'administration municipale.
               </div>
             </div>
@@ -315,45 +412,92 @@
           <!-- ── STEP 3 : Localisation ─────────────────── -->
           <div class="step-section" *ngIf="step === 3">
 
+            <!-- Gouvernorat -->
             <div class="field-row">
               <label class="field-label">Gouvernorat *</label>
-              <div class="field-wrap">
-                <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              <div class="field-wrap" [class.field-wrap--loading]="loadingGouvernorats">
+      <span class="fi">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+      </span>
                 <select class="auth-input" formControlName="gouvernorat"
+                        (change)="onGouvernoratChange()"
                         style="padding-left:40px;appearance:none;cursor:pointer">
-                  <option value="" disabled>Choisir un gouvernorat</option>
-                  <option *ngFor="let g of gouvernorats" [value]="g">{{ g }}</option>
+                  <option value="" disabled>
+                    {{ loadingGouvernorats ? 'Chargement…' : 'Choisir un gouvernorat' }}
+                  </option>
+                  <option *ngFor="let g of governorates" [value]="g">
+                    {{ g }}
+                  </option>
                 </select>
+                <span class="field-loading-spinner" *ngIf="loadingGouvernorats"></span>
               </div>
-              <p class="field-error" *ngIf="form.get('gouvernorat')?.touched && form.get('gouvernorat')?.errors?.['required']">
+              <p class="field-error"
+                 *ngIf="form.get('gouvernorat')?.touched && form.get('gouvernorat')?.errors?.['required']">
                 Gouvernorat requis
               </p>
             </div>
 
+            <!-- Ville (Délégation) -->
             <div class="field-row">
-              <label class="field-label">Ville / Quartier *</label>
-              <div class="field-wrap">
-                <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></span>
-                <input class="auth-input" type="text" formControlName="ville"
-                       placeholder="Ex: Lafayette, La Marsa..." (input)="onInput()">
+              <label class="field-label">Ville / Délégation *</label>
+              <div class="field-wrap" [class.field-wrap--loading]="loadingVilles">
+      <span class="fi">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>
+        </svg>
+      </span>
+                <select class="auth-input" formControlName="ville"
+                        (change)="onVilleChange()"
+                        style="padding-left:40px;appearance:none;cursor:pointer">
+                  <option value="" disabled>
+                    {{ !selectedGouvernorat ? 'Choisir d\'abord un gouvernorat' :
+                    loadingVilles ? 'Chargement…' : 'Choisir une ville' }}
+                  </option>
+                  <option *ngFor="let d of delegations" [value]="d">
+                    {{ d }}
+                  </option>
+                </select>
+                <span class="field-loading-spinner" *ngIf="loadingVilles"></span>
               </div>
-              <p class="field-error" *ngIf="form.get('ville')?.touched && form.get('ville')?.errors?.['required']">
+              <p class="field-error"
+                 *ngIf="form.get('ville')?.touched && form.get('ville')?.errors?.['required']">
                 Ville requise
+              </p>
+              <p class="field-hint" *ngIf="!selectedGouvernorat">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                </svg>
+                Sélectionnez d'abord un gouvernorat
               </p>
             </div>
 
+            <!-- Code postal (auto-rempli ou manuel) -->
             <div class="field-row">
               <label class="field-label">
                 Code postal
-                <span style="color:#9CA3AF;font-weight:400;text-transform:none;letter-spacing:0">(optionnel)</span>
+                <span style="color:#9CA3AF;font-weight:400;text-transform:none;letter-spacing:0">(auto-rempli)</span>
               </label>
               <div class="field-wrap">
-                <span class="fi"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6"/></svg></span>
+      <span class="fi">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M22 7l-10 6L2 7"/>
+        </svg>
+      </span>
                 <input class="auth-input" type="text" formControlName="codePostal"
-                       placeholder="Ex: 1002" maxlength="4" (input)="onInput()">
+                       placeholder="Ex: 2058" maxlength="5" (input)="onInput()">
               </div>
-              <p class="field-error" *ngIf="form.get('codePostal')?.touched && form.get('codePostal')?.errors?.['pattern']">
-                Code postal invalide (4 chiffres)
+              <p class="field-error"
+                 *ngIf="form.get('codePostal')?.touched && form.get('codePostal')?.errors?.['pattern']">
+                Code postal invalide (4-5 chiffres)
+              </p>
+              <p class="field-hint" *ngIf="form.get('codePostal')?.value">
+                <svg width="12" height="12" fill="none" stroke="#0D9B76" stroke-width="2.5" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span style="color:#0D9B76">Code postal détecté automatiquement</span>
               </p>
             </div>
 
@@ -362,7 +506,6 @@
           <!-- ── STEP 4 : Profil ───────────────────────── -->
           <div class="step-section" *ngIf="step === 4">
 
-            <!-- Photo de profil -->
             <div class="photo-section">
               <label class="field-label">
                 Photo de profil <span class="optional-tag">optionnel</span>
@@ -374,56 +517,96 @@
                      (change)="onPhotoChange($event)">
 
               <div class="photo-zone"
-                   (click)="triggerPhoto()"
-                   (mouseenter)="photoHover=true"
-                   (mouseleave)="photoHover=false"
-                   [class.photo-zone--hover]="photoHover && !photoPreview"
-                   [class.photo-zone--filled]="!!photoPreview">
+                   [class.photo-zone--hover]="photoHover && !photoPreview && !photoChecking"
+                   [class.photo-zone--filled]="!!photoPreview"
+                   [class.photo-zone--checking]="photoChecking">
 
-                <ng-container *ngIf="!photoPreview">
-                  <div class="photo-avatar-default">
-                    <span class="photo-initials">{{ initials }}</span>
-                  </div>
-                  <div class="photo-upload-hint">
-                    <div class="photo-upload-icon">
-                      <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                      </svg>
+                <!-- Analyse en cours -->
+                <ng-container *ngIf="photoChecking">
+                  <div class="photo-moderating">
+                    <div class="photo-mod-spinner"></div>
+                    <div class="photo-mod-text">
+                      <div style="font-weight:700;color:#0C1F3F;font-size:14px">Analyse en cours…</div>
+                      <div style="font-size:12px;color:#9CA3AF;margin-top:3px">Vérification de la photo</div>
                     </div>
-                    <p class="photo-upload-text">{{ photoHover ? 'Cliquez pour choisir' : 'Ajouter une photo' }}</p>
-                    <p class="photo-upload-sub">JPG, PNG · Max 5 Mo</p>
                   </div>
                 </ng-container>
 
-                <ng-container *ngIf="photoPreview">
+                <!-- Empty state — clickable -->
+                <ng-container *ngIf="!photoChecking && !photoPreview">
+                  <div class="photo-upload-area"
+                       (click)="triggerPhoto()"
+                       (mouseenter)="photoHover=true"
+                       (mouseleave)="photoHover=false">
+                    <div class="photo-avatar-default">
+                      <span class="photo-initials">{{ initials }}</span>
+                    </div>
+                    <div class="photo-upload-hint">
+                      <div class="photo-upload-icon">
+                        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                      </div>
+                      <p class="photo-upload-text">{{ photoHover ? 'Cliquez pour choisir' : 'Ajouter une photo' }}</p>
+                      <p class="photo-upload-sub">JPG, PNG · Max 5 Mo</p>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <!-- Filled state — separate clickable areas -->
+                <ng-container *ngIf="!photoChecking && photoPreview">
                   <div class="photo-preview-wrap">
-                    <div class="photo-preview-ring">
+                    <!-- Photo preview — click to change -->
+                    <div class="photo-preview-ring"
+                         (click)="triggerPhoto()"
+                         (mouseenter)="photoHover=true"
+                         (mouseleave)="photoHover=false"
+                         style="cursor:pointer">
                       <img class="photo-preview" [src]="photoPreview" alt="Aperçu">
                       <div class="photo-check">
-                        <svg width="11" height="11" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        <svg width="11" height="11" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      </div>
+                      <!-- Hover overlay on photo only -->
+                      <div class="photo-change-overlay" *ngIf="photoHover">
+                        <svg width="14" height="14" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
                       </div>
                     </div>
+
+                    <!-- Info + Remove button -->
                     <div class="photo-info">
                       <p class="photo-filename">{{ photoName }}</p>
-                      <p class="photo-hint">Cliquez pour changer</p>
+                      <p class="photo-hint">Cliquez sur la photo pour changer</p>
                     </div>
-                    <button type="button" class="photo-remove" (click)="$event.stopPropagation(); removePhoto()">
+
+                    <!-- Remove button — separate, not inside clickable area -->
+                    <button type="button" class="photo-remove"
+                            (click)="removePhoto()">
                       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                       </svg>
                     </button>
                   </div>
-                  <div class="photo-hover-overlay" *ngIf="photoHover">
-                    <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Changer
-                  </div>
                 </ng-container>
+
               </div>
-              <p class="photo-error" *ngIf="photoError">{{ photoError }}</p>
+
+              <!-- Erreur photo -->
+              <div class="photo-error-card" *ngIf="photoError">
+                <svg width="14" height="14" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {{ photoError }}
+              </div>
+
             </div>
 
             <!-- Terms -->

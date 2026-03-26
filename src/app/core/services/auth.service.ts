@@ -21,6 +21,7 @@ export interface RegisterRequest {
   gouvernorat?:    string;
   ville?:          string;
   codePostal?:     string;
+  photo?: string;
 }
 
 
@@ -144,6 +145,29 @@ export class AuthService {
     }, 1200);
   }
 
+  // ============================================================
+  // NAME CHECKER
+  // ============================================================
+
+  screenName(name: string): Observable<{ appropriate: boolean; reason?: string }> {
+    return this.http.post<any>(
+      `${environment.apiUrl}/api/ai/screen-name`,
+      { name }
+    );
+  }
+
+  checkEmail(email: string): Observable<{ exists: boolean }> {
+    return this.http.get<{ exists: boolean }>(
+      `${environment.apiUrl}/api/auth/check-email?email=${email}`
+    );
+  }
+
+  moderatePhoto(base64: string): Observable<{ safe: boolean; reason: string }> {
+    return this.http.post<any>(
+      `${environment.apiUrl}/api/auth/moderate-photo`,
+      { photo: base64 }
+    );
+  }
 
   // ============================================================
   // PASSWORD MANAGEMENT
@@ -206,6 +230,16 @@ export class AuthService {
 
   getRole(): string | null {
     return this.getCurrentUser()?.role ?? null;
+  }
+
+  handleOAuthSuccess(token: string, userId: string, role: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.setItem(this.USER_KEY, JSON.stringify({ userId, role, email: '' }));
+    this.setLoading(true, 'Connexion en cours…');
+    setTimeout(() => {
+      this.authStateSubject.next();
+      this.setLoading(false, undefined, 'Bienvenue sur CityVoice 🎉', 'success');
+    }, 1200);
   }
 
 

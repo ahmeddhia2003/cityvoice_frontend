@@ -351,9 +351,9 @@
   box-shadow: 0 0 0 3px rgba(232,83,42,.07);
 }
 
+/* ── Photo zone base — remove click from parent when filled ── */
 .photo-zone--filled {
-  border-style: solid;
-  border-color: rgba(12,31,63,.1);
+  cursor: default;
 }
 .photo-zone--filled:hover {
   border-color: #E8532A;
@@ -415,16 +415,51 @@
   font-size: 11px; color: #9CA3AF;
 }
 
-/* ── Preview state ──────────────────────────────────────── */
-.photo-preview-wrap {
-  display: flex; align-items: center; gap: 14px;
+/* ── Photo upload area — clickable only when empty ───── */
+.photo-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   width: 100%;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  transition: background 0.2s;
 }
 
-/* Ring around preview */
+.photo-upload-area:hover {
+  background: rgba(12, 31, 63, 0.03);
+}
+
+/* ── Photo preview wrap — flex container ─────────────── */
+.photo-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 8px;
+}
+
+/* ── Photo ring with hover effect ────────────────────── */
 .photo-preview-ring {
   position: relative;
   flex-shrink: 0;
+}
+
+.photo-change-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 31, 63, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photo-preview-ring:hover .photo-change-overlay {
+  opacity: 1;
 }
 
 .photo-preview {
@@ -448,35 +483,49 @@
   box-shadow: 0 2px 6px rgba(13,155,118,.4);
 }
 
-/* File info */
-.photo-info { flex: 1; min-width: 0; }
+/* ── Photo info ─────────────────────────────────────── */
+.photo-info {
+  flex: 1;
+  min-width: 0;
+}
 
 .photo-filename {
-  font-size: 13px; font-weight: 600; color: #1A1A2E;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0C1F3F;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .photo-hint {
-  font-size: 11.5px; color: #9CA3AF;
+  font-size: 11px;
+  color: #9CA3AF;
+  margin: 3px 0 0;
 }
 
-/* Remove button */
+/* ── Remove button — clearly separate ───────────────── */
 .photo-remove {
-  width: 28px; height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1.5px solid rgba(12,31,63,.12);
-  background: #fff;
+  border: 1.5px solid rgba(232, 83, 42, 0.3);
+  background: rgba(232, 83, 42, 0.08);
+  color: #E8532A;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: #8888A8;
-  transition: all .18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  transition: all 0.2s;
 }
+
 .photo-remove:hover {
-  background: #FEF2F2;
-  border-color: #F87171;
-  color: #EF4444;
+  background: #E8532A;
+  border-color: #E8532A;
+  color: white;
+  transform: scale(1.1);
 }
 
 /* Hover overlay when filled */
@@ -819,4 +868,117 @@
 .sent-badge {
   display: inline-flex; align-items: center; justify-content: center;
 }
+/* ── Feedbacks validation temps réel ───────────────────── */
+.field-feedback {
+  margin-top: 6px;
+}
+.name-feedback {
+  grid-column: 1 / -1;  /* Pleine largeur sous name-grid */
+}
 
+.fb-checking {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #9CA3AF;
+}
+.fb-ok {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #0D9B76; font-weight: 600;
+}
+.fb-error {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #E8532A; font-weight: 600;
+}
+
+/* Dot pulsant pour "vérification" */
+.fb-dot-pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #9CA3AF;
+  animation: fbPulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes fbPulse {
+  0%, 100% { transform: scale(.7); opacity: .5; }
+  50%       { transform: scale(1);  opacity: 1; }
+}
+
+/* Spinner inline dans le champ email */
+.field-wrap--checking .auth-input {
+  padding-right: 40px;
+}
+.field-checking-spinner {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(12,31,63,.15);
+  border-top-color: #0C1F3F;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+/* Photo modération */
+.photo-zone--checking {
+  cursor: not-allowed !important;
+  opacity: .8;
+}
+.photo-moderating {
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px;
+}
+.photo-mod-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid rgba(12,31,63,.1);
+  border-top-color: #E8532A;
+  animation: spin .8s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Erreur photo en card */
+.photo-error-card {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(232,83,42,.06);
+  border: 1.5px solid rgba(232,83,42,.2);
+  border-radius: 10px; padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 12.5px; color: #E8532A; font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ── Field loading state ───────────────────────────────── */
+.field-wrap--loading {
+  position: relative;
+}
+
+.field-wrap--loading .auth-input {
+  padding-right: 40px;
+  color: #9CA3AF;
+}
+
+.field-loading-spinner {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(12, 31, 63, 0.1);
+  border-top-color: #E8532A;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.auth-input:disabled {
+  background: #F5F5F5;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

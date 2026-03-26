@@ -24,6 +24,10 @@ export class SigninComponent implements OnInit, AfterViewInit {
   toastMsg  = '';
   toastType: 'success' | 'error' = 'success';
 
+  // oauth
+  oauthLoading: 'google' | 'facebook' | null = null;
+
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -64,21 +68,43 @@ export class SigninComponent implements OnInit, AfterViewInit {
   // ── OAuth ────────────────────────────────────────────────
   loginWithGoogle(): void {
     this.sound.click();
+    this.oauthLoading = 'google';
     this.oauthService.loginWithGoogle();
+
+    // Reset loading si popup fermée sans succès
+    setTimeout(() => {
+      if (this.oauthLoading === 'google') {
+        this.oauthLoading = null;
+      }
+    }, 60000); // timeout 1 minute
   }
 
   loginWithFacebook(): void {
     this.sound.click();
+    this.oauthLoading = 'facebook';
     this.oauthService.loginWithFacebook();
+
+    setTimeout(() => {
+      if (this.oauthLoading === 'facebook') {
+        this.oauthLoading = null;
+      }
+    }, 60000);
   }
 
   private onOAuthMessage(event: MessageEvent): void {
     if (event.data?.type === 'OAUTH_SUCCESS') {
-      this.success = true;
-      this.sound.success();
-      this.showToast('Bienvenue sur CityVoice 🎉', 'success');
-      setTimeout(() => this.router.navigate(['/landing']), 1000);
+      this.oauthLoading = null;
+      this.authService.handleOAuthSuccess(
+        event.data.token,
+        event.data.userId,
+        event.data.role
+      );
+      setTimeout(() => {
+        const role = event.data.role;
+        this.router.navigate([role === 'ADMIN_VILLE' ? '/admin' : '/landing']);
+      }, 1600);
     } else if (event.data?.type === 'OAUTH_ERROR') {
+      this.oauthLoading = null;
       this.showToast('Erreur de connexion ❌', 'error');
     }
   }
@@ -117,22 +143,40 @@ export class SigninComponent implements OnInit, AfterViewInit {
           this.sound.toggle2(false);
           gsap.to('.auth-submit', { x:[-6,6,-4,4,-2,2,0], duration:.4 });
 
+          // Parse error body (might be string or object)
+          let errorBody = err.error;
+          if (typeof errorBody === 'string') {
+            try {
+              errorBody = JSON.parse(errorBody);
+            } catch {
+              errorBody = {};
+            }
+          }
+
+          console.log('Login error:', err.status, errorBody); // Debug
+
           // ── Email non vérifié ──────────────────────────────
-          if (err.status === 403 && err.error?.error === 'EMAIL_NOT_VERIFIED') {
-            this.showToast(err.error?.message, 'error');
-            setTimeout(() => this.router.navigate(['/auth/email-pending']), 2000);
+          if (err.status === 403 && errorBody?.error === 'EMAIL_NOT_VERIFIED') {
+            this.showToast(errorBody?.message || 'Veuillez vérifier votre email', 'error');
+            setTimeout(() => {
+              this.router.navigate(['/auth/email-pending'], {
+                state: { email: this.form.value.email }
+              });
+            }, 1500);
             return;
           }
 
           // ── User Banned ──────────────────────────────
-          if (err.status === 403 && err.error?.error === 'USER_BANNED') {
-            this.showToast(err.error?.message, 'error');
+          if (err.status === 403 && errorBody?.error === 'USER_BANNED') {
+            this.showToast(errorBody?.message || 'Compte suspendu', 'error');
             return;
           }
 
           const msg = err.status === 401
             ? 'Email ou mot de passe incorrect ❌'
-            : 'Erreur serveur, réessayez !';
+            : err.status === 403
+              ? errorBody?.message || 'Accès refusé'
+              : 'Erreur serveur, réessayez !';
           this.showToast(msg, 'error');
         }, delay);
       }

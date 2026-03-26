@@ -83,10 +83,18 @@ export class OnboardingComponent implements OnInit {
     const auth = this.authService.getCurrentUser();
     if (!auth?.userId) return;
 
+    // ═══════════════════════════════════════════════════════
+    // ONLY SHOW FOR CITOYEN
+    // ═══════════════════════════════════════════════════════
+    if (!this.authService.isCitoyen()) {
+      this.visible = false;
+      return;
+    }
+
     const key = `onboarding_done_${auth.userId}`;
     if (localStorage.getItem(key)) return;
 
-    this.visible = false;  // reset propre avant re-check
+    this.visible = false;
 
     this.userService.getById(auth.userId).subscribe({
       next: (u) => {

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener  } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService, UserDto } from '../../../core/services/user.service';
+import { UserService, UserDto, TrustInfo } from '../../../core/services/user.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 declare const gsap: any;
@@ -19,6 +19,13 @@ function passwordMatchValidator(g: AbstractControl): ValidationErrors | null {
 })
 export class ProfileComponent implements OnInit {
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showCivicCard) {
+      this.closeCivicCard();
+    }
+  }
+
   user: UserDto | null = null;
   loading = true;
   activeTab: 'info' | 'security' | 'activity' = 'info';
@@ -32,14 +39,25 @@ export class ProfileComponent implements OnInit {
   photoPreview: string | null = null;
   photoHover   = false;
 
+  // ══════════════════════════════════════════════════════
+  // PHOTO MODERATION
+  // ══════════════════════════════════════════════════════
+  photoChecking = false;
+  photoError    = '';
+
   toast     = false;
   toastMsg  = '';
   toastType: 'success' | 'error' = 'success';
 
-  // Ajouter dans les propriétés
-  aiSuggestion:    string  = '';
-  aiLoading:       boolean = false;
+  // AI Suggestion
+  aiSuggestion:     string  = '';
+  aiLoading:        boolean = false;
   showAiSuggestion: boolean = false;
+
+  // Civic Card
+  showCivicCard = false;
+  civicCardBadges: any[] = [];
+  civicCardLoading = false;
 
   readonly gouvernorats = [
     'Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba',
@@ -80,9 +98,10 @@ export class ProfileComponent implements OnInit {
 
     this.userService.getById(auth.userId).subscribe({
       next: (u) => {
-        this.user        = u;
-        this.loading     = false;
+        this.user         = u;
+        this.loading      = false;
         this.photoPreview = u.photo || null;
+        this.photoError   = '';
         this.infoForm.patchValue({
           nom:         u.nom,
           email:       u.email,
@@ -100,16 +119,42 @@ export class ProfileComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  // ── Photo ────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════
+  // PHOTO WITH REAL-TIME MODERATION
+  // ══════════════════════════════════════════════════════
   onPhotoChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+
     if (file.size > 5 * 1024 * 1024) {
       this.showToast('Image trop lourde (max 5 Mo)', 'error');
       return;
     }
+
     this.compressImage(file, 200, 0.7).then(b64 => {
-      this.photoPreview = b64;
+      // Show preview immediately
+      const previousPhoto = this.photoPreview;
+      this.photoPreview   = b64;
+      this.photoChecking  = true;
+      this.photoError     = '';
+
+      // Moderate the photo
+      this.authService.moderatePhoto(b64).subscribe({
+        next: (res) => {
+          this.photoChecking = false;
+          if (!res.safe) {
+            this.photoError   = res.reason || 'Photo inappropriée';
+            this.photoPreview = previousPhoto; // Revert to old photo
+            this.showToast(res.reason || 'Photo refusée ❌', 'error');
+          } else {
+            this.showToast('Photo validée ✓', 'success');
+          }
+        },
+        error: () => {
+          this.photoChecking = false;
+          // Fail open — let backend handle final check on save
+        }
+      });
     });
   }
 
@@ -125,7 +170,7 @@ export class ProfileComponent implements OnInit {
         let h = img.height;
 
         if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
-        else        { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+        else       { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
 
         canvas.width  = Math.round(w);
         canvas.height = Math.round(h);
@@ -140,9 +185,9 @@ export class ProfileComponent implements OnInit {
 
   removePhoto(): void {
     this.photoPreview = null;
+    this.photoError   = '';
     if (!this.user) return;
 
-    // Supprimer aussi côté backend
     this.userService.update(this.user.id, { photo: '' }).subscribe({
       next: () => {
         this.authService.refreshAuthState();
@@ -152,9 +197,24 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // ── Sauvegarder infos ────────────────────────────────────
+  // ══════════════════════════════════════════════════════
+  // SAVE INFO WITH PHOTO MODERATION ERROR HANDLING
+  // ══════════════════════════════════════════════════════
   saveInfo(): void {
     if (this.infoForm.invalid || !this.user) return;
+
+    // Don't save if photo has error
+    if (this.photoError) {
+      this.showToast('Corrigez la photo avant de sauvegarder', 'error');
+      return;
+    }
+
+    // Don't save while photo is being checked
+    if (this.photoChecking) {
+      this.showToast('Attendez la vérification de la photo…', 'error');
+      return;
+    }
+
     this.savingInfo = true;
 
     const formValues = this.infoForm.getRawValue();
@@ -166,7 +226,6 @@ export class ProfileComponent implements OnInit {
       ville:       formValues.ville,
       codePostal:  formValues.codePostal,
       photo:       this.photoPreview || undefined,
-      // email is NOT included
     };
 
     this.userService.update(this.user.id, payload).subscribe({
@@ -176,8 +235,20 @@ export class ProfileComponent implements OnInit {
         this.showToast('Profil mis à jour avec succès ✓', 'success');
         this.loadUser();
       },
-      error: () => {
+      error: (err) => {
         this.savingInfo = false;
+
+        // Handle photo moderation rejection from backend
+        if (err.status === 400) {
+          const errorData = err.error;
+          if (errorData?.error === 'PHOTO_REJECTED') {
+            this.photoPreview = this.user?.photo || null;
+            this.photoError   = errorData.message || 'Photo refusée';
+            this.showToast(errorData.message || 'Photo refusée ❌', 'error');
+            return;
+          }
+        }
+
         this.showToast('Erreur lors de la sauvegarde', 'error');
       }
     });
@@ -196,6 +267,40 @@ export class ProfileComponent implements OnInit {
     const filled = fields.filter(f => f && f.trim() !== '').length;
     return Math.round((filled / fields.length) * 100);
   }
+
+  getTrustInfo(points: number, trustLevel?: string): TrustInfo {
+    const levels = [
+      { level: 'NOUVEAU',     label: 'Nouveau',     icon: '🌱', color: '#9CA3AF', minPts: 0,    maxPts: 49,   nextLabel: 'Membre'     },
+      { level: 'MEMBRE',      label: 'Membre',      icon: '⭐', color: '#3B82F6', minPts: 50,   maxPts: 199,  nextLabel: 'Habitué'    },
+      { level: 'HABITUE',     label: 'Habitué',     icon: '🔥', color: '#C9973E', minPts: 200,  maxPts: 499,  nextLabel: 'Vétéran'    },
+      { level: 'VETERAN',     label: 'Vétéran',     icon: '💎', color: '#8B5CF6', minPts: 500,  maxPts: 999,  nextLabel: 'Ambassadeur'},
+      { level: 'AMBASSADEUR', label: 'Ambassadeur', icon: '👑', color: '#E8532A', minPts: 1000, maxPts: 9999, nextLabel: ''           },
+    ];
+
+    const current = levels.find(l => l.level === (trustLevel ?? this.calculateTrustLevel(points)))
+      ?? levels[0];
+
+    const range    = current.maxPts - current.minPts;
+    const progress = Math.min(100, Math.round(((points - current.minPts) / range) * 100));
+
+    return { ...current, progress };
+  }
+
+  private calculateTrustLevel(points: number): string {
+    if (points >= 1000) return 'AMBASSADEUR';
+    if (points >= 500)  return 'VETERAN';
+    if (points >= 200)  return 'HABITUE';
+    if (points >= 50)   return 'MEMBRE';
+    return 'NOUVEAU';
+  }
+
+  trustStarCount(level: string): number {
+    const map: Record<string, number> = {
+      NOUVEAU: 1, MEMBRE: 2, HABITUE: 3, VETERAN: 4, AMBASSADEUR: 5
+    };
+    return map[level] ?? 1;
+  }
+
   // ── Changer mot de passe ─────────────────────────────────
   changePwd(): void {
     this.pwdForm.markAllAsTouched();
@@ -220,6 +325,10 @@ export class ProfileComponent implements OnInit {
   }
 
   // ── Helpers ──────────────────────────────────────────────
+  isCitoyen(): boolean {
+    return this.user?.role === 'CITOYEN';
+  }
+
   get initials(): string {
     if (!this.user?.nom) return '?';
     return this.user.nom.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
@@ -257,8 +366,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  //AI
-  // Ajouter la méthode
+  // AI
   async getAiSuggestion(): Promise<void> {
     if (!this.user || this.aiLoading) return;
     this.aiLoading        = true;
@@ -303,6 +411,106 @@ Utilise des emojis. Sois direct et authentique.`;
   closeAiSuggestion(): void {
     this.showAiSuggestion = false;
     this.aiSuggestion     = '';
+  }
+
+  // Civic Card
+  openCivicCard(): void {
+    this.civicCardLoading = true;
+    this.showCivicCard = true;
+
+    const auth = this.authService.getCurrentUser();
+    if (!auth?.userId) return;
+
+    this.userService.getUserBadges(auth.userId).subscribe({
+      next: (badges) => {
+        this.civicCardBadges = badges.slice(0, 4);
+        this.civicCardLoading = false;
+      },
+      error: () => {
+        this.civicCardLoading = false;
+      }
+    });
+  }
+
+  closeCivicCard(): void {
+    this.showCivicCard = false;
+  }
+
+  get cardTrustIcon(): string {
+    const pts = this.user?.points ?? 0;
+    if (pts >= 1000) return '👑';
+    if (pts >= 500)  return '💎';
+    if (pts >= 200)  return '🔥';
+    if (pts >= 50)   return '⭐';
+    return '🌱';
+  }
+
+  get cardTrustLabel(): string {
+    const pts = this.user?.points ?? 0;
+    if (pts >= 1000) return 'Ambassadeur';
+    if (pts >= 500)  return 'Vétéran';
+    if (pts >= 200)  return 'Habitué';
+    if (pts >= 50)   return 'Membre';
+    return 'Nouveau';
+  }
+
+  get cardMemberSince(): string {
+    if (!this.user?.dateInscription) return '—';
+    return new Date(this.user.dateInscription).toLocaleDateString('fr-FR', {
+      month: 'long', year: 'numeric'
+    });
+  }
+
+  async downloadCard(): Promise<void> {
+    const html2canvas = (window as any).html2canvas;
+    if (!html2canvas) {
+      this.showToast('Téléchargement non disponible', 'error');
+      return;
+    }
+
+    try {
+      const el = document.querySelector('.civic-card') as HTMLElement;
+      if (!el) return;
+
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+      });
+
+      const link = document.createElement('a');
+      link.download = `cityvoice-carte-${this.user?.nom?.replace(/\s+/g, '-')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      this.showToast('Carte téléchargée ✓', 'success');
+    } catch (e) {
+      this.showToast('Erreur lors du téléchargement', 'error');
+    }
+  }
+
+  async shareCard(): Promise<void> {
+    if (!navigator.share) {
+      this.downloadCard();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: 'Ma Carte CityVoice',
+        text: `Je suis ${this.roleLabel(this.user?.role || '')} sur CityVoice avec ${this.user?.points} points !`,
+        url: window.location.origin,
+      });
+    } catch {}
+  }
+
+  get qrCodeUrl(): string {
+    if (!this.user) return '';
+
+    // The link you want the QR code to open
+    const profileLink = `${window.location.origin}/user/profil/${this.user.id}`;
+
+    // Using a free QR code API (size 100x100, no margin)
+    return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(profileLink)}&bgcolor=FFFFFF&color=0C1F3F&margin=0`;
   }
 
   showToast(msg: string, type: 'success' | 'error'): void {

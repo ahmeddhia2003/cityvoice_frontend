@@ -6,9 +6,10 @@ import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors }
 import { Router } from '@angular/router';
 import { SoundService } from '../../../core/services/sound.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { TunisiaLocationService } from '../../../core/services/tunisia-location.service';
+import { debounceTime } from 'rxjs';
 declare const gsap: any;
 
-// ── Validateur custom : confirmPassword ──────────────────
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const pwd     = group.get('password')?.value;
   const confirm = group.get('confirmPassword')?.value;
@@ -24,49 +25,33 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   @ViewChild('photoInput') photoInputRef!: ElementRef<HTMLInputElement>;
 
-  // ── Navigation ───────────────────────────────────────────
   step = 0;
   userType: 'CITOYEN' | 'AGENT' | null = null;
   selectedRole: string | null = null;
 
+  // ── Location data ──────────────────────────────────────
+  governorates: string[] = [];
+  delegations:  string[] = [];
+
+  loadingGouvernorats = true;
+  loadingVilles       = false;
+
+  selectedGouvernorat: string = '';
+
   readonly agentRoles = [
-    {
-      key: 'CHEF_EQUIPE',
-      label: 'Chef d\'équipe',
-      desc: 'Planification et supervision des interventions terrain',
-      color: '#3B82F6',
-      bg: 'rgba(59,130,246,.08)',
-      border: 'rgba(59,130,246,.2)',
-    },
-    {
-      key: 'MEMBRE_EQUIPE',
-      label: 'Agent terrain',
-      desc: 'Interventions directes et résolution des signalements',
-      color: '#C9973E',
-      bg: 'rgba(201,151,62,.08)',
-      border: 'rgba(201,151,62,.2)',
-    },
-    {
-      key: 'MODERATEUR',
-      label: 'Modérateur',
-      desc: 'Modération du contenu et qualité de la plateforme',
-      color: '#E8532A',
-      bg: 'rgba(232,83,42,.08)',
-      border: 'rgba(232,83,42,.2)',
-    },
+    { key: 'CHEF_EQUIPE',   label: 'Chef d\'équipe',  desc: 'Planification et supervision des interventions terrain', color: '#3B82F6', bg: 'rgba(59,130,246,.08)',  border: 'rgba(59,130,246,.2)'  },
+    { key: 'MEMBRE_EQUIPE', label: 'Agent terrain',   desc: 'Interventions directes et résolution des signalements',  color: '#C9973E', bg: 'rgba(201,151,62,.08)', border: 'rgba(201,151,62,.2)' },
+    { key: 'MODERATEUR',    label: 'Modérateur',      desc: 'Modération du contenu et qualité de la plateforme',      color: '#E8532A', bg: 'rgba(232,83,42,.08)',  border: 'rgba(232,83,42,.2)'  },
   ];
 
-  // ── Listes géographiques ─────────────────────────────────
   readonly gouvernorats = [
-    'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès',
-    'Gafsa', 'Jendouba', 'Kairouan', 'Kasserine', 'Kébili',
-    'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir',
-    'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse',
-    'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+    'Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba',
+    'Kairouan','Kasserine','Kébili','Le Kef','Mahdia','La Manouba',
+    'Médenine','Monastir','Nabeul','Sfax','Sidi Bouzid','Siliana',
+    'Sousse','Tataouine','Tozeur','Tunis','Zaghouan',
   ];
 
-  // ── Form ─────────────────────────────────────────────────
-  form!: FormGroup;
+  form!:         FormGroup;
   showPwd        = false;
   showConfirmPwd = false;
   loading        = false;
@@ -79,6 +64,16 @@ export class SignupComponent implements OnInit, AfterViewInit {
   photoHover   = false;
   photoName    = '';
   photoError   = '';
+
+  // ── Validation temps réel ────────────────────────────────
+  nameChecking  = false;
+  nameError     = '';
+  nameOk        = false;
+
+  emailChecking = false;
+  emailError    = '';
+
+  photoChecking = false;
 
   pwdScore = 0;
   pwdLabel = 'Force du mot de passe';
@@ -97,17 +92,15 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   get stepsForRole(): { title: string; subtitle: string }[] {
     return [
-      { title: 'Identité',      subtitle: 'Vos informations personnelles' },
-      { title: 'Accès',         subtitle: 'Email et mot de passe' },
-      { title: 'Localisation',  subtitle: 'Votre adresse' },
-      { title: 'Profil',        subtitle: 'Photo et confirmation' },
+      { title: 'Identité',     subtitle: 'Vos informations personnelles' },
+      { title: 'Accès',        subtitle: 'Email et mot de passe'         },
+      { title: 'Localisation', subtitle: 'Votre adresse'                 },
+      { title: 'Profil',       subtitle: 'Photo et confirmation'         },
     ];
   }
 
-  get currentStepInfo(): { title: string; subtitle: string } | undefined {
-    return this.stepsForRole[this.step - 1];
-  }
-  get isLastStep(): boolean { return this.step === this.stepsForRole.length; }
+  get currentStepInfo() { return this.stepsForRole[this.step - 1]; }
+  get isLastStep():   boolean { return this.step === this.stepsForRole.length; }
 
   get selectedRoleColor(): string {
     if (this.userType === 'CITOYEN') return '#0D9B76';
@@ -119,30 +112,81 @@ export class SignupComponent implements OnInit, AfterViewInit {
     return this.agentRoles.find(r => r.key === this.selectedRole)?.label ?? '';
   }
 
+  // ── Contrôles canProceed par step ───────────────────────
+  get canProceedStep1(): boolean {
+    return this.form.get('firstName')!.valid &&
+      this.form.get('lastName')!.valid  &&
+      this.form.get('telephone')!.valid &&
+      !this.nameError && !this.nameChecking;
+  }
+
+  get canProceedStep2(): boolean {
+    const emailOk = this.form.get('email')!.valid && !this.emailError && !this.emailChecking;
+    const pwdOk   = this.form.get('password')!.valid;
+    const matchOk = !this.form.errors?.['passwordMismatch'] && !!this.form.get('confirmPassword')?.value;
+    const codeOk  = this.userType !== 'AGENT' || !!this.form.get('invitationCode')?.value?.trim();
+    return emailOk && pwdOk && matchOk && codeOk;
+  }
+
+  get canProceedStep3(): boolean {
+    const gouv = this.form.get('gouvernorat')?.value;
+    const ville = this.form.get('ville')?.value;
+    const cp = this.form.get('codePostal');
+
+    return !!gouv && !!ville && (cp!.valid || !cp!.value);
+  }
+
+  get canProceedStep4(): boolean {
+    return this.form.get('terms')!.valid && !this.photoError && !this.photoChecking;
+  }
+
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    public sound: SoundService,
+    private fb:        FormBuilder,
+    private router:    Router,
+    public  sound:     SoundService,
     private authService: AuthService,
-    private ngZone: NgZone,
+    private ngZone:    NgZone,
+    private locationService: TunisiaLocationService,
   ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      firstName:      ['', Validators.required],
-      lastName:       ['', Validators.required],
-      telephone:      ['', [Validators.required, Validators.pattern(/^[0-9+\s]{8,15}$/)]],
-      email:          ['', [Validators.required, Validators.email]],
-      password:       ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword:['', Validators.required],
-      invitationCode: [''],
-      gouvernorat:    ['', Validators.required],
-      ville:          ['', Validators.required],
-      codePostal:     ['', [Validators.pattern(/^[0-9]{4}$/)]],
-      terms:          [false, Validators.requiredTrue],
+      firstName:       ['', Validators.required],
+      lastName:        ['', Validators.required],
+      telephone:       ['', [Validators.required, Validators.pattern(/^[0-9+\s]{8,15}$/)]],
+      email:           ['', [Validators.required, Validators.email]],
+      password:        ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+      invitationCode:  [''],
+      gouvernorat:     ['', Validators.required],
+      ville:           ['', Validators.required],  // ← Délégation = Ville
+      codePostal:      ['', [Validators.pattern(/^[0-9]{4}$/)]],
+      terms:           [false, Validators.requiredTrue],
     }, { validators: passwordMatchValidator });
 
+    // Disable ville until gouvernorat is selected
+    this.form.get('ville')?.disable();
+
     this.form.get('password')?.valueChanges.subscribe(v => this.checkPwd(v));
+
+    // Watcher nom — debounce 600ms
+    this.form.get('firstName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
+    this.form.get('lastName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
+
+    // Watcher email — debounce 700ms
+    this.form.get('email')?.valueChanges.subscribe(() => {
+      this.emailError = '';
+      this.emailChecking = false;
+    });
+
+// Debounced check for API call
+    this.form.get('email')?.valueChanges.pipe(debounceTime(700)).subscribe(email => {
+      if (!email || !email.includes('@') || this.form.get('email')?.invalid) return;
+      this.checkEmail(email);
+    });
+
+    // ── Charger les gouvernorats ─────────────────────────
+    this.loadGovernorates();
   }
 
   ngAfterViewInit(): void {
@@ -182,10 +226,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
   }
 
   // ── Step -1 ──────────────────────────────────────────────
-  selectAgentRole(key: string): void {
-    this.sound.click();
-    this.selectedRole = key;
-  }
+  selectAgentRole(key: string): void { this.sound.click(); this.selectedRole = key; }
 
   confirmAgentRole(): void {
     if (!this.selectedRole) return;
@@ -196,16 +237,13 @@ export class SignupComponent implements OnInit, AfterViewInit {
   prevStepAgent(): void {
     this.sound.nav();
     this.animateStepOut(() => {
-      this.step = 0;
-      this.userType = null;
-      this.selectedRole = null;
+      this.step = 0; this.userType = null; this.selectedRole = null;
       this.animateStepIn();
     }, 'back');
   }
 
   // ── Navigation ───────────────────────────────────────────
   nextStep(): void {
-    // Toucher tous les champs de l'étape pour déclencher les erreurs
     this.touchCurrentStep();
 
     if (!this.canProceed()) {
@@ -215,6 +253,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
       }
       return;
     }
+
     this.sound.click();
     if (this.step < this.stepsForRole.length) {
       this.animateStepOut(() => { this.step++; this.animateStepIn(); });
@@ -223,7 +262,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Touche les champs de l'étape courante pour afficher les erreurs
   private touchCurrentStep(): void {
     const fieldsPerStep: Record<number, string[]> = {
       1: ['firstName', 'lastName', 'telephone'],
@@ -231,8 +269,17 @@ export class SignupComponent implements OnInit, AfterViewInit {
       3: ['gouvernorat', 'ville', 'codePostal'],
       4: ['terms'],
     };
-    const fields = fieldsPerStep[this.step] ?? [];
-    fields.forEach(f => this.form.get(f)?.markAsTouched());
+    (fieldsPerStep[this.step] ?? []).forEach(f => {
+      const ctrl = this.form.get(f);
+      if (ctrl) {
+        ctrl.markAsTouched();
+        // Temporarily enable to validate, then re-disable if needed
+        if (ctrl.disabled && !ctrl.value) {
+          ctrl.enable();
+          ctrl.markAsTouched();
+        }
+      }
+    });
   }
 
   prevStep(): void {
@@ -243,9 +290,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
       this.animateStepOut(() => { this.step = -1; this.animateStepIn(); }, 'back');
     } else {
       this.animateStepOut(() => {
-        this.step = 0;
-        this.userType = null;
-        this.selectedRole = null;
+        this.step = 0; this.userType = null; this.selectedRole = null;
         this.animateStepIn();
       }, 'back');
     }
@@ -253,27 +298,11 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   canProceed(): boolean {
     switch (this.step) {
-      case 1:
-        return this.form.get('firstName')!.valid &&
-          this.form.get('lastName')!.valid &&
-          this.form.get('telephone')!.valid;
-      case 2: {
-        const emailOk   = this.form.get('email')!.valid;
-        const pwdOk     = this.form.get('password')!.valid;
-        const matchOk   = !this.form.errors?.['passwordMismatch'] &&
-          !!this.form.get('confirmPassword')?.value;
-        const codeOk    = this.userType !== 'AGENT' ||
-          !!this.form.get('invitationCode')?.value?.trim();
-        return emailOk && pwdOk && matchOk && codeOk;
-      }
-      case 3:
-        return this.form.get('gouvernorat')!.valid &&
-          this.form.get('ville')!.valid &&
-          (this.form.get('codePostal')!.valid || !this.form.get('codePostal')!.value);
-      case 4:
-        return this.form.get('terms')!.valid;
-      default:
-        return true;
+      case 1:  return this.canProceedStep1;
+      case 2:  return this.canProceedStep2;
+      case 3:  return this.canProceedStep3;
+      case 4:  return this.canProceedStep4;
+      default: return true;
     }
   }
 
@@ -281,7 +310,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
     if (typeof gsap === 'undefined') { this.ngZone.run(cb); return; }
     const x = dir === 'forward' ? -30 : 30;
     gsap.to('.step-section', {
-      opacity:0, x, duration:.22, ease:'power2.in',
+      opacity: 0, x, duration: .22, ease: 'power2.in',
       onComplete: () => { this.ngZone.run(cb); }
     });
   }
@@ -289,16 +318,13 @@ export class SignupComponent implements OnInit, AfterViewInit {
   private animateStepIn(): void {
     if (typeof gsap === 'undefined') return;
     gsap.fromTo('.step-section',
-      { opacity:0, x:30 },
-      { opacity:1, x:0, duration:.32, ease:'power3.out' }
+      { opacity: 0, x: 30 },
+      { opacity: 1, x: 0,  duration: .32, ease: 'power3.out' }
     );
   }
 
   // ── Photo ────────────────────────────────────────────────
-  triggerPhoto(): void {
-    this.sound.click();
-    this.photoInputRef?.nativeElement.click();
-  }
+  triggerPhoto(): void { this.sound.click(); this.photoInputRef?.nativeElement.click(); }
 
   onPhotoChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -317,15 +343,39 @@ export class SignupComponent implements OnInit, AfterViewInit {
     }
 
     this.compressImage(file, 200, 0.7).then(b64 => {
-      this.photoPreview = b64;
-      this.photoName    = file.name;
-      this.sound.success();
-      if (typeof gsap !== 'undefined') {
-        gsap.fromTo('.photo-preview',
-          { scale: .6, opacity: 0 },
-          { scale: 1,  opacity: 1, duration: .5, ease: 'back.out(1.8)' }
-        );
-      }
+      this.photoPreview  = b64;
+      this.photoName     = file.name;
+      this.photoChecking = true;
+
+      this.authService.moderatePhoto(b64).subscribe({
+        next: (res) => {
+          this.photoChecking = false;
+          if (!res.safe) {
+            this.photoError   = res.reason || 'Photo inappropriée pour la plateforme ❌';
+            this.photoPreview = null;
+            this.photoName    = '';
+            this.sound.toggle2(false);
+            return;
+          }
+          this.sound.success();
+          if (typeof gsap !== 'undefined') {
+            gsap.fromTo('.photo-preview',
+              { scale: .6, opacity: 0 },
+              { scale: 1,  opacity: 1, duration: .5, ease: 'back.out(1.8)' }
+            );
+          }
+        },
+        error: () => {
+          this.photoChecking = false;
+          this.sound.success();
+          if (typeof gsap !== 'undefined') {
+            gsap.fromTo('.photo-preview',
+              { scale: .6, opacity: 0 },
+              { scale: 1,  opacity: 1, duration: .5, ease: 'back.out(1.8)' }
+            );
+          }
+        }
+      });
     });
   }
 
@@ -337,16 +387,12 @@ export class SignupComponent implements OnInit, AfterViewInit {
       const url    = URL.createObjectURL(file);
 
       img.onload = () => {
-        let w = img.width;
-        let h = img.height;
-
+        let w = img.width, h = img.height;
         if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
         else        { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
-
         canvas.width  = Math.round(w);
         canvas.height = Math.round(h);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
         URL.revokeObjectURL(url);
         resolve(canvas.toDataURL('image/jpeg', quality));
       };
@@ -367,15 +413,62 @@ export class SignupComponent implements OnInit, AfterViewInit {
   // ── Password ─────────────────────────────────────────────
   private checkPwd(val: string): void {
     let score = 0;
-    if (val.length >= 8)           score++;
-    if (/[A-Z]/.test(val))         score++;
-    if (/[0-9]/.test(val))         score++;
-    if (/[^A-Za-z0-9]/.test(val))  score++;
+    if (val.length >= 8)          score++;
+    if (/[A-Z]/.test(val))        score++;
+    if (/[0-9]/.test(val))        score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
     this.pwdScore = score;
     const labels = ['', 'Faible', 'Moyen', 'Bon', 'Fort'];
     const colors = ['#8888A8','#E8532A','#C9973E','#0D9B76','#0D9B76'];
     this.pwdLabel = score > 0 ? `Mot de passe ${labels[score]}` : 'Force du mot de passe';
     this.pwdColor = colors[score];
+  }
+
+  // ── Validations temps réel ───────────────────────────────
+  checkName(): void {
+    const first = this.form.get('firstName')?.value ?? '';
+    const last  = this.form.get('lastName')?.value  ?? '';
+    const nom   = `${first} ${last}`.trim();
+
+    if (nom.length < 3) {
+      this.nameError = '';
+      this.nameOk    = false;
+      return;
+    }
+
+    this.nameChecking = true;
+    this.nameError    = '';
+    this.nameOk       = false;
+
+    this.authService.screenName(nom).subscribe({
+      next: (res) => {
+        this.nameChecking = false;
+        if (res.appropriate) {
+          this.nameOk    = true;
+          this.nameError = '';
+        } else {
+          this.nameOk    = false;
+          this.nameError = res.reason ?? 'Nom inapproprié pour la plateforme';
+        }
+      },
+      error: () => {
+        this.nameChecking = false;
+        this.nameOk       = true; // Fail open
+      }
+    });
+  }
+
+  checkEmail(email: string): void {
+    this.emailChecking = true;
+    this.emailError    = '';
+
+    this.authService.checkEmail(email).subscribe({
+      next: (res) => {
+        this.emailChecking = false;
+        this.emailError    = res.exists ? 'Cet email est déjà utilisé' : '';
+      },
+      error: () => { this.emailChecking = false; }
+    });
   }
 
   togglePwd():          void { this.sound.nav(); this.showPwd = !this.showPwd; }
@@ -394,25 +487,48 @@ export class SignupComponent implements OnInit, AfterViewInit {
     const { firstName, lastName, email, password, telephone,
       invitationCode, gouvernorat, ville, codePostal } = this.form.value;
 
+    const nom = `${firstName} ${lastName}`.trim();
+
+    // Screening final (double check avant envoi)
+    this.authService.screenName(nom).subscribe({
+      next: (result) => {
+        if (!result.appropriate) {
+          this.loading = false;
+          this.sound.toggle2(false);
+          this.showToast(result.reason ?? 'Nom inapproprié pour la plateforme ❌', 'error');
+          return;
+        }
+        this.doRegister(nom, email, password, telephone,
+          invitationCode, gouvernorat, ville, codePostal);
+      },
+      error: () => {
+        // Fail open
+        this.doRegister(nom, email, password, telephone,
+          invitationCode, gouvernorat, ville, codePostal);
+      }
+    });
+  }
+
+  private doRegister(
+    nom: string, email: string, password: string, telephone: string,
+    invitationCode: string, gouvernorat: string, ville: string, codePostal: string
+  ): void {
     this.authService.register({
-      nom:            `${firstName} ${lastName}`,
-      email,
-      password,
-      telephone,
+      nom, email, password, telephone,
       role:           this.selectedRole!,
       invitationCode: this.userType === 'AGENT' ? invitationCode : undefined,
-      gouvernorat,
-      ville,
-      codePostal:     codePostal || undefined,
+      gouvernorat, ville,
+      codePostal: codePostal || undefined,
+      photo:          this.photoPreview || undefined,
     }).subscribe({
-      next: (registerRes: any) => {
+      next: () => {
         this.loading = false;
         this.success = true;
         this.sound.success();
         this.showToast('Vérifiez votre email pour activer votre compte 📧', 'success');
         setTimeout(() => {
           this.router.navigate(['/auth/email-pending'], {
-            state: { email: this.form.value.email }  // ← passer l'email
+            state: { email: this.form.value.email }
           });
         }, 2000);
       },
@@ -422,7 +538,9 @@ export class SignupComponent implements OnInit, AfterViewInit {
         if (typeof gsap !== 'undefined') {
           gsap.to('.auth-submit', { x:[-6,6,-4,4,0], duration:.4, ease:'none' });
         }
-        const msg = err.status === 400 ? 'Email déjà utilisé'
+        const msg = err.status === 400
+          ? (typeof err.error === 'string' && err.error.includes('Nom refusé')
+            ? err.error : 'Email déjà utilisé')
           : err.status === 403 ? 'Code d\'invitation invalide ou expiré'
             : 'Erreur serveur, réessayez !';
         this.showToast(msg, 'error');
@@ -430,47 +548,96 @@ export class SignupComponent implements OnInit, AfterViewInit {
     });
   }
 
+  loadGovernorates(): void {
+    this.loadingGouvernorats = true;
+    this.form.get('gouvernorat')?.disable();
+
+    this.locationService.getGovernorates().subscribe({
+      next: (data) => {
+        this.governorates = data;
+        this.loadingGouvernorats = false;
+        this.form.get('gouvernorat')?.enable();
+      },
+      error: () => {
+        this.loadingGouvernorats = false;
+        this.form.get('gouvernorat')?.enable();
+      }
+    });
+  }
+
+  onGouvernoratChange(): void {
+    const gouvernorat = this.form.get('gouvernorat')?.value;
+
+    this.selectedGouvernorat = gouvernorat;
+    this.delegations = [];
+    this.form.patchValue({ ville: '', codePostal: '' });
+
+    if (gouvernorat) {
+      this.loadingVilles = true;
+      this.form.get('ville')?.disable();
+
+      this.locationService.getDelegations(gouvernorat).subscribe({
+        next: (data) => {
+          this.delegations = data;
+          this.loadingVilles = false;
+          this.form.get('ville')?.enable();
+        },
+        error: () => {
+          this.loadingVilles = false;
+          this.form.get('ville')?.enable();
+        }
+      });
+    } else {
+      this.form.get('ville')?.disable();
+    }
+
+    this.sound.nav();
+  }
+
+  onVilleChange(): void {
+    const gouvernorat = this.form.get('gouvernorat')?.value;
+    const ville = this.form.get('ville')?.value;
+
+    if (gouvernorat && ville) {
+      // Auto-fill postal code if available
+      this.locationService.getPostalCode(gouvernorat, ville).subscribe({
+        next: (postalCode) => {
+          if (postalCode) {
+            this.form.patchValue({ codePostal: postalCode });
+          }
+        }
+      });
+    }
+
+    this.sound.nav();
+  }
+
   goSignin(): void { this.sound.nav(); this.router.navigate(['/auth/signin']); }
 
   showToast(msg: string, type: 'success' | 'error' = 'success'): void {
-    // Reset d'abord si un toast est déjà affiché
     this.toast = false;
-
-    // Laisser Angular détruire l'ancien toast puis en créer un nouveau
     setTimeout(() => {
       this.toastMsg  = msg;
       this.toastType = type;
       this.toast     = true;
-
-      // Attendre le prochain cycle de rendu Angular
       setTimeout(() => {
         if (typeof gsap === 'undefined') {
-          // Pas de GSAP → on laisse visible 3s puis on ferme
           setTimeout(() => { this.toast = false; }, 3000);
           return;
         }
-
         const el = document.querySelector('.auth-toast');
         if (!el) return;
-
         gsap.killTweensOf(el);
-        gsap.fromTo(el,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: .4, ease: 'back.out(1.6)' }
-        );
-
+        gsap.fromTo(el, { opacity:0, y:30 }, { opacity:1, y:0, duration:.4, ease:'back.out(1.6)' });
         setTimeout(() => {
           const toastEl = document.querySelector('.auth-toast');
           if (!toastEl) return;
           gsap.to(toastEl, {
-            opacity: 0, y: 30, duration: .35, ease: 'power2.in',
-            onComplete: () => {
-              this.ngZone.run(() => { this.toast = false; });
-            }
+            opacity:0, y:30, duration:.35, ease:'power2.in',
+            onComplete: () => { this.ngZone.run(() => { this.toast = false; }); }
           });
         }, 3000);
-
-      }, 50); // laisser Angular rendre le DOM
+      }, 50);
     }, 50);
   }
 }

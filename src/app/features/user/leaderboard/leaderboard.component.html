@@ -49,8 +49,8 @@
         <ng-container *ngFor="let user of podiumOrder(); let vi = index">
           <div class="podium-item"
                [class.podium-first]="vi === 1"
-               [routerLink]="['/user/profil', user.id]"
-               style="cursor:pointer">
+               [routerLink]="isCurrentUser(user) ? null : ['/user/profil', user.id]"
+               [style.cursor]="isCurrentUser(user) ? 'default' : 'pointer'">
 
             <div class="podium-user">
               <!-- Medal -->
@@ -66,9 +66,23 @@
                 <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
               </div>
 
-              <div class="podium-name" style="cursor:pointer"
-                   [routerLink]="['/user/profil', user.id]">
-                {{ user.nom.split(' ')[0] }}
+              <div class="podium-name"
+                   [routerLink]="isCurrentUser(user) ? null : ['/user/profil', user.id]"
+                   [style.cursor]="isCurrentUser(user) ? 'default' : 'pointer'">
+
+                <ng-container *ngIf="isCurrentUser(user); else showName">
+                  <span class="lb-you">Vous</span>
+                </ng-container>
+
+                <ng-template #showName>
+                  {{
+                    user.nom
+                      ? (user.nom.split(' ')[0].charAt(0).toUpperCase() +
+                        user.nom.split(' ')[0].slice(1).toLowerCase())
+                      : ''
+                  }}
+                </ng-template>
+
               </div>
               <div class="podium-pts">⭐ {{ user.points }}</div>
             </div>
@@ -104,8 +118,8 @@
         <div class="lb-row"
              *ngFor="let user of rest; let i = index"
              [class.lb-row--me]="isCurrentUser(user)"
-             [routerLink]="['/user/profil', user.id]"
-             style="cursor:pointer">
+             [routerLink]="isCurrentUser(user) ? null : ['/user/profil', user.id]"
+             [style.cursor]="isCurrentUser(user) ? 'default' : 'pointer'">
 
           <div class="lb-rank">
             <span class="lb-rank-num">{{ i + 4 }}</span>
@@ -117,10 +131,16 @@
               <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
             </div>
             <div class="lb-user-info">
-              <div class="lb-user-name" style="cursor:pointer"
-                   [routerLink]="['/user/profil', user.id]">
-                {{ user.nom }}
-                <span class="lb-you" *ngIf="isCurrentUser(user)">Vous</span>
+              <div class="lb-user-name"
+                   [routerLink]="isCurrentUser(user) ? null : ['/user/profil', user.id]"
+                   [style.cursor]="isCurrentUser(user) ? 'default' : 'pointer'">
+
+                <span *ngIf="isCurrentUser(user)" class="lb-you">Vous</span>
+
+                <span *ngIf="!isCurrentUser(user)">
+                  {{ formatName(user.nom) }}
+                </span>
+
               </div>
               <div class="lb-user-loc" *ngIf="user.ville">
                 📍 {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
