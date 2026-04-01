@@ -1,0 +1,279 @@
+<div class="users-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">Utilisateurs</div>
+      <div class="page-sub">
+        {{ filtered.length }} utilisateur{{ filtered.length > 1 ? 's' : '' }}
+        · {{ users.length }} total
+      </div>
+    </div>
+    <div class="search-wrap">
+      <svg width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [(ngModel)]="search"
+             (input)="onSearch()" placeholder="Rechercher…">
+    </div>
+  </div>
+
+  <!-- Role filters -->
+  <div class="role-filters">
+    <button class="rf-btn"
+            *ngFor="let r of roles"
+            [class.active]="selectedRole === r"
+            [style.--rc]="r === 'ALL' ? '#0C1F3F' : roleColor(r)"
+            (click)="setRole(r)">
+      <span class="rf-dot" *ngIf="r !== 'ALL'"
+            [style.background]="roleColor(r)"></span>
+      {{ r === 'ALL' ? 'Tous' : roleLabel(r) }}
+      <span class="rf-count">
+        {{ r === 'ALL' ? users.length : countByRole(r) }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <span>Chargement des utilisateurs…</span>
+  </div>
+
+  <!-- Table -->
+  <div class="users-table-wrap" *ngIf="!loading">
+    <table class="users-table">
+      <thead>
+      <tr>
+        <th class="th-sort" (click)="sort('nom')">
+          Utilisateur
+          <svg *ngIf="sortField==='nom'" width="11" height="11"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               viewBox="0 0 24 24">
+            <polyline *ngIf="sortDir==='asc'"  points="18 15 12 9 6 15"/>
+            <polyline *ngIf="sortDir==='desc'" points="6 9 12 15 18 9"/>
+          </svg>
+        </th>
+        <th>Contact</th>
+        <th class="th-sort" (click)="sort('role')">Rôle</th>
+        <th class="th-sort" (click)="sort('points')">Points</th>
+        <th>Localisation</th>
+        <th class="th-sort" (click)="sort('dateInscription')">Inscription</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let u of filtered; trackBy: trackById"
+          [class.tr-highlight]="deleteConfirm === u.id">
+
+        <td>
+          <div class="user-cell">
+            <div class="user-av"
+                 *ngIf="!u.photo"
+                 [style.background]="roleBg(u.role)"
+                 [style.color]="roleColor(u.role)">
+              {{ initials(u.nom) }}
+            </div>
+            <img class="user-av-img" *ngIf="u.photo"
+                 [src]="u.photo" [alt]="u.nom">
+            <div>
+              <div class="user-name">{{ u.nom }}</div>
+              <div class="user-id">#{{ u.id | slice:0:8 }}</div>
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div class="contact-cell">
+            <span class="contact-email">{{ u.email }}</span>
+            <span class="contact-tel" *ngIf="u.telephone">{{ u.telephone }}</span>
+          </div>
+        </td>
+
+        <td>
+            <span class="role-badge"
+                  [style.background]="roleBg(u.role)"
+                  [style.color]="roleColor(u.role)">
+              {{ roleLabel(u.role) }}
+            </span>
+        </td>
+
+        <td>
+          <div class="points-cell">
+            <span>⭐</span>{{ u.points | number }}
+          </div>
+        </td>
+
+        <td>
+          <div class="loc-cell" *ngIf="u.gouvernorat">
+            <svg width="12" height="12" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ u.ville ? u.ville + ', ' : '' }}{{ u.gouvernorat }}
+          </div>
+          <span class="no-data" *ngIf="!u.gouvernorat">—</span>
+        </td>
+
+        <td class="date-cell">{{ formatDate(u.dateInscription) }}</td>
+
+        <td>
+          <div class="actions-cell">
+            <button class="action-btn view-btn"
+                    title="Voir le profil"
+                    (click)="viewUser(u)">
+              <svg width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+
+            <button class="action-btn delete-btn"
+                    *ngIf="deleteConfirm !== u.id"
+                    title="Supprimer"
+                    (click)="confirmDelete(u.id)">
+              <svg width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+              </svg>
+            </button>
+
+            <div class="delete-confirm" *ngIf="deleteConfirm === u.id">
+              <button class="confirm-yes"
+                      [disabled]="deleteLoading"
+                      (click)="doDelete()">
+                {{ deleteLoading ? '…' : 'Confirmer' }}
+              </button>
+              <button class="confirm-no" (click)="cancelDelete()">
+                Annuler
+              </button>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="filtered.length === 0 && !loading">
+        <td colspan="7" class="empty-state">
+          <svg width="32" height="32" fill="none" stroke="currentColor"
+               stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          <div>Aucun utilisateur trouvé</div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══ MODAL DÉTAIL ══════════════════════════════════════ -->
+<div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
+  <div class="detail-panel" (click)="$event.stopPropagation()">
+
+    <button class="detail-close" (click)="closeDetail()">
+      <svg width="16" height="16" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <ng-container *ngIf="selectedUser">
+
+      <div class="dp-header">
+        <div class="dp-av"
+             *ngIf="!selectedUser.photo"
+             [style.background]="roleBg(selectedUser.role)"
+             [style.color]="roleColor(selectedUser.role)">
+          {{ initials(selectedUser.nom) }}
+        </div>
+        <img class="dp-av-img" *ngIf="selectedUser.photo"
+             [src]="selectedUser.photo" [alt]="selectedUser.nom">
+        <div>
+          <div class="dp-name">{{ selectedUser.nom }}</div>
+          <span class="role-badge"
+                [style.background]="roleBg(selectedUser.role)"
+                [style.color]="roleColor(selectedUser.role)">
+            {{ roleLabel(selectedUser.role) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-row">
+          <span class="dp-label">Email</span>
+          <span class="dp-value">{{ selectedUser.email }}</span>
+        </div>
+        <div class="dp-row" *ngIf="selectedUser.telephone">
+          <span class="dp-label">Téléphone</span>
+          <span class="dp-value">{{ selectedUser.telephone }}</span>
+        </div>
+        <div class="dp-row" *ngIf="selectedUser.gouvernorat">
+          <span class="dp-label">Localisation</span>
+          <span class="dp-value">
+            {{ selectedUser.ville ? selectedUser.ville + ', ' : '' }}
+            {{ selectedUser.gouvernorat }}
+          </span>
+        </div>
+        <div class="dp-row">
+          <span class="dp-label">Inscription</span>
+          <span class="dp-value">{{ formatDate(selectedUser.dateInscription) }}</span>
+        </div>
+        <div class="dp-row">
+          <span class="dp-label">Points</span>
+          <span class="dp-value" style="color:#C9973E">
+            ⭐ {{ selectedUser.points | number }}
+          </span>
+        </div>
+        <div class="dp-row">
+          <span class="dp-label">ID</span>
+          <span class="dp-value dp-mono">{{ selectedUser.id }}</span>
+        </div>
+      </div>
+
+      <div class="dp-section">
+        <div class="dp-section-title">Modifier le rôle</div>
+        <select class="dp-role-select"
+                [(ngModel)]="selectedUser.role"
+                [style.color]="roleColor(selectedUser.role)"
+                (change)="changeRole(selectedUser!, selectedUser.role)">
+          <option *ngFor="let r of roles.slice(1)" [value]="r">
+            {{ roleLabel(r) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="dp-actions">
+        <button class="dp-delete-btn"
+                *ngIf="deleteConfirm !== selectedUser.id"
+                (click)="confirmDelete(selectedUser.id)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          </svg>
+          Supprimer l'utilisateur
+        </button>
+        <div class="delete-confirm" *ngIf="deleteConfirm === selectedUser.id">
+          <button class="confirm-yes"
+                  [disabled]="deleteLoading"
+                  (click)="doDelete()">
+            {{ deleteLoading ? '…' : 'Confirmer la suppression' }}
+          </button>
+          <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

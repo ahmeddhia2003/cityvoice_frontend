@@ -10,6 +10,10 @@ const routes: Routes = [
     path : '',
     component: LandingComponent
   },
+  {
+    path : 'landing',
+    component: LandingComponent,
+  },
   // Auth (public)
   {
     path: 'auth',
@@ -57,15 +61,25 @@ const routes: Routes = [
   },
   {
     path: 'admin',
-    loadChildren: () =>
-      import('./features/admin/admin.module').then(m => m.AdminModule),
+    canActivate: [AuthGuard],
+    data: { role: 'ADMIN_VILLE' },
+    loadChildren: () => import('./features/admin/admin.module')
+      .then(m => m.AdminModule)
+  },
+  {
+    path: 'user',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/user/user.module').then(m => m.UserModule)
   },
 
   { path: '**', redirectTo: '' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+  imports: [RouterModule.forRoot(routes, {
+    anchorScrolling: 'enabled',
+    scrollPositionRestoration: 'enabled'
+  })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

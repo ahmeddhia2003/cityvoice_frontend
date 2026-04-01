@@ -1,0 +1,294 @@
+<div class="ic-page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Codes d'invitation</div>
+      <div class="page-sub">
+        {{ totalElements }} code{{ totalElements > 1 ? 's' : '' }} au total
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Générateur ════════════════════════════════════════ -->
+  <div class="generator-card">
+    <div class="gc-left">
+      <div class="gc-title">Générer un nouveau code</div>
+      <div class="gc-sub">Valable 7 jours · Usage unique</div>
+
+      <div class="gc-form">
+        <div class="role-btns">
+          <button class="role-btn"
+                  *ngFor="let r of roles"
+                  [class.active]="selectedRole === r.key"
+                  [style.--rc]="r.color"
+                  (click)="selectedRole = r.key; sound.nav()">
+            <span class="role-btn-dot" [style.background]="r.color"></span>
+            {{ r.label }}
+          </button>
+        </div>
+
+        <button class="generate-btn" [disabled]="generating" (click)="generate()">
+          <span class="gen-spinner" *ngIf="generating"></span>
+          <svg *ngIf="!generating" width="15" height="15" fill="none"
+               stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          {{ generating ? 'Génération…' : 'Générer le code' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Code généré — rôle figé depuis generatedCodeRole -->
+    <div class="gc-right" *ngIf="generatedCode && generatedCodeRole">
+      <div class="generated-box">
+        <div class="gb-label">Code généré</div>
+        <div class="gb-code">{{ generatedCode }}</div>
+        <div class="gb-role">
+          <span class="role-badge"
+                [style.background]="roleBg(generatedCodeRole)"
+                [style.color]="roleColor(generatedCodeRole)">
+            {{ roleLabel(generatedCodeRole) }}
+          </span>
+          <span class="gb-expiry">· Expire dans 7 jours</span>
+        </div>
+        <button class="copy-btn" (click)="copyCode()">
+          <svg *ngIf="!copied" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+          </svg>
+          <svg *ngIf="copied" width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ copied ? 'Copié !' : 'Copier le code' }}
+        </button>
+        <p class="gb-hint">Transmettez ce code à l'agent par email ou message sécurisé.</p>
+      </div>
+    </div>
+
+    <div class="gc-right gc-placeholder" *ngIf="!generatedCode">
+      <svg width="40" height="40" fill="none" stroke="currentColor"
+           stroke-width="1.2" viewBox="0 0 24 24" style="opacity:.2">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+      <p>Le code apparaîtra ici</p>
+    </div>
+  </div>
+
+  <!-- ══ Filtres ═══════════════════════════════════════════ -->
+  <div class="filters-bar">
+    <select class="filter-select" [(ngModel)]="filterRole" (change)="applyFilters()">
+      <option value="">Tous les rôles</option>
+      <option *ngFor="let r of roles" [value]="r.key">{{ r.label }}</option>
+    </select>
+
+    <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+      <option *ngFor="let s of statusOptions" [value]="s.key">{{ s.label }}</option>
+    </select>
+
+    <button class="filter-reset"
+            *ngIf="filterRole || filterStatus"
+            (click)="filterRole=''; filterStatus=''; applyFilters()">
+      <svg width="13" height="13" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- ══ Table ═════════════════════════════════════════════ -->
+  <div class="codes-section">
+
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Chargement…</span>
+    </div>
+
+    <div *ngIf="!loading">
+      <table class="codes-table">
+        <thead>
+        <tr>
+          <th>Code</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Utilisé par</th>
+          <th>Expiration</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr *ngFor="let c of codes; trackBy: trackByCode"
+            [class.tr-used]="c.used"
+            [class.tr-expired]="!c.used && isExpired(c.expiresAt)">
+
+          <!-- Code -->
+          <td>
+            <div class="code-cell">
+              <span class="code-val">{{ c.code }}</span>
+              <button class="mini-copy" title="Copier"
+                      (click)="copyToClipboard(c.code)">
+                <svg width="12" height="12" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+
+          <!-- Rôle -->
+          <td>
+              <span class="role-badge"
+                    [style.background]="roleBg(c.role)"
+                    [style.color]="roleColor(c.role)">
+                {{ roleLabel(c.role) }}
+              </span>
+          </td>
+
+          <!-- Statut -->
+          <td>
+              <span class="status-pill"
+                    [class.sp-active]="!c.used && !isExpired(c.expiresAt)"
+                    [class.sp-used]="c.used"
+                    [class.sp-expired]="!c.used && isExpired(c.expiresAt)">
+                {{ c.used ? 'Utilisé' : isExpired(c.expiresAt) ? 'Expiré' : '● Actif' }}
+              </span>
+          </td>
+
+          <!-- Utilisé par -->
+          <td>
+            <div class="used-by-cell" *ngIf="c.used && c.usedByUser">
+              <div class="ub-av">
+                {{ c.usedByUser.nom[0].toUpperCase() }}
+              </div>
+              <div>
+                <div class="ub-nom">{{ c.usedByUser.nom }}</div>
+                <div class="ub-email">{{ c.usedByUser.email }}</div>
+              </div>
+            </div>
+            <span class="no-data" *ngIf="!c.used || !c.usedByUser">—</span>
+          </td>
+
+          <!-- Date -->
+          <td class="date-cell">{{ formatDate(c.expiresAt) }}</td>
+
+          <!-- Actions -->
+          <td>
+            <div class="actions-cell">
+
+              <!-- Erreur suppression -->
+              <div class="delete-error-msg"
+                   *ngIf="deleteConfirmId === c.id && deleteError">
+                <svg width="13" height="13" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {{ deleteError }}
+                <button class="err-close" (click)="cancelDelete()">✕</button>
+              </div>
+
+              <!-- Confirmation suppression -->
+              <div class="delete-confirm"
+                   *ngIf="deleteConfirmId === c.id && !deleteError">
+                <button class="confirm-yes" (click)="doDelete()">Supprimer</button>
+                <button class="confirm-no"  (click)="cancelDelete()">Annuler</button>
+              </div>
+
+              <!-- Boutons normaux -->
+              <ng-container *ngIf="deleteConfirmId !== c.id">
+
+                <!-- Révoquer (seulement si actif) -->
+                <ng-container *ngIf="!c.used && !isExpired(c.expiresAt)">
+                  <button class="action-btn revoke-btn"
+                          *ngIf="revokeConfirm !== c.code"
+                          title="Révoquer"
+                          (click)="confirmRevoke(c.code)">
+                    <svg width="13" height="13" fill="none" stroke="currentColor"
+                         stroke-width="2" viewBox="0 0 24 24">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                  <div class="delete-confirm" *ngIf="revokeConfirm === c.code">
+                    <button class="confirm-yes" (click)="doRevoke()">Révoquer</button>
+                    <button class="confirm-no"  (click)="revokeConfirm = null">Annuler</button>
+                  </div>
+                </ng-container>
+
+                <!-- Supprimer (toujours disponible) -->
+                <button class="action-btn delete-btn"
+                        title="Supprimer"
+                        (click)="confirmDelete(c.id)">
+                  <svg width="13" height="13" fill="none" stroke="currentColor"
+                       stroke-width="2" viewBox="0 0 24 24">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  </svg>
+                </button>
+
+              </ng-container>
+
+            </div>
+          </td>
+
+        </tr>
+
+        <tr *ngIf="codes.length === 0">
+          <td colspan="6" class="empty-state">
+            <svg width="28" height="28" fill="none" stroke="currentColor"
+                 stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <div>Aucun code trouvé</div>
+          </td>
+        </tr>
+
+        </tbody>
+      </table>
+
+      <!-- ── Pagination ─────────────────────────────────── -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button class="pg-btn"
+                [disabled]="currentPage === 0"
+                (click)="goToPage(currentPage - 1)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+
+        <button class="pg-num"
+                *ngFor="let p of pages"
+                [class.active]="p === currentPage"
+                (click)="goToPage(p)">
+          {{ p + 1 }}
+        </button>
+
+        <button class="pg-btn"
+                [disabled]="currentPage === totalPages - 1"
+                (click)="goToPage(currentPage + 1)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <span class="pg-info">
+          Page {{ currentPage + 1 }} / {{ totalPages }}
+          · {{ totalElements }} codes
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
