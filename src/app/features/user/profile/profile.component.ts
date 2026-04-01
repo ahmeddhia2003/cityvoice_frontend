@@ -102,6 +102,7 @@ export class ProfileComponent implements OnInit {
         this.loading      = false;
         this.photoPreview = u.photo || null;
         this.photoError   = '';
+        this.selectedAgentStatus = u.agentStatus || 'DISPONIBLE';
         this.infoForm.patchValue({
           nom:         u.nom,
           email:       u.email,
@@ -511,6 +512,90 @@ Utilise des emojis. Sois direct et authentique.`;
 
     // Using a free QR code API (size 100x100, no margin)
     return `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(profileLink)}&bgcolor=FFFFFF&color=0C1F3F&margin=0`;
+  }
+
+  // ── Statut utilisateur ────────────────────────────────────
+  getStatutLabel(statut: string): string {
+    const map: Record<string, string> = {
+      ACTIF: 'Actif',
+      NOUVEAU: 'Nouveau membre',
+      INCOMPLET: 'Profil incomplet',
+      EN_ATTENTE_VERIFICATION: 'Email non vérifié',
+      SUSPENDU: 'Suspendu',
+    };
+    return map[statut] ?? statut;
+  }
+
+  getStatutColor(statut: string): string {
+    const map: Record<string, string> = {
+      ACTIF: '#0D9B76',
+      NOUVEAU: '#3B82F6',
+      INCOMPLET: '#C9973E',
+      EN_ATTENTE_VERIFICATION: '#F97316',
+      SUSPENDU: '#E8532A',
+    };
+    return map[statut] ?? '#9CA3AF';
+  }
+
+  getStatutBg(statut: string): string {
+    const map: Record<string, string> = {
+      ACTIF: 'rgba(13,155,118,.1)',
+      NOUVEAU: 'rgba(59,130,246,.1)',
+      INCOMPLET: 'rgba(201,151,62,.1)',
+      EN_ATTENTE_VERIFICATION: 'rgba(249,115,22,.1)',
+      SUSPENDU: 'rgba(232,83,42,.1)',
+    };
+    return map[statut] ?? 'rgba(156,163,175,.1)';
+  }
+
+// ── Indice civique ────────────────────────────────────────
+  getCivicIndexColor(index: number): string {
+    if (index >= 80) return '#0D9B76';
+    if (index >= 60) return '#3B82F6';
+    if (index >= 40) return '#C9973E';
+    return '#E8532A';
+  }
+
+  getCivicIndexLabel(index: number): string {
+    if (index >= 80) return 'Excellent';
+    if (index >= 60) return 'Bon';
+    if (index >= 40) return 'Moyen';
+    return 'À améliorer';
+  }
+
+// ── Statut agent ──────────────────────────────────────────
+  readonly agentStatusOptions = [
+    { key: 'DISPONIBLE',       label: 'Disponible',       color: '#0D9B76', dot: '🟢' },
+    { key: 'OCCUPE',           label: 'Occupé',           color: '#C9973E', dot: '🟡' },
+    { key: 'EN_INTERVENTION',  label: 'En intervention',  color: '#E8532A', dot: '🔴' },
+    { key: 'HORS_LIGNE',       label: 'Hors ligne',       color: '#9CA3AF', dot: '⚫' },
+  ];
+
+  selectedAgentStatus = '';
+  savingAgentStatus   = false;
+
+  getAgentStatusInfo(key: string) {
+    return this.agentStatusOptions.find(o => o.key === key)
+      ?? { key, label: key, color: '#9CA3AF', dot: '⚫' };
+  }
+
+  updateAgentStatus(): void {
+    if (!this.user || !this.selectedAgentStatus) return;
+    this.savingAgentStatus = true;
+
+    this.userService.updateAgentStatus(
+      this.user.id, this.selectedAgentStatus
+    ).subscribe({
+      next: () => {
+        this.savingAgentStatus = false;
+        if (this.user) this.user.agentStatus = this.selectedAgentStatus;
+        this.showToast('Statut mis à jour ✓', 'success');
+      },
+      error: () => {
+        this.savingAgentStatus = false;
+        this.showToast('Erreur mise à jour statut', 'error');
+      }
+    });
   }
 
   showToast(msg: string, type: 'success' | 'error'): void {

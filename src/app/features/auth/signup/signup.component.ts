@@ -69,9 +69,11 @@ export class SignupComponent implements OnInit, AfterViewInit {
   nameChecking  = false;
   nameError     = '';
   nameOk        = false;
+  private nameRequestId = 0;
 
   emailChecking = false;
   emailError    = '';
+  emailOk       = false;
 
   photoChecking = false;
 
@@ -151,8 +153,8 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      firstName:       ['', Validators.required],
-      lastName:        ['', Validators.required],
+      firstName: ['', [Validators.required, Validators.minLength(3)]],
+      lastName:  ['', [Validators.required, Validators.minLength(3)]],
       telephone:       ['', [Validators.required, Validators.pattern(/^[0-9+\s]{8,15}$/)]],
       email:           ['', [Validators.required, Validators.email]],
       password:        ['', [Validators.required, Validators.minLength(8)]],
@@ -180,10 +182,20 @@ export class SignupComponent implements OnInit, AfterViewInit {
     });
 
 // Debounced check for API call
-    this.form.get('email')?.valueChanges.pipe(debounceTime(700)).subscribe(email => {
-      if (!email || !email.includes('@') || this.form.get('email')?.invalid) return;
-      this.checkEmail(email);
-    });
+    this.form.get('email')?.valueChanges
+      .pipe(debounceTime(700))
+      .subscribe(email => {
+        const ctrl = this.form.get('email');
+
+        if (!email || !ctrl?.valid) {
+          this.emailChecking = false;
+          this.emailError    = '';
+          this.emailOk       = false;
+          return;
+        }
+
+        this.checkEmail(email);
+      });
 
     // ── Charger les gouvernorats ─────────────────────────
     this.loadGovernorates();
@@ -426,48 +438,126 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
   // ── Validations temps réel ───────────────────────────────
   checkName(): void {
-    const first = this.form.get('firstName')?.value ?? '';
-    const last  = this.form.get('lastName')?.value  ?? '';
-    const nom   = `${first} ${last}`.trim();
 
-    if (nom.length < 3) {
-      this.nameError = '';
-      this.nameOk    = false;
+    const firstCtrl = this.form.get('firstName');
+    const lastCtrl  = this.form.get('lastName');
+
+    const first = firstCtrl?.value ?? '';
+    const last  = lastCtrl?.value ?? '';
+
+    if (!firstCtrl?.valid || !lastCtrl?.valid || !first || !last) {
+      this.nameChecking = false;
+      this.nameError    = '';
+      this.nameOk       = false;
       return;
     }
+
+    const nom = `${first} ${last}`.trim();
 
     this.nameChecking = true;
     this.nameError    = '';
     this.nameOk       = false;
 
+    const startTime = Date.now();
+
+    // 🔥 NEW: increment request ID
+    const currentRequestId = ++this.nameRequestId;
+
     this.authService.screenName(nom).subscribe({
+
       next: (res) => {
-        this.nameChecking = false;
-        if (res.appropriate) {
-          this.nameOk    = true;
-          this.nameError = '';
-        } else {
-          this.nameOk    = false;
-          this.nameError = res.reason ?? 'Nom inapproprié pour la plateforme';
-        }
+
+        // ❌ Ignore outdated response
+        if (currentRequestId !== this.nameRequestId) return;
+
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+
+          // ❌ Double check again (important)
+          if (currentRequestId !== this.nameRequestId) return;
+
+          this.nameChecking = false;
+
+          if (res.appropriate) {
+            this.nameOk    = true;
+            this.nameError = '';
+          } else {
+            this.nameOk    = false;
+            this.nameError = res.reason ?? 'Nom inapproprié';
+          }
+
+        }, delay);
       },
+
       error: () => {
-        this.nameChecking = false;
-        this.nameOk       = true; // Fail open
+        if (currentRequestId !== this.nameRequestId) return;
+
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          if (currentRequestId !== this.nameRequestId) return;
+
+          this.nameChecking = false;
+          this.nameOk = true;
+        }, delay);
       }
+
     });
   }
 
   checkEmail(email: string): void {
+
+    const ctrl = this.form.get('email');
+    const value = ctrl?.value ?? '';
+
+    // 🚫 Stop if invalid
+    if (!ctrl?.valid || !value) {
+      this.emailChecking = false;
+      this.emailError    = '';
+      this.emailOk       = false;
+      return;
+    }
+
+    // ✅ Start loader
     this.emailChecking = true;
     this.emailError    = '';
+    this.emailOk       = false;
+
+    const startTime = Date.now(); // ⏱️ track start
 
     this.authService.checkEmail(email).subscribe({
+
       next: (res) => {
-        this.emailChecking = false;
-        this.emailError    = res.exists ? 'Cet email est déjà utilisé' : '';
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0); // ⏳ same as name
+
+        setTimeout(() => {
+          this.emailChecking = false;
+
+          if (res.exists) {
+            this.emailError = 'Cet email est déjà utilisé';
+            this.emailOk    = false;
+          } else {
+            this.emailError = '';
+            this.emailOk    = true;
+          }
+
+        }, delay);
       },
-      error: () => { this.emailChecking = false; }
+
+      error: () => {
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          this.emailChecking = false;
+          this.emailOk = true; // fail open
+        }, delay);
+      }
+
     });
   }
 

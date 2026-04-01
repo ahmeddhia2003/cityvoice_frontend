@@ -8,21 +8,28 @@ import { environment } from '../../../environments/environment';
 // ============================================================
 
 export interface UserDto {
-  id:             string;
-  nom:            string;
-  email:          string;
-  telephone:      string;
-  role:           string;
-  points:         number;
-  gouvernorat:    string;
-  ville:          string;
-  codePostal:     string;
-  dateInscription: string;
-  photo:          string;
-  banned:         boolean;
-  banReason:      string;
-  loginStreak: number;
-  trustLevel: string;
+  id:               string;
+  nom:              string;
+  email:            string;
+  telephone:        string;
+  role:             string;
+  points:           number;
+  monthlyPoints:     number;
+  gouvernorat:      string;
+  ville:            string;
+  codePostal:       string;
+  dateInscription:  string;
+  photo:            string;
+  banned:           boolean;
+  banReason:        string;
+  loginStreak:      number;
+  trustLevel:       string;
+  emailVerified:    boolean;
+
+  // ── Champs calculés ──────────────────────────────────
+  statut: string;       // ACTIF | NOUVEAU | INCOMPLET | EN_ATTENTE_VERIFICATION | SUSPENDU
+  civicIndex:       number;   // 0-100, -1 si non citoyen
+  agentStatus:      string;   // DISPONIBLE | OCCUPE | EN_INTERVENTION | HORS_LIGNE
 }
 
 export interface PageResponse<T> {
@@ -194,5 +201,13 @@ export class UserService {
 
   getUserBadges(userId: string): Observable<UserBadgeDto[]> {
     return this.http.get<UserBadgeDto[]>(`${this.URL}/${userId}/badges`);
+  }
+
+  // ============================================================
+  // STATUT AGENT
+  // ============================================================
+
+  updateAgentStatus(userId: string, status: string): Observable<any> {
+    return this.http.patch(`${this.URL}/${userId}/agent-status`, { status });
   }
 }

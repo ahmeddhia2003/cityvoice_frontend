@@ -181,8 +181,13 @@
                          placeholder="Ahmed" (input)="onInput()">
                 </div>
                 <p class="field-error"
-                   *ngIf="form.get('firstName')?.touched && form.get('firstName')?.errors?.['required']">
-                  Prénom requis
+                   *ngIf="!nameError && form.get('firstName')?.touched && form.get('firstName')?.errors">
+                  <span *ngIf="form.get('firstName')?.errors?.['required']">
+                    Prénom requis
+                  </span>
+                  <span *ngIf="form.get('firstName')?.errors?.['minlength']">
+                    Minimum 3 caractères
+                  </span>
                 </p>
               </div>
 
@@ -198,8 +203,13 @@
                          placeholder="Ben Ali" (input)="onInput()">
                 </div>
                 <p class="field-error"
-                   *ngIf="form.get('lastName')?.touched && form.get('lastName')?.errors?.['required']">
-                  Nom requis
+                   *ngIf="!nameError && form.get('lastName')?.touched && form.get('lastName')?.errors">
+                  <span *ngIf="form.get('lastName')?.errors?.['required']">
+                    Nom requis
+                  </span>
+                  <span *ngIf="form.get('lastName')?.errors?.['minlength']">
+                    Minimum 3 caractères
+                  </span>
                 </p>
               </div>
             </div>
@@ -224,7 +234,11 @@
               </div>
             </div>
             <div class="field-feedback name-feedback"
-                 *ngIf="!nameChecking && nameOk && !nameError">
+                 *ngIf="!nameChecking && nameOk && !nameError &&
+                   form.get('firstName')?.valid &&
+                   form.get('lastName')?.valid &&
+                   form.get('firstName')?.value &&
+                   form.get('lastName')?.value">
               <div class="fb-ok">
                 <svg width="13" height="13" fill="none" stroke="currentColor"
                      stroke-width="2.5" viewBox="0 0 24 24">
@@ -259,21 +273,48 @@
 
             <div class="field-row">
               <label class="field-label">Email *</label>
-              <div class="field-wrap" [class.field-wrap--checking]="emailChecking">
-                <span class="fi">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                  </svg>
-                </span>
-                <input class="auth-input" type="email" formControlName="email"
-                       placeholder="vous@exemple.com" (input)="onInput()">
-                <!-- Spinner inline dans le champ -->
-                <span class="field-checking-spinner" *ngIf="emailChecking"></span>
+
+              <div class="field-wrap">
+    <span class="fi">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </span>
+
+                <input class="auth-input"
+                       type="email"
+                       formControlName="email"
+                       placeholder="vous@exemple.com"
+                       (input)="onInput()">
               </div>
 
-              <!-- Feedback email -->
-              <div class="field-feedback" *ngIf="!emailChecking && emailError">
+              <!-- ⚠️ Angular validation -->
+              <p class="field-error"
+                 *ngIf="!emailError && form.get('email')?.touched && form.get('email')?.errors">
+
+    <span *ngIf="form.get('email')?.errors?.['required']">
+      Email requis
+    </span>
+
+                <span *ngIf="form.get('email')?.errors?.['email']">
+      Format invalide
+    </span>
+
+              </p>
+
+              <!-- ⏳ CHECKING -->
+              <div class="field-feedback"
+                   *ngIf="emailChecking">
+                <div class="fb-checking">
+                  <span class="fb-dot-pulse"></span>
+                  Vérification de l’email…
+                </div>
+              </div>
+
+              <!-- ❌ ERROR -->
+              <div class="field-feedback"
+                   *ngIf="!emailChecking && emailError">
                 <div class="fb-error">
                   <svg width="13" height="13" fill="none" stroke="currentColor"
                        stroke-width="2.5" viewBox="0 0 24 24">
@@ -284,8 +325,16 @@
                   {{ emailError }}
                 </div>
               </div>
+
+              <!-- ✅ SUCCESS (ONLY AFTER API) -->
               <div class="field-feedback"
-                   *ngIf="!emailChecking && !emailError && form.get('email')?.valid && form.get('email')?.value">
+                   *ngIf="
+         !emailChecking &&
+         emailOk &&
+         !emailError &&
+         form.get('email')?.valid &&
+         form.get('email')?.value
+       ">
                 <div class="fb-ok">
                   <svg width="13" height="13" fill="none" stroke="currentColor"
                        stroke-width="2.5" viewBox="0 0 24 24">
@@ -295,11 +344,6 @@
                 </div>
               </div>
 
-              <p class="field-error"
-                 *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
-                <span *ngIf="form.get('email')?.errors?.['required']">Email requis</span>
-                <span *ngIf="form.get('email')?.errors?.['email']">Format invalide</span>
-              </p>
             </div>
 
             <div class="field-row">

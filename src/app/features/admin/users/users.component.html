@@ -8,14 +8,17 @@
         {{ totalElements }} utilisateur{{ totalElements > 1 ? 's' : '' }}
       </div>
     </div>
+
     <div class="search-wrap">
       <svg width="14" height="14" fill="none" stroke="currentColor"
            stroke-width="2" viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="8"/>
         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" [(ngModel)]="search"
-             (input)="onSearch()" placeholder="Rechercher…">
+      <input type="text"
+             [(ngModel)]="search"
+             (input)="onSearch()"
+             placeholder="Rechercher…">
     </div>
   </div>
 
@@ -29,9 +32,7 @@
       <span class="rf-dot" *ngIf="r !== 'ALL'"
             [style.background]="roleColor(r)"></span>
       {{ r === 'ALL' ? 'Tous' : roleLabel(r) }}
-      <span class="rf-count">
-        {{ countByRole(r) }}
-      </span>
+      <span class="rf-count">{{ countByRole(r) }}</span>
     </button>
   </div>
 
@@ -49,16 +50,20 @@
         <th>Utilisateur</th>
         <th>Contact</th>
         <th>Rôle</th>
-        <th>Points</th>
+        <th>Statut</th>
+        <th>Points / Disponibilité</th>
         <th>Localisation</th>
         <th>Inscription</th>
-        <th>Actions</th>
       </tr>
       </thead>
+
       <tbody>
       <tr *ngFor="let u of users; trackBy: trackById"
-          [class.tr-highlight]="deleteConfirm === u.id">
+          class="clickable-row"
+          [class.tr-highlight]="selectedUser?.id === u.id"
+          (click)="viewUser(u)">
 
+        <!-- Utilisateur -->
         <td>
           <div class="user-cell">
             <div class="user-av"
@@ -67,8 +72,12 @@
                  [style.color]="roleColor(u.role)">
               {{ initials(u.nom) }}
             </div>
-            <img class="user-av-img" *ngIf="u.photo"
-                 [src]="u.photo" [alt]="u.nom">
+
+            <img class="user-av-img"
+                 *ngIf="u.photo"
+                 [src]="u.photo"
+                 [alt]="u.nom">
+
             <div>
               <div class="user-name">
                 {{ u.nom }}
@@ -79,6 +88,7 @@
           </div>
         </td>
 
+        <!-- Contact -->
         <td>
           <div class="contact-cell">
             <span class="contact-email">{{ u.email }}</span>
@@ -86,6 +96,7 @@
           </div>
         </td>
 
+        <!-- Rôle -->
         <td>
           <span class="role-badge"
                 [style.background]="roleBg(u.role)"
@@ -94,12 +105,36 @@
           </span>
         </td>
 
+        <!-- Statut -->
         <td>
-          <div class="points-cell">
-            <span>⭐</span>{{ u.points | number }}
-          </div>
+          <span class="statut-pill"
+                [style.background]="getStatutBg(u.statut)"
+                [style.color]="getStatutColor(u.statut)">
+            <span class="statut-pill-dot"></span>
+            {{ getStatutLabel(u.statut) }}
+          </span>
         </td>
 
+        <!-- Points / disponibilité -->
+        <td>
+          <div class="points-cell" *ngIf="u.role === 'CITOYEN'">
+            <span>⭐</span>
+            {{ u.points | number }}
+          </div>
+
+          <div class="points-cell"
+               *ngIf="u.role !== 'CITOYEN' && u.agentStatus">
+            <span>{{ getAgentStatusInfo(u.agentStatus).dot }}</span>
+            <span [style.color]="getAgentStatusInfo(u.agentStatus).color">
+              {{ getAgentStatusInfo(u.agentStatus).label }}
+            </span>
+          </div>
+
+          <span class="no-data"
+                *ngIf="u.role !== 'CITOYEN' && !u.agentStatus">—</span>
+        </td>
+
+        <!-- Localisation -->
         <td>
           <div class="loc-cell" *ngIf="u.gouvernorat">
             <svg width="12" height="12" fill="none" stroke="currentColor"
@@ -112,45 +147,8 @@
           <span class="no-data" *ngIf="!u.gouvernorat">—</span>
         </td>
 
+        <!-- Inscription -->
         <td class="date-cell">{{ formatDate(u.dateInscription) }}</td>
-
-        <td>
-          <div class="actions-cell">
-            <button class="action-btn view-btn"
-                    title="Voir le profil"
-                    (click)="viewUser(u)">
-              <svg width="14" height="14" fill="none" stroke="currentColor"
-                   stroke-width="2" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </button>
-
-            <button class="action-btn delete-btn"
-                    *ngIf="deleteConfirm !== u.id"
-                    title="Supprimer"
-                    (click)="confirmDelete(u.id)">
-              <svg width="14" height="14" fill="none" stroke="currentColor"
-                   stroke-width="2" viewBox="0 0 24 24">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                <path d="M10 11v6M14 11v6"/>
-                <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-              </svg>
-            </button>
-
-            <div class="delete-confirm" *ngIf="deleteConfirm === u.id">
-              <button class="confirm-yes"
-                      [disabled]="deleteLoading"
-                      (click)="doDelete()">
-                {{ deleteLoading ? '…' : 'Confirmer' }}
-              </button>
-              <button class="confirm-no" (click)="cancelDelete()">
-                Annuler
-              </button>
-            </div>
-          </div>
-        </td>
       </tr>
 
       <tr *ngIf="users.length === 0 && !loading">
@@ -167,9 +165,10 @@
       </tbody>
     </table>
 
-    <!-- ── Pagination ── -->
+    <!-- Pagination -->
     <div class="pagination" *ngIf="totalPages > 1">
-      <button class="pg-btn" [disabled]="currentPage === 0"
+      <button class="pg-btn"
+              [disabled]="currentPage === 0"
               (click)="goToPage(currentPage - 1)">
         <svg width="14" height="14" fill="none" stroke="currentColor"
              stroke-width="2.5" viewBox="0 0 24 24">
@@ -184,7 +183,8 @@
         {{ p + 1 }}
       </button>
 
-      <button class="pg-btn" [disabled]="currentPage === totalPages - 1"
+      <button class="pg-btn"
+              [disabled]="currentPage === totalPages - 1"
               (click)="goToPage(currentPage + 1)">
         <svg width="14" height="14" fill="none" stroke="currentColor"
              stroke-width="2.5" viewBox="0 0 24 24">
@@ -196,15 +196,12 @@
         Page {{ currentPage + 1 }} / {{ totalPages }} · {{ totalElements }} utilisateurs
       </span>
     </div>
-
   </div>
-
 </div>
 
 <!-- ══ MODAL DÉTAIL ══════════════════════════════════════ -->
 <div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
   <div class="detail-panel" (click)="$event.stopPropagation()">
-
     <button class="detail-close" (click)="closeDetail()">
       <svg width="16" height="16" fill="none" stroke="currentColor"
            stroke-width="2.5" viewBox="0 0 24 24">
@@ -215,162 +212,269 @@
 
     <ng-container *ngIf="selectedUser">
 
-      <div class="dp-header">
-        <div class="dp-av"
-             *ngIf="!selectedUser.photo"
-             [style.background]="roleBg(selectedUser.role)"
-             [style.color]="roleColor(selectedUser.role)">
-          {{ initials(selectedUser.nom) }}
-        </div>
-        <img class="dp-av-img" *ngIf="selectedUser.photo"
-             [src]="selectedUser.photo" [alt]="selectedUser.nom">
-        <div>
-          <div class="dp-name">
-            {{ selectedUser.nom }}
-            <span class="banned-tag" *ngIf="selectedUser.banned">Banni</span>
+      <!-- ══ HEADER ═══════════════════════════════════════ -->
+      <div class="dp-hero">
+        <div class="dp-hero-top">
+          <div class="dp-av"
+               *ngIf="!selectedUser.photo"
+               [style.background]="roleBg(selectedUser.role)"
+               [style.color]="roleColor(selectedUser.role)">
+            {{ initials(selectedUser.nom) }}
           </div>
+
+          <img class="dp-av-img"
+               *ngIf="selectedUser.photo"
+               [src]="selectedUser.photo"
+               [alt]="selectedUser.nom">
+
+          <div class="dp-hero-info">
+            <div class="dp-name">
+              {{ selectedUser.nom }}
+              <span class="banned-tag" *ngIf="selectedUser.banned">Banni</span>
+            </div>
+
+            <div class="dp-badges">
           <span class="role-badge"
                 [style.background]="roleBg(selectedUser.role)"
                 [style.color]="roleColor(selectedUser.role)">
             {{ roleLabel(selectedUser.role) }}
           </span>
-        </div>
-      </div>
 
-      <div class="dp-section">
-        <div class="dp-row">
-          <span class="dp-label">Email</span>
-          <span class="dp-value">{{ selectedUser.email }}</span>
-        </div>
-        <div class="dp-row" *ngIf="selectedUser.telephone">
-          <span class="dp-label">Téléphone</span>
-          <span class="dp-value">{{ selectedUser.telephone }}</span>
-        </div>
-        <div class="dp-row" *ngIf="selectedUser.gouvernorat">
-          <span class="dp-label">Localisation</span>
-          <span class="dp-value">
-            {{ selectedUser.ville ? selectedUser.ville + ', ' : '' }}
-            {{ selectedUser.gouvernorat }}
+              <span class="statut-pill"
+                    [style.background]="getStatutBg(selectedUser.statut)"
+                    [style.color]="getStatutColor(selectedUser.statut)">
+            <span class="statut-pill-dot"></span>
+                {{ getStatutLabel(selectedUser.statut) }}
           </span>
+            </div>
+
+            <div class="dp-subline">
+              #{{ selectedUser.id | slice:0:8 }} · {{ formatDate(selectedUser.dateInscription) }}
+            </div>
+          </div>
         </div>
-        <div class="dp-row">
-          <span class="dp-label">Inscription</span>
-          <span class="dp-value">{{ formatDate(selectedUser.dateInscription) }}</span>
+      </div>
+
+      <!-- ══ IDENTITÉ ══════════════════════════════════════ -->
+      <div class="dp-card">
+        <div class="dp-card-title">Identité</div>
+
+        <div class="dp-grid">
+          <div class="dp-item">
+            <div class="dp-item-label">Email</div>
+            <div class="dp-item-value">{{ selectedUser.email }}</div>
+          </div>
+
+          <div class="dp-item" *ngIf="selectedUser.telephone">
+            <div class="dp-item-label">Téléphone</div>
+            <div class="dp-item-value">{{ selectedUser.telephone }}</div>
+          </div>
+
+          <div class="dp-item">
+            <div class="dp-item-label">Identifiant</div>
+            <div class="dp-item-value dp-mono">{{ selectedUser.id }}</div>
+          </div>
+
+          <div class="dp-item">
+            <div class="dp-item-label">Inscription</div>
+            <div class="dp-item-value">{{ formatDate(selectedUser.dateInscription) }}</div>
+          </div>
         </div>
-        <div class="dp-row">
-          <span class="dp-label">Points</span>
-          <span class="dp-value" style="color:#C9973E">
-            ⭐ {{ selectedUser.points | number }}
+      </div>
+
+      <!-- ══ STATUT & SCORE ═════════════════════════════════ -->
+      <div class="dp-card">
+        <div class="dp-card-title">Statut & score</div>
+
+        <div class="dp-score-stack">
+
+          <div class="dp-score-row">
+            <div class="dp-score-label">Statut</div>
+            <div class="dp-score-value">
+          <span class="statut-pill"
+                [style.background]="getStatutBg(selectedUser.statut)"
+                [style.color]="getStatutColor(selectedUser.statut)">
+            <span class="statut-pill-dot"></span>
+            {{ getStatutLabel(selectedUser.statut) }}
           </span>
-        </div>
-        <div class="dp-row">
-          <span class="dp-label">ID</span>
-          <span class="dp-value dp-mono">{{ selectedUser.id }}</span>
+            </div>
+          </div>
+
+          <div class="dp-score-row" *ngIf="selectedUser.role === 'CITOYEN'">
+            <div class="dp-score-label">Points</div>
+            <div class="dp-score-value dp-score-value--accent">
+              ⭐ {{ selectedUser.points | number }}
+            </div>
+          </div>
+
+          <div class="dp-score-row"
+               *ngIf="selectedUser.role === 'CITOYEN' && selectedUser.civicIndex >= 0">
+            <div class="dp-score-label">Indice civique</div>
+            <div class="dp-score-value"
+                 [style.color]="getCivicIndexColor(selectedUser.civicIndex)"
+                 style="font-weight:700">
+              {{ selectedUser.civicIndex }}/100 — {{ getCivicIndexLabel(selectedUser.civicIndex) }}
+            </div>
+          </div>
+
+          <div class="dp-score-row"
+               *ngIf="selectedUser.role !== 'CITOYEN' && selectedUser.agentStatus">
+            <div class="dp-score-label">Disponibilité</div>
+            <div class="dp-score-value"
+                 [style.color]="getAgentStatusInfo(selectedUser.agentStatus).color"
+                 style="font-weight:700">
+              {{ getAgentStatusInfo(selectedUser.agentStatus).dot }}
+              {{ getAgentStatusInfo(selectedUser.agentStatus).label }}
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <div class="dp-section">
-        <div class="dp-section-title">Modifier le rôle</div>
-        <select class="dp-role-select"
-                [(ngModel)]="selectedUser.role"
-                [style.color]="roleColor(selectedUser.role)"
-                (change)="changeRole(selectedUser!, selectedUser.role)">
-          <option *ngFor="let r of roles.slice(1)" [value]="r">
-            {{ roleLabel(r) }}
-          </option>
-        </select>
+      <!-- ══ LOCALISATION ════════════════════════════════════ -->
+      <div class="dp-card" *ngIf="selectedUser.gouvernorat || selectedUser.ville || selectedUser.codePostal">
+        <div class="dp-card-title">Localisation</div>
+
+        <div class="dp-grid">
+          <div class="dp-item" *ngIf="selectedUser.gouvernorat">
+            <div class="dp-item-label">Gouvernorat</div>
+            <div class="dp-item-value">{{ selectedUser.gouvernorat }}</div>
+          </div>
+
+          <div class="dp-item" *ngIf="selectedUser.ville">
+            <div class="dp-item-label">Ville</div>
+            <div class="dp-item-value">{{ selectedUser.ville }}</div>
+          </div>
+
+          <div class="dp-item" *ngIf="selectedUser.codePostal">
+            <div class="dp-item-label">Code postal</div>
+            <div class="dp-item-value">{{ selectedUser.codePostal }}</div>
+          </div>
+        </div>
       </div>
 
-      <!-- ── Actions ── -->
-      <div class="detail-actions">
+      <!-- ══ SÉCURITÉ ════════════════════════════════════════ -->
+      <div class="dp-card">
+        <div class="dp-card-title">Sécurité</div>
 
-        <!-- Ban / Unban -->
-        <ng-container *ngIf="!selectedUser.banned">
+        <div class="dp-score-stack">
+          <div class="dp-score-row">
+            <div class="dp-score-label">Compte banni</div>
+            <div class="dp-score-value"
+                 [style.color]="selectedUser.banned ? '#E8532A' : '#0D9B76'"
+                 style="font-weight:700">
+              {{ selectedUser.banned ? 'Oui' : 'Non' }}
+            </div>
+          </div>
 
-          <!-- Formulaire de ban -->
-          <div class="ban-form" *ngIf="banConfirm === selectedUser.id">
-            <div class="ban-form-title">
+          <div class="dp-score-row" *ngIf="selectedUser.banned && selectedUser.banReason">
+            <div class="dp-score-label">Motif</div>
+            <div class="dp-score-value">{{ selectedUser.banReason }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ACTIONS SENSIBLES ═══════════════════════════════ -->
+      <div class="dp-card dp-card--danger">
+        <div class="dp-card-title">Actions sensibles</div>
+
+        <div class="detail-actions">
+
+          <!-- Ban -->
+          <ng-container *ngIf="!selectedUser.banned">
+
+            <div class="ban-form" *ngIf="banConfirm === selectedUser.id">
+              <div class="ban-form-title">
+                <svg width="14" height="14" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                Motif du bannissement
+              </div>
+
+              <input class="ban-input"
+                     type="text"
+                     [(ngModel)]="banReason"
+                     placeholder="Ex: Comportement abusif…">
+
+              <div class="ban-form-actions">
+                <button class="ban-confirm-btn"
+                        [disabled]="banLoading"
+                        (click)="doBan()">
+                  <span *ngIf="banLoading" class="btn-mini-spinner"></span>
+                  {{ banLoading ? '…' : 'Confirmer le ban' }}
+                </button>
+                <button class="ban-cancel-btn" (click)="cancelBan()">Annuler</button>
+              </div>
+            </div>
+
+            <button class="action-ban-btn"
+                    *ngIf="banConfirm !== selectedUser.id"
+                    (click)="confirmBan(selectedUser.id)">
               <svg width="14" height="14" fill="none" stroke="currentColor"
                    stroke-width="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
               </svg>
-              Motif du bannissement
-            </div>
-            <input class="ban-input" type="text" [(ngModel)]="banReason"
-                   placeholder="Ex: Comportement abusif…">
-            <div class="ban-form-actions">
-              <button class="ban-confirm-btn"
-                      [disabled]="banLoading"
-                      (click)="doBan()">
-                <span *ngIf="banLoading" class="btn-mini-spinner"></span>
-                {{ banLoading ? '…' : 'Confirmer le ban' }}
-              </button>
-              <button class="ban-cancel-btn" (click)="cancelBan()">Annuler</button>
-            </div>
-          </div>
-
-          <button class="action-ban-btn"
-                  *ngIf="banConfirm !== selectedUser.id"
-                  (click)="confirmBan(selectedUser.id)">
-            <svg width="14" height="14" fill="none" stroke="currentColor"
-                 stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-            Bannir l'utilisateur
-          </button>
-
-        </ng-container>
-
-        <!-- Unban -->
-        <div class="banned-notice" *ngIf="selectedUser.banned">
-          <div class="bn-header">
-            <svg width="14" height="14" fill="none" stroke="currentColor"
-                 stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-            Compte suspendu
-          </div>
-          <div class="bn-reason" *ngIf="selectedUser.banReason">
-            {{ selectedUser.banReason }}
-          </div>
-          <button class="unban-btn"
-                  *ngIf="unbanConfirm !== selectedUser.id"
-                  (click)="confirmUnban(selectedUser.id)">
-            Débannir l'utilisateur
-          </button>
-          <div class="unban-confirm" *ngIf="unbanConfirm === selectedUser.id">
-            <span>Confirmer le déban ?</span>
-            <button class="confirm-yes" (click)="doUnban()">Oui</button>
-            <button class="confirm-no" (click)="unbanConfirm = null">Non</button>
-          </div>
-        </div>
-
-        <!-- Suppression -->
-        <div class="delete-confirm-wrap" *ngIf="deleteConfirm === selectedUser.id">
-          <p>Supprimer définitivement ce compte ?</p>
-          <div style="display:flex;gap:8px">
-            <button class="confirm-yes" [disabled]="deleteLoading" (click)="doDelete()">
-              <span *ngIf="deleteLoading" class="btn-mini-spinner"></span>
-              Supprimer
+              Bannir l'utilisateur
             </button>
-            <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
+          </ng-container>
+
+          <!-- Unban -->
+          <div class="banned-notice" *ngIf="selectedUser.banned">
+            <div class="bn-header">
+              <svg width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+              Compte suspendu
+            </div>
+
+            <div class="bn-reason" *ngIf="selectedUser.banReason">
+              {{ selectedUser.banReason }}
+            </div>
+
+            <button class="unban-btn"
+                    *ngIf="unbanConfirm !== selectedUser.id"
+                    (click)="confirmUnban(selectedUser.id)">
+              Débannir l'utilisateur
+            </button>
+
+            <div class="unban-confirm" *ngIf="unbanConfirm === selectedUser.id">
+              <span>Confirmer le déban ?</span>
+              <button class="confirm-yes" (click)="doUnban()">Oui</button>
+              <button class="confirm-no" (click)="unbanConfirm = null">Non</button>
+            </div>
           </div>
+
+          <!-- Delete -->
+          <div class="delete-confirm-wrap" *ngIf="deleteConfirm === selectedUser.id">
+            <p>Supprimer définitivement ce compte ?</p>
+            <div style="display:flex;gap:8px">
+              <button class="confirm-yes"
+                      [disabled]="deleteLoading"
+                      (click)="doDelete()">
+                <span *ngIf="deleteLoading" class="btn-mini-spinner"></span>
+                Supprimer
+              </button>
+              <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
+            </div>
+          </div>
+
+          <button class="action-delete-btn"
+                  *ngIf="deleteConfirm !== selectedUser.id"
+                  (click)="confirmDelete(selectedUser.id)">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            </svg>
+            Supprimer le compte
+          </button>
+
         </div>
-
-        <button class="action-delete-btn"
-                *ngIf="deleteConfirm !== selectedUser.id"
-                (click)="confirmDelete(selectedUser.id)">
-          <svg width="14" height="14" fill="none" stroke="currentColor"
-               stroke-width="2" viewBox="0 0 24 24">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          </svg>
-          Supprimer le compte
-        </button>
-
       </div>
 
     </ng-container>
