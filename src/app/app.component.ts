@@ -11,10 +11,12 @@ declare const gsap: any;
 })
 export class AppComponent implements OnInit {
 
+
   showLoader     = true;
   isAdminRoute   = false;
   showAuthLoader = false;
   authLoaderMsg  = '';
+
 
   // ── Toast sur le loading screen ──────────────────────
   showLoaderToast    = false;

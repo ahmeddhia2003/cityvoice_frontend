@@ -186,6 +186,15 @@ export class UserService {
     return this.http.get<PointTransactionDto[]>(`${this.URL}/${userId}/points`);
   }
 
+  addPoints(userId: string, points: number, reason: string): Observable<any> {
+    return this.http.post(
+      `${this.URL}/${userId}/points`,
+      null,                                    // ← body vide
+      { params: { points: points.toString(), reason } }  // ← params URL
+    );
+  }
+
+
   getLeaderboard(limit = 10): Observable<UserDto[]> {
     return this.http.get<UserDto[]>(`${this.URL}/leaderboard?limit=${limit}`);
   }

@@ -1,14 +1,34 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule, Routes } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { MesSignalementsComponent } from './mes-signalements/mes-signalements.component';
 
-import { SignalementRoutingModule } from './signalement-routing.module';
+import { SignalementComponent }   from './signalement.component';
+import { SignalerFormComponent }  from './signaler-form/signaler-form.component';
+import { CameraModalComponent } from '../../shared/components/camera-modal/camera-modal.component'; 
+const routes: Routes = [
+  { path: '',               component: SignalementComponent,    title: 'Signalement — CityVoice' },
+  { path: 'new',            component: SignalerFormComponent,   title: 'Signaler un problème' },
+  { path: 'mes-signalements', component: MesSignalementsComponent, title: 'Mes signalements' },
+];
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    SignalementComponent,
+    SignalerFormComponent,
+    CameraModalComponent,
+    MesSignalementsComponent,
+  ],
   imports: [
     CommonModule,
-    SignalementRoutingModule
-  ]
+    FormsModule,
+    ReactiveFormsModule,
+    HttpClientModule,
+    RouterModule.forChild(routes),
+    
+  ],
 })
-export class SignalementModule { }
+export class SignalementModule {}

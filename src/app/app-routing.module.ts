@@ -29,10 +29,10 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'signalements',
+    path: 'signaler',
     loadChildren: () =>
       import('./features/signalement/signalement.module').then(m => m.SignalementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'evenements',
@@ -52,6 +52,7 @@ const routes: Routes = [
       import('./features/actualite/actualite.module').then(m => m.ActualiteModule),
     canActivate: [AuthGuard],
   },
+  
   {
     path: 'personnel',
     loadChildren: () =>
@@ -70,6 +71,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/user/user.module').then(m => m.UserModule)
   },
+  { 
+  path: 'mes-signalements', 
+  redirectTo: 'signaler/mes-signalements', 
+  pathMatch: 'full' 
+},
 
   { path: '**', redirectTo: '' },
 ];
