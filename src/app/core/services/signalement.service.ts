@@ -33,6 +33,7 @@ export interface SignalementResponse {
   votes:             number;
   dateSignalement:   string;
   mediaUrls:         string[];
+  commentaireIA?:    string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,10 +43,10 @@ export class SignalementService {
 
   constructor(private http: HttpClient) {}
 
-  create(req: SignalementRequest, userId: number): Observable<SignalementResponse> {
+  create(req: SignalementRequest, userId: string): Observable<SignalementResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'X-User-Id':    userId.toString(),
+      'X-User-Id':    userId,
     });
     return this.http.post<SignalementResponse>(this.BASE, req, { headers });
   }
@@ -55,8 +56,8 @@ export class SignalementService {
     return this.http.get<SignalementResponse[]>(url);
   }
 
-  getMes(userId: number): Observable<SignalementResponse[]> {
-    const headers = new HttpHeaders({ 'X-User-Id': userId.toString() });
+  getMes(userId: string): Observable<SignalementResponse[]> {
+    const headers = new HttpHeaders({ 'X-User-Id': userId });
     return this.http.get<SignalementResponse[]>(`${this.BASE}/mes-signalements`, { headers });
   }
 
@@ -78,10 +79,10 @@ export class SignalementService {
     return this.http.get<Record<string, number>>(`${this.BASE}/stats`);
   }
 
-  changerStatut(id: number, nouveauStatut: string, commentaire: string, userId: number): Observable<SignalementResponse> {
+  changerStatut(id: number, nouveauStatut: string, commentaire: string, userId: string): Observable<SignalementResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'X-User-Id':    userId.toString(),
+      'X-User-Id':    userId,
     });
     return this.http.patch<SignalementResponse>(
       `${this.BASE}/${id}/statut`,
@@ -89,4 +90,21 @@ export class SignalementService {
       { headers }
     );
   }
+
+  delete(id: number, userId: string): Observable<void> {
+    const headers = new HttpHeaders({
+      'X-User-Id':   userId,
+      'X-User-Role': 'ADMIN',
+    });
+    return this.http.delete<void>(`${this.BASE}/${id}`, { headers });
+  }
+
+  checkDoublon(lat: number, lng: number, type: string): Observable<{
+  hasDoublon: boolean;
+  signalement?: SignalementResponse;
+}> {
+  return this.http.get<any>(
+    `${this.BASE}/check-doublon?lat=${lat}&lng=${lng}&type=${type}`
+  );
+}
 }

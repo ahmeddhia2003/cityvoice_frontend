@@ -1,4 +1,4 @@
-<nav [class.solid]="scrolled">
+<nav [class.solid]="scrolled || !isHomePage">
 
   <!-- Logo -->
   <a routerLink="/" class="nav-logo" (click)="sound.nav()">
@@ -58,19 +58,25 @@
           <button class="nd-mark-all" (click)="markAllRead($event)">Tout lire</button>
         </div>
         <div class="nd-list">
+          <div class="nd-empty" *ngIf="notifications.length === 0">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <p>Aucune notification</p>
+          </div>
           <div class="nd-item" *ngFor="let n of notifications"
-               [class.nd-item--unread]="!n.read" (click)="readNotif(n)">
-            <div class="nd-icon" [ngClass]="'nd-icon--' + n.type">
-              <svg *ngIf="n.type==='resolved'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              <svg *ngIf="n.type==='progress'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <svg *ngIf="n.type==='badge'"   width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-              <svg *ngIf="n.type==='info'"    width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+               [class.nd-item--unread]="!n.lu" (click)="readNotif(n)">
+            <div class="nd-icon" [ngClass]="'nd-icon--' + notifIconType(n.type)">
+              <svg *ngIf="notifIconType(n.type)==='resolved'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg *ngIf="notifIconType(n.type)==='progress'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg *ngIf="notifIconType(n.type)==='badge'"   width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+              <svg *ngIf="notifIconType(n.type)==='info'"    width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
             </div>
             <div class="nd-body">
               <p class="nd-msg">{{ n.message }}</p>
-              <span class="nd-time">{{ n.time }}</span>
+              <span class="nd-time">{{ notifTimeAgo(n.dateCreation) }}</span>
             </div>
-            <span class="nd-dot" *ngIf="!n.read"></span>
+            <span class="nd-dot" *ngIf="!n.lu"></span>
           </div>
         </div>
         <div class="nd-footer"><a routerLink="/notifications">Voir tout →</a></div>
@@ -145,7 +151,7 @@
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
           Tableau de bord
         </a>
-        <a routerLink="/mes-signalements" class="ud-item" (click)="sound.nav(); closeUserMenu()">
+        <a routerLink="/signaler/mes-signalements" class="ud-item" (click)="sound.nav(); closeUserMenu()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
           Mes signalements
         </a>
@@ -186,5 +192,8 @@
 <!-- Toast -->
 <div class="nav-toast" *ngIf="toast" [ngClass]="toastType">
   <div class="toast-dot"></div>
-  {{ toastMsg }}
+  <div class="toast-body">
+    <span class="toast-label">Nouvelle notification</span>
+    <span class="toast-message">{{ toastMsg }}</span>
+  </div>
 </div>

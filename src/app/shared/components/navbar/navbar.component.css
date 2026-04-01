@@ -867,29 +867,51 @@ nav.solid {
    ============================================ */
 .nav-toast {
   position: fixed;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 92px;
+  right: 24px;
   background: #0C1F3F;
   color: #ECE8E1;
-  padding: 12px 22px;
-  border-radius: 100px;
+  padding: 14px 16px;
+  border-radius: 18px;
   font-size: 13px;
   font-weight: 600;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
   box-shadow: 0 8px 28px rgba(12, 31, 63, 0.3);
   z-index: 999;
-  white-space: nowrap;
+  width: min(360px, calc(100vw - 32px));
   pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav-toast .toast-dot {
-  width: 7px;
-  height: 7px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #0D9B76;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.toast-label {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(236, 232, 225, 0.7);
+}
+
+.toast-message {
+  color: #ECE8E1;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .nav-toast.success {
@@ -943,4 +965,22 @@ nav.solid {
     width: calc(100vw - 24px);
     right: -30px;
   }
+  .nav-toast {
+    top: 78px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
 }
+
+/* ── État vide notifications ── */
+.nd-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  color: var(--c-muted, #8888a8);
+  font-size: 13px;
+}
+.nd-empty p { margin: 0; }

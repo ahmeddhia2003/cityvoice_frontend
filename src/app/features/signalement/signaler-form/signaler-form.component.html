@@ -2,60 +2,68 @@
   <div class="container">
 
     <!-- ══ SUCCÈS ══════════════════════════════════════════ -->
-    <div class="success-card" *ngIf="submitted">
-      <div class="success-icon">
-        <svg width="44" height="44" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24">
-          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-      </div>
-      <h2>Signalement envoyé !</h2>
-      <p>Votre signalement a été transmis à la municipalité.</p>
+   <!-- Ripples d'animation -->
+<div class="ripple-1" *ngIf="submitted"></div>
+<div class="ripple-2" *ngIf="submitted"></div>
 
-      <!-- Résultat IA -->
-      <div class="ai-result-card" *ngIf="analyzeResult">
-        <div class="air-header">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-          Résultat de l'analyse IA
+<div class="success-card" *ngIf="submitted">
+  <div class="success-icon" id="success-icon-ring">
+    <svg width="44" height="44" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24">
+      <path class="check-circle" d="M22 11.08V12a10 10 0 11-5.93-9.14"
+            style="stroke-dasharray:60;stroke-dashoffset:60"/>
+      <polyline class="check-mark" points="22 4 12 14.01 9 11.01"
+                style="stroke-dasharray:20;stroke-dashoffset:20"/>
+    </svg>
+  </div>
+
+  <h2 class="success-title">Signalement envoyé !</h2>
+  <p class="success-sub">Votre problème a été transmis et analysé par l'IA.</p>
+
+  <div class="ai-result-card" *ngIf="analyzeResult">
+    <div class="air-header">Résultat de l'analyse IA</div>
+    <div class="air-grid">
+      <div class="air-item">
+        <span class="air-label">Équipe assignée</span>
+        <span class="air-val" style="color:var(--teal)">{{ analyzeResult.equipe_label }}</span>
+      </div>
+      <div class="air-item">
+        <span class="air-label">Priorité</span>
+        <span class="prio-pill prio-{{ analyzeResult.priorite }}">{{ prioriteLabel(analyzeResult.priorite) }}</span>
+      </div>
+      <div class="air-item">
+        <span class="air-label">Délai estimé</span>
+        <span class="air-val" style="color:var(--gold)">
+          <span class="delay-counter">0h</span>
+        </span>
+      </div>
+      <div class="air-item">
+        <span class="air-label">Confiance IA</span>
+        <div class="conf-wrap">
+          <div class="conf-bar"><div class="conf-fill" id="conf-fill-anim"></div></div>
+          <span class="conf-counter">0%</span>
         </div>
-        <div class="air-grid">
-          <div class="air-item">
-            <span class="air-label">Équipe assignée</span>
-            <span class="air-val" style="color:var(--teal)">{{ analyzeResult.equipe_label }}</span>
-          </div>
-          <div class="air-item">
-            <span class="air-label">Priorité</span>
-            <span class="prio-pill prio-{{ analyzeResult.priorite }}">{{ prioriteLabel(analyzeResult.priorite) }}</span>
-          </div>
-          <div class="air-item">
-            <span class="air-label">Délai estimé</span>
-            <span class="air-val" style="color:var(--gold)">{{ delaiLabel(analyzeResult.delai_heures) }}</span>
-          </div>
-          <div class="air-item">
-            <span class="air-label">Confiance IA</span>
-            <div class="conf-wrap">
-              <div class="conf-bar"><div class="conf-fill" [style.width.%]="(analyzeResult.confidences['categorie']||0)*100"></div></div>
-              <span>{{ ((analyzeResult.confidences['categorie']||0)*100)|number:'1.0-0' }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="success-meta" *ngIf="selectedType">
-        <div class="sm-row"><span>Type</span><strong>{{ selectedType.emoji }} {{ selectedType.label }}</strong></div>
-        <div class="sm-row"><span>Adresse</span><strong>{{ form.get('adresse')?.value }}</strong></div>
-      </div>
-
-      <div class="success-actions">
-        <button class="btn btn-primary" (click)="goHome()">Retour à l'accueil</button>
-        <button class="btn btn-outline" (click)="goSignalements()">Voir tous les signalements</button>
       </div>
     </div>
+  </div>
+
+  <div class="success-meta" *ngIf="selectedType">
+    <div class="sm-row"><span>Type</span><strong>{{ selectedType.emoji }} {{ selectedType.label }}</strong></div>
+    <div class="sm-row"><span>Adresse</span><strong>{{ form.get('adresse')?.value }}</strong></div>
+  </div>
+
+  <div class="success-actions">
+    <button class="btn btn-primary" (click)="goHome()">Retour à l'accueil</button>
+    <button class="btn btn-outline" (click)="goSignalements()">Voir les signalements</button>
+  </div>
+</div>
 
     <!-- ══ FORMULAIRE ══════════════════════════════════════ -->
     <div class="form-wrapper" *ngIf="!submitted">
 
-      <a routerLink="/signalements" class="form-back">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      <a routerLink="/signaler" class="form-back">
+        <span class="fb-arrow">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </span>
         Retour aux signalements
       </a>
 
@@ -312,8 +320,23 @@
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 Résultats de l'analyse
               </span>
-              <span class="arp-conf">{{ (aiSuggestion.confidence*100)|number:'1.0-0' }}% de confiance</span>
               <button type="button" class="arp-close" (click)="dismissAi()">×</button>
+            </div>
+
+            <!-- Barre de confiance -->
+            <div class="arp-conf-row">
+              <span class="arp-conf-label">Confiance IA</span>
+              <div class="arp-conf-bar">
+                <div class="arp-conf-fill" [class]="aiConfidenceClass"
+                     [style.width.%]="aiConfidencePct"></div>
+              </div>
+              <span class="arp-conf-pct" [class]="aiConfidenceClass">{{ aiConfidencePct }}%</span>
+            </div>
+
+            <!-- Alerte confiance faible -->
+            <div class="arp-low-conf-warn" *ngIf="aiConfidenceLow">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Confiance faible — vérifiez les suggestions avant d'appliquer.
             </div>
 
             <!-- 3 cartes résultat -->
@@ -339,9 +362,11 @@
 
             <!-- CTA -->
             <div class="arp-cta">
-              <button type="button" class="btn-apply-all" (click)="applyAndNext()">
+              <button type="button" class="btn-apply-all"
+                      [class.btn-apply-caution]="aiConfidenceLow"
+                      (click)="applyAndNext()">
                 <svg width="14" height="14" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                Appliquer et continuer →
+                {{ aiConfidenceLow ? 'Appliquer quand même →' : 'Appliquer et continuer →' }}
               </button>
               <p class="arp-hint">Les suggestions seront pré-remplies à l'étape 2. Vous pouvez les modifier.</p>
             </div>
@@ -441,7 +466,7 @@
           </div>
 
           <!-- Toggle anonyme -->
-          <div class="anon-toggle" (click)="form.patchValue({anonyme:!form.get('anonyme')?.value}); sound.toggle2(!form.get('anonyme')?.value)">
+          <div class="anon-toggle" (click)="toggleAnonyme()">
             <div class="at-left">
               <div class="at-icon">
                 <svg width="17" height="17" fill="none" stroke="var(--ink-2)" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
@@ -458,12 +483,22 @@
 
           <div class="identity-fields" *ngIf="!form.get('anonyme')?.value">
             <div class="field-group">
-              <label class="field-label">Nom complet</label>
-              <input type="text" formControlName="nom" class="field-input" placeholder="Ahmed Ben Ali">
+              <label class="field-label">
+                Nom complet
+                <span class="field-autofilled" *ngIf="userProfile?.nom">✓ Rempli automatiquement</span>
+              </label>
+              <input type="text" formControlName="nom" class="field-input"
+                     [class.autofilled]="userProfile?.nom"
+                     placeholder="Ahmed Ben Ali">
             </div>
             <div class="field-group">
-              <label class="field-label">Email</label>
-              <input type="email" formControlName="email" class="field-input" placeholder="vous@exemple.com">
+              <label class="field-label">
+                Email
+                <span class="field-autofilled" *ngIf="userProfile?.email">✓ Rempli automatiquement</span>
+              </label>
+              <input type="email" formControlName="email" class="field-input"
+                     [class.autofilled]="userProfile?.email"
+                     placeholder="vous@exemple.com">
             </div>
           </div>
 
@@ -493,9 +528,18 @@
             Suivant
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
+          <!-- Bannière d'erreur de soumission -->
+          <div class="submit-error-banner" *ngIf="submitError && currentStep===totalSteps">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ submitError }}
+          </div>
+
           <button type="submit" class="btn btn-submit"
                   *ngIf="currentStep===totalSteps"
-                  [disabled]="submitting">
+                  [disabled]="submitting"
+                  (click)="submitError = null">
             <ng-container *ngIf="!submitting">
               <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
               Envoyer le signalement
@@ -509,4 +553,51 @@
       </form>
     </div>
   </div>
+  <!-- ══ MODAL DOUBLON ══ -->
+<div class="doublon-overlay" *ngIf="showDoublonWarning">
+  <div class="doublon-modal">
+
+    <div class="doublon-icon">⚠️</div>
+    <h3 class="doublon-title">Signalement similaire existant</h3>
+    <p class="doublon-sub">
+      Un signalement du même type existe déjà à moins de 200m de votre localisation.
+    </p>
+
+    <div class="doublon-card" *ngIf="doublon">
+      <div class="doublon-card-row">
+        <span>Type</span>
+        <strong>{{ doublon.type }}</strong>
+      </div>
+      <div class="doublon-card-row">
+        <span>Adresse</span>
+        <strong>{{ doublon.adresse || '—' }}</strong>
+      </div>
+      <div class="doublon-card-row">
+        <span>Statut</span>
+        <strong [style.color]="doublon.statut === 'EN_COURS' ? 'var(--teal)' : 'var(--coral)'">
+          {{ doublon.statut === 'EN_ATTENTE' ? 'En attente' :
+             doublon.statut === 'EN_COURS'   ? 'En cours ✓' : doublon.statut }}
+        </strong>
+      </div>
+      <div class="doublon-card-row" *ngIf="doublon.equipeIALabel">
+        <span>Équipe</span>
+        <strong style="color:var(--teal)">{{ doublon.equipeIALabel }}</strong>
+      </div>
+    </div>
+
+    <p class="doublon-hint">
+      Voulez-vous quand même soumettre votre signalement ou voter pour celui existant ?
+    </p>
+
+    <div class="doublon-actions">
+      <button class="btn-doublon-cancel"  (click)="annulerDoublon()">Annuler</button>
+      <button class="btn-doublon-vote"    (click)="voterDoublon()">
+        👍 Voter pour l'existant
+      </button>
+      <button class="btn-doublon-confirm" (click)="confirmerDoublon()">
+        Signaler quand même
+      </button>
+    </div>
+  </div>
+</div>
 </div>

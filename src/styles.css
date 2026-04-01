@@ -161,3 +161,147 @@ body {
 }
 .admin-main::-webkit-scrollbar { width: 4px; }
 .admin-main::-webkit-scrollbar-thumb { background: var(--cream-3, #E3DDD5); border-radius: 2px; }
+
+/* ══════════════════════════════════════════════════════════
+   LEAFLET CUSTOM STYLES — me-dot + Apple Maps Premium Markers
+   (must be global: Leaflet renders outside Angular components)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Me-dot (user position) ───────────────────────────── */
+@keyframes mePulse {
+  0%  { box-shadow: 0 0 0 0   rgba(232,83,42,.55); }
+  70% { box-shadow: 0 0 0 10px rgba(232,83,42,.0); }
+  100%{ box-shadow: 0 0 0 0   rgba(232,83,42,.0); }
+}
+.me-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #E8532A;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px rgba(232,83,42,.3);
+  animation: mePulse 1.8s ease-out infinite;
+}
+
+/* ── Root container ──────────────────────────────────── */
+.apm-root {
+  position: relative;
+  width: 36px;
+  height: 48px;
+  cursor: pointer;
+  /* pins start hidden; GSAP spawnMarker() reveals them */
+}
+
+/* ── Pin assembly ────────────────────────────────────── */
+.apm-pin {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  /* NO transform here — GSAP owns the transform property via xPercent:-50 */
+  will-change: transform, opacity;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));
+}
+
+.apm-pin-body {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin-color, #FF6B35);
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2.5px solid rgba(255,255,255,.75);
+  box-shadow:
+    inset 0 -3px 6px rgba(0,0,0,.2),
+    inset 0 2px 5px rgba(255,255,255,.4);
+}
+
+.apm-pin-inner {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.92);
+  transform: rotate(45deg);
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.apm-pin-tail {
+  width: 0; height: 0;
+  border-left:  5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top:   9px solid var(--pin-color, #FF6B35);
+  margin: -1px auto 0;
+  filter: brightness(0.82);
+}
+
+/* ── Ground shadow ───────────────────────────────────── */
+.apm-shadow {
+  position: absolute;
+  bottom: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 5px;
+  background: rgba(0,0,0,.28);
+  border-radius: 50%;
+  filter: blur(3px);
+  opacity: 0.2;
+  will-change: transform, opacity;
+}
+
+/* ── Halo pulse rings ────────────────────────────────── */
+.apm-halo {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 28px; height: 28px;
+  margin: -22px 0 0 -14px;
+  border-radius: 50%;
+  border: 2px solid var(--halo-color, #FF6B35);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.apm-halo-2 {
+  opacity: 0;
+  border-width: 1.5px;
+}
+
+/* ── Glow on hover ───────────────────────────────────── */
+.apm-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 36px; height: 36px;
+  margin: -24px 0 0 -18px;
+  border-radius: 50%;
+  background: var(--glow-color, #FF6B35);
+  opacity: 0;
+  filter: blur(9px);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+/* ── Custom popup ────────────────────────────────────── */
+.apm-popup-wrap .leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(12,31,63,.18) !important;
+  border: 1.5px solid rgba(12,31,63,.07) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
+}
+.apm-popup-wrap .leaflet-popup-content { margin: 0 !important; }
+.apm-popup-wrap .leaflet-popup-tip-container { margin-top: -1px; }
+.apm-popup { padding: 14px 16px; min-width: 180px; }
+.apm-popup-type {
+  font-weight: 800; font-size: 13.5px; color: #111827; margin-bottom: 4px;
+}
+.apm-popup-addr {
+  font-size: 12px; color: #6B7280; margin-bottom: 5px; line-height: 1.4;
+}
+.apm-popup-dist { font-size: 11px; color: #9CA3AF; margin-bottom: 8px; }
+.apm-popup-pill {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 100px; font-size: 11.5px; font-weight: 700;
+}
+/* styles.css — fichier global */
+@keyframes pin-pulse {
+  0%   { transform: scale(1);   opacity: .5; }
+  70%  { transform: scale(2);   opacity: 0;  }
+  100% { transform: scale(2);   opacity: 0;  }
+}
