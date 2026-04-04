@@ -1,54 +1,70 @@
-import {
-  Component, Input, OnInit,
-  ElementRef, ViewChild, AfterViewInit
+import { 
+  Component, Input, ViewChild, ElementRef, 
+  AfterViewInit, OnChanges, SimpleChanges 
 } from '@angular/core';
 import * as QRCode from 'qrcode';
 import { Participant } from '../../models/participant.model';
 import { Evenement } from '../../models/evenement.model';
+import { SoundService } from '../../../../core/services/sound.service';
 
 @Component({
   selector: 'app-evenement-qrcode',
   templateUrl: './evenement-qrcode.component.html',
   styleUrls: ['./evenement-qrcode.component.css']
 })
-export class EvenementQrcodeComponent implements AfterViewInit {
+export class EvenementQrcodeComponent implements AfterViewInit, OnChanges {
 
   @Input() participant!: Participant;
   @Input() evenement!: Evenement;
-  @ViewChild('qrCanvas') qrCanvas!: ElementRef;
+  @ViewChild('qrCanvas') qrCanvas!: ElementRef<HTMLCanvasElement>;
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.generateQR(), 100);
+    // Petit délai pour laisser le ViewChild s'initialiser
+    setTimeout(() => this.generateQR(), 200);
   }
 
-  private generateQR(): void {
-    if (!this.qrCanvas || !this.participant || !this.evenement) return;
-
-    const qrData = JSON.stringify({
-      inscriptionId: this.participant.id,
-      evenementId:   this.evenement.id,
-      nom:           this.participant.nomCitoyen,
-      email:         this.participant.emailCitoyen,
-      evenement:     this.evenement.titre,
-      date:          this.evenement.dateDebut,
-      lieu:          this.evenement.lieu
-    });
-
-    QRCode.toCanvas(this.qrCanvas.nativeElement, qrData, {
-      width:            220,
-      margin:           2,
-      color: {
-        dark:  '#0C1F3F',
-        light: '#FFFFFF'
-      },
-      errorCorrectionLevel: 'H'
-    });
+  // Déclenché si l'objet participant change (ex: après un chargement asynchrone)
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['participant'] && !changes['participant'].firstChange) {
+      this.generateQR();
+    }
   }
+  constructor(
+      public sound: SoundService
+    ) {}
+
+ private generateQR(): void {
+  if (!this.qrCanvas || !this.participant) return;
+
+  // EXTRACTION DU TOKEN : On récupère uniquement la chaîne de caractères
+  // On ne veut pas de JSON.stringify(...) ici
+  const qrData = this.participant.qrToken || (this.participant as any).qr_token;
+
+  console.log("DEBUG Badge - Token envoyé au QR:", qrData);
+
+  if (!qrData) {
+    console.error("ERREUR: qrToken manquant !");
+    return;
+  }
+
+  // On génère le QR avec uniquement la chaîne 'qrData'
+  QRCode.toCanvas(this.qrCanvas.nativeElement, qrData, {
+    width: 220,
+    margin: 2,
+    errorCorrectionLevel: 'M'
+    }).then(() => {
+      this.sound.success();
+  });
+}
 
   telecharger(): void {
-    const canvas = this.qrCanvas.nativeElement as HTMLCanvasElement;
+    this.sound.click();
+    const canvas = this.qrCanvas.nativeElement;
     const link = document.createElement('a');
-    link.download = `inscription-${this.evenement.titre}-${this.participant.nomCitoyen}.png`;
+    const nomFichier = this.evenement?.titre || 'evenement';
+    const nomCitoyen = this.participant?.nomCitoyen || 'participant';
+    
+    link.download = `Pass-${nomFichier}-${nomCitoyen}.png`.replace(/\s+/g, '_');
     link.href = canvas.toDataURL('image/png');
     link.click();
   }

@@ -3,6 +3,7 @@ export interface Sponsor {
   nomEntreprise: string;
   logoUrl?: string;
   siteWeb?: string;
+  niveauSponsorat?: string;
   montantSponsorat?: number;
-  niveauSponsorat?: string; // BRONZE, ARGENT, OR, PLATINE
+  evenementIds?: number[];
 }

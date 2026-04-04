@@ -16,6 +16,7 @@
     <a href="#stats"        (click)="sound.nav()">{{ lang.t.nav_impact }}</a>
     <a href="#map-section"  (click)="sound.nav()">{{ lang.t.nav_map }}</a>
     <a href="#testimonials" (click)="sound.nav()">{{ lang.t.nav_testi }}</a>
+    <a routerLink="/evenements" (click)="sound.nav()">{{ lang.t.nav_events }}</a>
   </div>
 
   <!-- Actions -->
@@ -45,11 +46,13 @@
     <div class="notif-wrap">
       <button class="icon-btn notif-btn" (click)="toggleNotifs()"
               [class.active]="notifsOpen">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg width="18" height="18" fill="none" stroke="currentColor"
+            stroke-width="2" viewBox="0 0 24 24">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 01-3.46 0"/>
         </svg>
-        <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        <!-- ← evNonLues au lieu de unreadCount -->
+        <span class="notif-badge" *ngIf="evNonLues > 0">{{ evNonLues }}</span>
       </button>
 
       <div class="notif-dropdown" [class.visible]="notifsOpen">
@@ -57,20 +60,43 @@
           <span class="nd-title">Notifications</span>
           <button class="nd-mark-all" (click)="markAllRead($event)">Tout lire</button>
         </div>
+
         <div class="nd-list">
-          <div class="nd-item" *ngFor="let n of notifications"
-               [class.nd-item--unread]="!n.read" (click)="readNotif(n)">
-            <div class="nd-icon" [ngClass]="'nd-icon--' + n.type">
-              <svg *ngIf="n.type==='resolved'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              <svg *ngIf="n.type==='progress'" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <svg *ngIf="n.type==='badge'"   width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-              <svg *ngIf="n.type==='info'"    width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+
+          <!-- Vide -->
+          <div class="nd-empty" *ngIf="evNotifications.length === 0">
+            <svg width="32" height="32" fill="none" stroke="currentColor"
+                stroke-width="1.5" viewBox="0 0 24 24" style="color:var(--ink-3)">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <p style="font-size:13px; color:var(--ink-3); margin-top:8px">
+              Aucune notification
+            </p>
+          </div>
+
+          <!-- ← evNotifications au lieu de notifications -->
+          <div class="nd-item"
+              *ngFor="let n of evNotifications"
+              [class.nd-item--unread]="!n.lu"
+              (click)="readNotif(n)">
+
+            <!-- Icône colorée selon type -->
+            <div class="nd-icon"
+                [style.background]="notifService.getColorType(n.type) + '20'"
+                [style.color]="notifService.getColorType(n.type)">
+              {{ notifService.getIconType(n.type) }}
             </div>
+
             <div class="nd-body">
-              <p class="nd-msg">{{ n.message }}</p>
-              <span class="nd-time">{{ n.time }}</span>
+              <p class="nd-msg">{{ n.titre }}</p>
+              <p class="nd-sub" *ngIf="n.message">{{ n.message }}</p>
+              <!-- ← date formatée au lieu de time -->
+              <span class="nd-time">{{ n.dateCreation | date:'dd/MM HH:mm' }}</span>
             </div>
-            <span class="nd-dot" *ngIf="!n.read"></span>
+
+            <!-- ← n.lu au lieu de n.read -->
+            <span class="nd-dot" *ngIf="!n.lu"></span>
           </div>
         </div>
         <div class="nd-footer"><a routerLink="/notifications">Voir tout →</a></div>

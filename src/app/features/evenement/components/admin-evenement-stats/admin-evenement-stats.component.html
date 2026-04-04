@@ -1,0 +1,73 @@
+<div class="stats-page">
+
+  <div class="stats-header">
+    <div>
+      <div class="stats-title">Statistiques <em>Événements</em></div>
+      <div class="stats-sub">Vue d'ensemble des performances</div>
+    </div>
+    <button class="btn-back" (click)="retour()">
+      ← Retour à la liste
+    </button>
+  </div>
+
+  <div class="ae-loading" *ngIf="loading">
+    <div class="ae-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--ka: var(--coral, #E8532A)">
+        <div class="kpi-header">
+          <div class="kpi-icon">📅</div>
+          <div class="kpi-trend">Total</div>
+        </div>
+        <div class="kpi-num">{{ totalEvenements }}</div>
+        <div class="kpi-label">Événements</div>
+      </div>
+      <div class="kpi-card" style="--ka: var(--teal, #0D9B76)">
+        <div class="kpi-header">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-trend" style="background:rgba(13,155,118,.1);color:var(--teal)">Actifs</div>
+        </div>
+        <div class="kpi-num">{{ evenementsPublies }}</div>
+        <div class="kpi-label">Événements publiés</div>
+      </div>
+      <div class="kpi-card" style="--ka: #3B82F6">
+        <div class="kpi-header">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-trend" style="background:#eff6ff;color:#3B82F6">Inscrits</div>
+        </div>
+        <div class="kpi-num">{{ totalInscrits }}</div>
+        <div class="kpi-label">Participants total</div>
+      </div>
+      <div class="kpi-card" style="--ka: var(--gold, #C9973E)">
+        <div class="kpi-header">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-trend" style="background:rgba(201,151,62,.1);color:var(--gold)">TND</div>
+        </div>
+        <div class="kpi-num">{{ totalRevenus | number:'1.0-0' }}</div>
+        <div class="kpi-label">Revenus générés</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Répartition par <em>type</em></div>
+        <div style="height: 240px"><canvas id="type-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Répartition par <em>statut</em></div>
+        <div style="height: 240px"><canvas id="statut-chart"></canvas></div>
+      </div>
+      <div class="chart-card chart-full">
+        <div class="chart-title">Top 5 événements par <em>nombre d'inscrits</em></div>
+        <div style="height: 240px"><canvas id="inscrits-chart"></canvas></div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

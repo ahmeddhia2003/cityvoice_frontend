@@ -7,9 +7,18 @@ export interface Suggestion {
   typeSouhaite?: TypeEvenement;
   lieuSouhaite?: string;
   dateSouhaitee?: string;
-  citoyenId: number;
+  citoyenId: string;
   emailCitoyen?: string;
   statut?: string;
   commentaireAdmin?: string;
   soumisLe?: string;
+}
+export interface SuggestionAnalyse {
+  scorePertinence: number;
+  niveauImpact: string;
+  estimationParticipation: string;
+  recommandation: string;
+  justificationFr: string;
+  justificationEn: string;
+  categorieImpact: string;
 }

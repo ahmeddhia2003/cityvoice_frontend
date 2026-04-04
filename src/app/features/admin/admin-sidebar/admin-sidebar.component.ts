@@ -11,6 +11,7 @@ export interface NavItem {
   icon:        string;
   badge?:      number;
   badgeColor?: 'coral' | 'teal';
+  children?:   NavItem[]; 
 }
 
 @Component({
@@ -38,6 +39,16 @@ export class AdminSidebarComponent implements OnInit {
         { label: 'Signalements',    route: '/admin/signalements',       icon: 'tool',      badge: 12, badgeColor: 'coral' },
         { label: 'Équipes terrain', route: '/admin/equipes',            icon: 'users'     },
         { label: 'Utilisateurs',    route: '/admin/users',              icon: 'user'      },
+        { 
+          label: 'Événements', 
+          route: '/admin/evenements', 
+          icon: 'calendar',
+          children: [
+            { label: 'Scanner QR', route: '/admin/scan', icon: 'qr' },
+            { label: 'Suggestions',  route: '/admin/suggestions', icon: 'suggestions' },
+            { label: 'Sponsors', route: '/admin/sponsors', icon: 'handshake' },
+          ]
+        },
         { label: 'Projets',         route: '/admin/projets',            icon: 'monitor'   },
         { label: 'Actualités',      route: '/admin/actualites',         icon: 'book'      },
       ],

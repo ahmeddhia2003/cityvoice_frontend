@@ -30,24 +30,47 @@
 
       <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form">
 
+        <!-- Titre -->
         <div class="ev-form-group">
           <label class="ev-label">Titre de votre suggestion *</label>
           <input type="text" class="ev-input" formControlName="titre"
                  placeholder="Ex: Atelier de recyclage pour les jeunes"
                  [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
           <span class="ev-field-error"
-                *ngIf="form.get('titre')?.invalid && form.get('titre')?.touched">
+                *ngIf="form.get('titre')?.errors?.['required'] && form.get('titre')?.touched">
             Le titre est obligatoire
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['minlength'] && form.get('titre')?.touched">
+            Le titre doit contenir au moins 5 caractères
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['maxlength'] && form.get('titre')?.touched">
+            Le titre ne peut pas dépasser 100 caractères
           </span>
         </div>
 
+        <!-- Description -->
         <div class="ev-form-group">
           <label class="ev-label">Description</label>
           <textarea class="ev-textarea" formControlName="description"
                     placeholder="Décrivez votre idée, les objectifs, le public cible…"
-                    rows="4"></textarea>
+                    rows="4"
+                    [class.ev-input-error]="form.get('description')?.invalid
+                      && form.get('description')?.touched"></textarea>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['minlength']
+                  && form.get('description')?.touched">
+            La description doit contenir au moins 20 caractères
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['maxlength']
+                  && form.get('description')?.touched">
+            La description ne peut pas dépasser 1000 caractères
+          </span>
         </div>
 
+        <!-- Type + Lieu -->
         <div class="ev-form-row">
           <div class="ev-form-group">
             <label class="ev-label">Type souhaité</label>
@@ -59,20 +82,41 @@
           <div class="ev-form-group">
             <label class="ev-label">Lieu souhaité</label>
             <input type="text" class="ev-input" formControlName="lieuSouhaite"
-                   placeholder="Ex: Sfax, Parc Ennahli">
+                   placeholder="Ex: Sfax, Parc Ennahli"
+                   [class.ev-input-error]="form.get('lieuSouhaite')?.invalid
+                     && form.get('lieuSouhaite')?.touched">
+            <span class="ev-field-error"
+                    *ngIf="form.get('lieuSouhaite')?.errors?.['minlength']
+                      && form.get('lieuSouhaite')?.touched">
+                Le lieu doit contenir au moins 3 caractères
+            </span>
           </div>
         </div>
 
+        <!-- Date + Email -->
         <div class="ev-form-row">
           <div class="ev-form-group">
             <label class="ev-label">Date souhaitée</label>
-            <input type="date" class="ev-input" formControlName="dateSouhaitee">
+            <input type="date" class="ev-input" formControlName="dateSouhaitee"
+                   [class.ev-input-error]="form.get('dateSouhaitee')?.invalid
+                     && form.get('dateSouhaitee')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('dateSouhaitee')?.errors?.['datePasse']
+                    && form.get('dateSouhaitee')?.touched">
+              La date souhaitée doit être dans le futur
+            </span>
           </div>
           <div class="ev-form-group">
             <label class="ev-label">Votre email</label>
             <input type="email" class="ev-input" formControlName="emailCitoyen"
                    placeholder="vous@exemple.com"
-                   [class.ev-input-error]="form.get('emailCitoyen')?.invalid && form.get('emailCitoyen')?.touched">
+                   [class.ev-input-error]="form.get('emailCitoyen')?.invalid
+                     && form.get('emailCitoyen')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('emailCitoyen')?.errors?.['email']
+                    && form.get('emailCitoyen')?.touched">
+              Adresse email invalide
+            </span>
           </div>
         </div>
 
@@ -83,8 +127,10 @@
           <button type="submit" class="btn btn-primary"
                   [disabled]="form.invalid || loading">
             <span *ngIf="loading" class="ev-btn-spinner"></span>
-            <svg *ngIf="!loading" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            <svg *ngIf="!loading" width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
             Soumettre ma suggestion
           </button>

@@ -37,7 +37,7 @@ export interface Evenement {
 }
 
 export interface InscriptionRequest {
-  citoyenId: number;
+  citoyenId: string;
   email: string;
   nom: string;
 }

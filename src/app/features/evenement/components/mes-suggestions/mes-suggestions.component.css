@@ -1,0 +1,220 @@
+.ev-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 100px 40px 80px;  
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.ms-header-row {
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+
+.ms-title-section { margin-bottom: 4px; }
+.ms-title {
+  font-family: var(--fd); font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 800; color: var(--navy); letter-spacing: -.025em;
+  line-height: 1.1; margin-bottom: 8px;
+}
+.ms-title em { font-style: italic; color: var(--ink3); }
+.ms-sub { font-size: 14px; color: var(--ink3); font-weight: 300; }
+
+/* Loading */
+.ms-loading {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  padding: 80px; color: var(--ink3);
+}
+
+/* Empty */
+.ms-empty {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 14px;
+  padding: 80px; text-align: center;
+}
+.ms-empty-icon { font-size: 56px; }
+.ms-empty h3 { font-family: var(--fd); font-size: 22px; font-weight: 700; color: var(--navy); }
+.ms-empty p  { font-size: 14px; color: var(--ink3); max-width: 320px; }
+
+/* Liste */
+.ms-list { display: flex; flex-direction: column; gap: 16px; }
+
+/* Card */
+.ms-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r2);
+  padding: 24px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.ms-card:hover { border-color: var(--navy); box-shadow: 0 4px 16px rgba(12,31,63,.08); }
+
+.ms-card-header {
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap;
+  gap: 8px; margin-bottom: 12px;
+}
+.ms-card-left { display: flex; align-items: center; gap: 8px; }
+.ms-card-date { font-size: 12px; color: var(--ink3); }
+
+/* Badges statut */
+.ms-statut-badge {
+  font-size: 11.5px; font-weight: 600;
+  padding: 4px 12px; border-radius: 100px;
+}
+.statut-soumise  { background: rgba(201,151,62,.1);  color: #C9973E; }
+.statut-acceptee { background: rgba(13,155,118,.1);  color: #0D9B76; }
+.statut-rejetee  { background: rgba(232,83,42,.1);   color: #E8532A; }
+
+.ms-type-badge {
+  font-size: 10.5px; font-weight: 600;
+  padding: 3px 9px; border-radius: 100px;
+  background: #eff6ff; color: #3B82F6;
+}
+
+.ms-card-titre {
+  font-family: var(--fd); font-size: 18px;
+  font-weight: 700; color: var(--navy);
+  margin-bottom: 8px;
+}
+.ms-card-desc {
+  font-size: 14px; color: var(--ink2);
+  line-height: 1.7; font-weight: 300;
+  margin-bottom: 12px;
+}
+
+/* Meta */
+.ms-card-meta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.ms-card-meta span {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12.5px; color: var(--ink3);
+}
+
+/* Commentaire admin */
+.ms-commentaire {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--navy);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.ms-commentaire-label {
+  font-size: 11.5px; font-weight: 700;
+  color: var(--navy); margin-bottom: 4px;
+}
+.ms-commentaire-text { font-size: 13.5px; color: var(--ink2); }
+
+/* Actions */
+.ms-card-actions { display: flex; gap: 8px; }
+.ms-btn-edit, .ms-btn-delete {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 600;
+  font-family: var(--fb); cursor: pointer;
+  border: 1.5px solid; transition: all .18s;
+}
+.ms-btn-edit {
+  background: #eff6ff; color: #3B82F6;
+  border-color: rgba(59,130,246,.3);
+}
+.ms-btn-edit:hover { background: #3B82F6; color: #fff; }
+.ms-btn-delete {
+  background: rgba(232,83,42,.08); color: var(--coral);
+  border-color: rgba(232,83,42,.3);
+}
+.ms-btn-delete:hover { background: var(--coral); color: #fff; }
+
+.ms-traitee-info {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--ink3);
+  font-style: italic;
+}
+
+/* Modal */
+.ms-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(12,31,63,.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.ms-modal {
+  background: var(--white);
+  border-radius: var(--r2);
+  padding: 32px;
+  width: 100%; max-width: 560px;
+  box-shadow: 0 20px 60px rgba(12,31,63,.2);
+}
+.ms-modal-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.ms-modal-header h3 {
+  font-family: var(--fd); font-size: 20px;
+  font-weight: 700; color: var(--navy);
+}
+.ms-modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--cream); cursor: pointer;
+  font-size: 14px; color: var(--ink3);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .18s;
+}
+.ms-modal-close:hover { background: var(--coral); color: #fff; border-color: var(--coral); }
+.ms-modal-form { display: flex; flex-direction: column; gap: 16px; }
+.ms-modal-footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding-top: 8px; border-top: 1px solid var(--border);
+}
+
+/* Alerts */
+.ev-alert {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-radius: var(--r);
+  font-size: 14px; font-weight: 500;
+}
+.ev-alert-success { background: var(--teal-l); color: var(--teal); border: 1px solid rgba(13,155,118,.2); }
+.ev-alert-danger  { background: var(--coral-l); color: var(--coral); border: 1px solid rgba(232,83,42,.2); }
+
+.ev-spinner {
+  width: 36px; height: 36px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--coral);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .ev-form-row { grid-template-columns: 1fr; }
+  .ms-modal { padding: 24px; }
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  background: transparent;
+  color: var(--ink2);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: var(--fb);
+  cursor: pointer;
+  transition: all .18s;
+}
+
+.btn-back:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}

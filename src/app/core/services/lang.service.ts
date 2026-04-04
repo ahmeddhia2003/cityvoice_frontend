@@ -11,6 +11,7 @@ export interface Translations {
   nav_testi: string;
   nav_login: string;
   nav_report: string;
+  nav_events: string;
 
   // Hero
   hero_badge: string;
@@ -77,11 +78,34 @@ export interface Translations {
   cta_stat1: string;
   cta_stat2: string;
   cta_stat3: string;
+  //admin evenement list
+  admin_ev_titre: string;
+  admin_ev_sub: string;
+  admin_ev_export_csv: string;
+  admin_ev_export_pdf: string;
+  admin_ev_stats: string;
+  admin_ev_nouveau: string;
+  admin_ev_rechercher: string;
+  admin_ev_tous_statuts: string;
+  admin_ev_tous_types: string;
+  admin_ev_reinitialiser: string;
+  admin_ev_chargement: string;
+  admin_ev_col_evenement: string;
+  admin_ev_col_type: string;
+  admin_ev_col_statut: string;
+  admin_ev_col_date: string;
+  admin_ev_col_lieu: string;
+  admin_ev_col_inscrits: string;
+  admin_ev_col_prix: string;
+  admin_ev_col_actions: string;
+  admin_ev_gratuit: string;
+  admin_ev_aucun: string;
 }
 
 const FR: Translations = {
   nav_how:'Comment ça marche', nav_impact:'Impact', nav_map:'Carte', nav_testi:'Témoignages',
   nav_login:'Se connecter', nav_report:'Signaler',
+  nav_events: 'Événements',
 
   hero_badge:'Plateforme officielle · Tunis',
   hero_title1:'Ensemble', hero_title2:'améliorons', hero_title3a:'notre ', hero_title3b:'ville.',
@@ -117,11 +141,34 @@ const FR: Translations = {
   cta_btn1:'Faire mon premier signalement', cta_btn2:'Créer un compte gratuit',
   cta_note:'Sans inscription · Données protégées · Réponse sous 48h',
   cta_stat1:'Signalements soumis', cta_stat2:'Problèmes résolus', cta_stat3:'Citoyens nous font confiance',
+  // admin even list
+  admin_ev_titre: 'Gestion des',
+  admin_ev_sub: 'événements au total',
+  admin_ev_export_csv: 'Exporter CSV',
+  admin_ev_export_pdf: 'Exporter PDF',
+  admin_ev_stats: 'Statistiques',
+  admin_ev_nouveau: 'Nouvel événement',
+  admin_ev_rechercher: 'Rechercher par titre ou lieu…',
+  admin_ev_tous_statuts: 'Tous les statuts',
+  admin_ev_tous_types: 'Tous les types',
+  admin_ev_reinitialiser: 'Réinitialiser',
+  admin_ev_chargement: 'Chargement…',
+  admin_ev_col_evenement: 'Événement',
+  admin_ev_col_type: 'Type',
+  admin_ev_col_statut: 'Statut',
+  admin_ev_col_date: 'Date début',
+  admin_ev_col_lieu: 'Lieu',
+  admin_ev_col_inscrits: 'Inscrits',
+  admin_ev_col_prix: 'Prix',
+  admin_ev_col_actions: 'Actions',
+  admin_ev_gratuit: 'Gratuit',
+  admin_ev_aucun: 'Aucun événement trouvé',
 };
 
 const EN: Translations = {
   nav_how:'How it works', nav_impact:'Impact', nav_map:'Map', nav_testi:'Testimonials',
   nav_login:'Sign in', nav_report:'Report',
+  nav_events: 'Events',
 
   hero_badge:'Official platform · Tunis',
   hero_title1:'Together', hero_title2:'let\'s improve', hero_title3a:'our ', hero_title3b:'city.',
@@ -157,6 +204,28 @@ const EN: Translations = {
   cta_btn1:'Make my first report', cta_btn2:'Create a free account',
   cta_note:'No registration · Data protected · Response within 48h',
   cta_stat1:'Reports submitted', cta_stat2:'Problems resolved', cta_stat3:'Citizens trust us',
+  //admin even list
+  admin_ev_titre: 'Event',
+  admin_ev_sub: 'events in total',
+  admin_ev_export_csv: 'Export CSV',
+  admin_ev_export_pdf: 'Export PDF',
+  admin_ev_stats: 'Statistics',
+  admin_ev_nouveau: 'New event',
+  admin_ev_rechercher: 'Search by title or location…',
+  admin_ev_tous_statuts: 'All statuses',
+  admin_ev_tous_types: 'All types',
+  admin_ev_reinitialiser: 'Reset',
+  admin_ev_chargement: 'Loading…',
+  admin_ev_col_evenement: 'Event',
+  admin_ev_col_type: 'Type',
+  admin_ev_col_statut: 'Status',
+  admin_ev_col_date: 'Start date',
+  admin_ev_col_lieu: 'Location',
+  admin_ev_col_inscrits: 'Registered',
+  admin_ev_col_prix: 'Price',
+  admin_ev_col_actions: 'Actions',
+  admin_ev_gratuit: 'Free',
+  admin_ev_aucun: 'No events found',
 };
 
 @Injectable({ providedIn: 'root' })

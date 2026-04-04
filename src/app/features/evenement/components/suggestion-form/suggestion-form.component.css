@@ -1,7 +1,7 @@
 .ev-shell {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 40px 40px 80px;
+  padding: 100px 40px 80px;
   display: flex;
   flex-direction: column;
   gap: 28px;

@@ -8,6 +8,7 @@ import listPlugin from '@fullcalendar/list';
 import frLocale from '@fullcalendar/core/locales/fr';
 import { Evenement } from '../../models/evenement.model';
 import { EvenementService } from '../../services/evenement.service';
+import { SoundService } from '../../../../core/services/sound.service';
 
 @Component({
   selector: 'app-evenement-calendrier',
@@ -22,7 +23,8 @@ export class EvenementCalendrierComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private evenementService: EvenementService
+    private evenementService: EvenementService,
+    public sound: SoundService
   ) {}
 
   ngOnInit(): void {
@@ -109,6 +111,7 @@ export class EvenementCalendrierComponent implements OnInit {
   }
 
   private onEventClick(info: EventClickArg): void {
+    this.sound.click(); 
     this.router.navigate(['/evenements', info.event.id]);
   }
 
@@ -137,6 +140,7 @@ export class EvenementCalendrierComponent implements OnInit {
   }
 
   retour(): void {
+    this.sound.nav(); 
     this.router.navigate(['/evenements']);
   }
 }

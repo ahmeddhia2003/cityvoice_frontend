@@ -1,10 +1,10 @@
-<div class="ev-shell">
+<div [class]="isAdminMode ? 'ae-form-shell' : 'ev-shell'">
 
-  <button class="ev-back" (click)="annuler()">
+  <button class="ev-back" (click)="retour()">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
-    Retour
+    {{ isAdminMode ? 'Retour à la liste' : 'Retour' }}
   </button>
 
   <div class="ev-form-page">
@@ -18,10 +18,15 @@
             <line x1="12" y1="8" x2="12" y2="16"/>
             <line x1="8" y1="12" x2="16" y2="12"/>
           </svg>
-          Nouvel événement
+          {{ isEditMode ? 'Modifier l\'événement' : 'Nouvel événement' }}
         </span>
-        <h2 class="heading-display">Créer un <span class="italic" style="color:var(--ink3)">événement</span></h2>
-        <p class="ev-form-sub">Remplissez les informations pour créer votre événement</p>
+        <h2 class="heading-display">
+          {{ isEditMode ? 'Modifier un' : 'Créer un' }}
+          <span class="italic" style="color:var(--ink3)">événement</span>
+        </h2>
+        <p class="ev-form-sub">
+          {{ isEditMode ? 'Modifiez les informations de l\'événement' : 'Remplissez les informations pour créer votre événement' }}
+        </p>
       </div>
 
       <div *ngIf="succes" class="ev-alert ev-alert-success">
@@ -37,8 +42,67 @@
         {{ erreur }}
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form">
+      <!-- Loading skeleton mode édition -->
+      <div *ngIf="loading && isEditMode" class="ae-loading">
+        <div class="ae-spinner"></div>
+        <span>Chargement de l'événement…</span>
+      </div>
 
+      <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form"
+            *ngIf="!loading || !isEditMode">
+        <!-- ─── OCR Import ──────────────────────────────────── -->
+        <div class="ev-ocr-section">
+          <div class="ev-ocr-header">
+            <span class="ev-ocr-title">🤖 Importer depuis une affiche</span>
+            <span class="ev-ocr-sub">L'IA extrait automatiquement les informations</span>
+          </div>
+
+          <!-- Langue sélection -->
+          <div class="ev-ocr-langs">
+            <div class="ev-form-group">
+              <label class="ev-label">Langue de l'affiche</label>
+              <select class="ev-select-input" [(ngModel)]="langueAffiche" 
+                      [ngModelOptions]="{standalone: true}">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 Anglais</option>
+                <option value="ar">🇹🇳 Arabe</option>
+              </select>
+            </div>
+            <div class="ev-form-group">
+              <label class="ev-label">Remplir le formulaire en</label>
+              <select class="ev-select-input" [(ngModel)]="langueSortie"
+                      [ngModelOptions]="{standalone: true}">
+                <option value="fr">🇫🇷 Français</option>
+                <option value="en">🇬🇧 Anglais</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Upload zone -->
+          <label class="ev-ocr-upload" [class.ev-ocr-loading]="ocrLoading">
+            <input type="file" accept="image/*" 
+                  (change)="onAfficheUpload($event)"
+                  [disabled]="ocrLoading"
+                  style="display:none">
+            <div *ngIf="!ocrLoading" class="ev-ocr-upload-content">
+              <span class="ev-ocr-icon">📎</span>
+              <span class="ev-ocr-upload-text">Cliquez pour uploader une affiche</span>
+              <span class="ev-ocr-upload-hint">JPG, PNG — Max 5MB</span>
+            </div>
+            <div *ngIf="ocrLoading" class="ev-ocr-upload-content">
+              <div class="ev-btn-spinner"></div>
+              <span class="ev-ocr-upload-text">Analyse en cours…</span>
+            </div>
+          </label>
+
+          <div *ngIf="ocrErreur" class="ev-alert ev-alert-danger" style="margin-top:8px">
+            {{ ocrErreur }}
+          </div>
+        </div>
+
+        <div class="ev-ocr-divider">
+          <span>ou remplir manuellement</span>
+        </div>
         <!-- Titre -->
         <div class="ev-form-group">
           <label class="ev-label">Titre de l'événement *</label>
@@ -46,42 +110,82 @@
                  placeholder="Ex: Séminaire sur l'intelligence artificielle"
                  [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
           <span class="ev-field-error"
-                *ngIf="form.get('titre')?.invalid && form.get('titre')?.touched">
-            Le titre est obligatoire (min. 3 caractères)
+                *ngIf="form.get('titre')?.errors?.['required'] && form.get('titre')?.touched">
+            Le titre est obligatoire
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['minlength'] && form.get('titre')?.touched">
+            Le titre doit contenir au moins 3 caractères
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['maxlength'] && form.get('titre')?.touched">
+            Le titre ne peut pas dépasser 100 caractères
           </span>
         </div>
 
         <!-- Description -->
         <div class="ev-form-group">
-          <label class="ev-label">Description</label>
+          <label class="ev-label">Description *</label>
           <textarea class="ev-textarea" formControlName="description"
                     placeholder="Décrivez l'événement, le programme, les intervenants…"
-                    rows="4"></textarea>
+                    rows="4"
+                    [class.ev-input-error]="form.get('description')?.invalid
+                      && form.get('description')?.touched"></textarea>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['required']
+                  && form.get('description')?.touched">
+            La description est obligatoire
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['minlength']
+                  && form.get('description')?.touched">
+            La description doit contenir au moins 20 caractères
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['maxlength']
+                  && form.get('description')?.touched">
+            La description ne peut pas dépasser 2000 caractères
+          </span>
         </div>
 
         <!-- Type + Lieu -->
         <div class="ev-form-row">
           <div class="ev-form-group">
             <label class="ev-label">Type d'événement *</label>
-            <select class="ev-select-input" formControlName="type">
+            <select class="ev-select-input" formControlName="type"
+                    [class.ev-input-error]="form.get('type')?.invalid && form.get('type')?.touched">
               <option value="">-- Sélectionner --</option>
               <option *ngFor="let t of types" [value]="t">{{ t }}</option>
             </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('type')?.errors?.['required'] && form.get('type')?.touched">
+              Le type est obligatoire
+            </span>
           </div>
           <div class="ev-form-group">
             <label class="ev-label">Lieu *</label>
             <input type="text" class="ev-input" formControlName="lieu"
-                   placeholder="Ex: Tunis, Cité des Sciences">
+                   placeholder="Ex: Tunis, Cité des Sciences"
+                   [class.ev-input-error]="form.get('lieu')?.invalid && form.get('lieu')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('lieu')?.errors?.['required'] && form.get('lieu')?.touched">
+              Le lieu est obligatoire
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('lieu')?.errors?.['minlength'] && form.get('lieu')?.touched">
+              Le lieu doit contenir au moins 3 caractères
+            </span>
           </div>
         </div>
-        <!-- ➕ Coordonnées GPS -->
+
+        <!-- Map -->
         <div class="ev-form-group">
           <label class="ev-label">Localisation sur la carte</label>
           <div class="ev-map-picker">
             <div #miniMap class="ev-mini-map"></div>
             <p class="ev-map-hint">
               <svg width="12" height="12" fill="none" stroke="currentColor"
-                  stroke-width="2" viewBox="0 0 24 24">
+                   stroke-width="2" viewBox="0 0 24 24">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
                 <circle cx="12" cy="10" r="3"/>
               </svg>
@@ -91,14 +195,26 @@
               <div class="ev-coord-item">
                 <span class="ev-coord-label">Latitude</span>
                 <input type="number" class="ev-input ev-coord-input"
-                      formControlName="latitude"
-                      placeholder="36.8065" step="0.0001">
+                       formControlName="latitude" placeholder="36.8065" step="0.0001"
+                       [class.ev-input-error]="form.get('latitude')?.invalid
+                         && form.get('latitude')?.touched">
+                <span class="ev-field-error"
+                      *ngIf="(form.get('latitude')?.errors?.['min'] || form.get('latitude')?.errors?.['max'])
+                        && form.get('latitude')?.touched">
+                  Latitude invalide (-90 à 90)
+                </span>
               </div>
               <div class="ev-coord-item">
                 <span class="ev-coord-label">Longitude</span>
                 <input type="number" class="ev-input ev-coord-input"
-                      formControlName="longitude"
-                      placeholder="10.1815" step="0.0001">
+                       formControlName="longitude" placeholder="10.1815" step="0.0001"
+                       [class.ev-input-error]="form.get('longitude')?.invalid
+                         && form.get('longitude')?.touched">
+                <span class="ev-field-error"
+                      *ngIf="(form.get('longitude')?.errors?.['min'] || form.get('longitude')?.errors?.['max'])
+                        && form.get('longitude')?.touched">
+                  Longitude invalide (-180 à 180)
+                </span>
               </div>
             </div>
           </div>
@@ -108,11 +224,29 @@
         <div class="ev-form-row">
           <div class="ev-form-group">
             <label class="ev-label">Date et heure de début *</label>
-            <input type="datetime-local" class="ev-input" formControlName="dateDebut">
+            <input type="datetime-local" class="ev-input" formControlName="dateDebut"
+                   [class.ev-input-error]="form.get('dateDebut')?.invalid
+                     && form.get('dateDebut')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('dateDebut')?.errors?.['required']
+                    && form.get('dateDebut')?.touched">
+              La date de début est obligatoire
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('dateDebut')?.errors?.['datePasse']
+                    && form.get('dateDebut')?.touched">
+              La date de début doit être dans le futur
+            </span>
           </div>
           <div class="ev-form-group">
             <label class="ev-label">Date et heure de fin</label>
-            <input type="datetime-local" class="ev-input" formControlName="dateFin">
+            <input type="datetime-local" class="ev-input" formControlName="dateFin"
+                   [class.ev-input-error]="form.hasError('dateFin')
+                     && form.get('dateFin')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.hasError('dateFin') && form.get('dateFin')?.touched">
+              La date de fin doit être après la date de début
+            </span>
           </div>
         </div>
 
@@ -121,7 +255,19 @@
           <div class="ev-form-group">
             <label class="ev-label">Capacité maximale</label>
             <input type="number" class="ev-input" formControlName="capaciteMax"
-                   placeholder="Ex: 100" min="1">
+                   placeholder="Ex: 100" min="10"
+                   [class.ev-input-error]="form.get('capaciteMax')?.invalid
+                     && form.get('capaciteMax')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('capaciteMax')?.errors?.['min']
+                    && form.get('capaciteMax')?.touched">
+              La capacité minimale est de 10 participants
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('capaciteMax')?.errors?.['max']
+                    && form.get('capaciteMax')?.touched">
+              La capacité ne peut pas dépasser 100 000 participants
+            </span>
           </div>
           <div class="ev-form-group ev-form-group-check">
             <label class="ev-label">Type d'accès</label>
@@ -135,28 +281,53 @@
           </div>
         </div>
 
-        <!-- Prix (si payant) -->
+        <!-- Prix -->
         <div class="ev-form-group" *ngIf="form.get('estPayant')?.value">
           <label class="ev-label">Prix (TND) *</label>
           <div class="ev-input-prefix">
             <span class="ev-prefix">TND</span>
             <input type="number" class="ev-input ev-input-with-prefix"
-                   formControlName="prix" placeholder="0.000" min="0" step="0.001">
+                   formControlName="prix" placeholder="0.000" min="0" step="0.001"
+                   [class.ev-input-error]="form.get('prix')?.invalid
+                     && form.get('prix')?.touched">
           </div>
+          <span class="ev-field-error"
+                *ngIf="form.get('prix')?.errors?.['min'] && form.get('prix')?.touched">
+            Le prix doit être positif
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('prix')?.errors?.['max'] && form.get('prix')?.touched">
+            Le prix ne peut pas dépasser 999 999 TND
+          </span>
         </div>
 
-        <!-- Submit -->
+        <!-- Image URL -->
+        <div class="ev-form-group">
+          <label class="ev-label">URL de l'image</label>
+          <input type="url" class="ev-input" formControlName="imageUrl"
+                 placeholder="https://exemple.com/image.jpg"
+                 [class.ev-input-error]="form.get('imageUrl')?.invalid
+                   && form.get('imageUrl')?.touched">
+          <span class="ev-field-error"
+                *ngIf="form.get('imageUrl')?.errors?.['pattern']
+                  && form.get('imageUrl')?.touched">
+            L'URL doit commencer par http:// ou https://
+          </span>
+        </div>
+
+        <!-- Footer -->
         <div class="ev-form-footer">
-          <button type="button" class="btn btn-outline" (click)="annuler()">
+          <button type="button" class="btn btn-outline" (click)="retour()">
             Annuler
           </button>
           <button type="submit" class="btn btn-primary"
                   [disabled]="form.invalid || loading">
             <span *ngIf="loading" class="ev-btn-spinner"></span>
-            <svg *ngIf="!loading" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <svg *ngIf="!loading" width="14" height="14" fill="none"
+                 stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Créer l'événement
+            {{ isEditMode ? 'Enregistrer les modifications' : 'Créer l\'événement' }}
           </button>
         </div>
 
@@ -186,6 +357,13 @@
           <div>
             <div class="ev-tip-label">Capacité</div>
             <p class="ev-tip-text">Limitez les places pour créer un sentiment d'urgence</p>
+          </div>
+        </div>
+        <div class="ev-tip-item" *ngIf="isAdminMode">
+          <div class="ev-tip-icon">✅</div>
+          <div>
+            <div class="ev-tip-label">Publication</div>
+            <p class="ev-tip-text">Après création, publiez l'événement depuis la liste admin</p>
           </div>
         </div>
       </div>

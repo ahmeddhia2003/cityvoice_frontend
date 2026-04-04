@@ -1,0 +1,47 @@
+.qr-card {
+  max-width: 350px;
+  margin: 25px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden;
+  border: 1px solid #e0e6ed;
+  text-align: center;
+}
+
+.qr-header {
+  background: #f8fafc;
+  padding: 20px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.qr-icon-check { font-size: 2rem; margin-bottom: 10px; }
+.qr-header h3 { margin: 0; color: #0f172a; font-size: 1.25rem; }
+.qr-ev-title { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+
+.qr-body { padding: 25px; }
+
+.qr-canvas-wrapper {
+  background: white;
+  padding: 10px;
+  display: inline-block;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.qr-info { text-align: left; font-size: 0.9rem; color: #334155; }
+.qr-info p { margin: 5px 0; }
+
+.btn-download {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  background: #0f172a;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-download:hover { background: #1e293b; }

@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { Evenement, TypeEvenement } from '../../models/evenement.model';
 import { Suggestion } from '../../models/suggestion.model';
 import { EvenementService } from '../../services/evenement.service';
+import { SoundService } from '../../../../core/services/sound.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-evenement-list',
@@ -16,6 +18,10 @@ export class EvenementListComponent implements OnInit, OnDestroy {
   suggestions: Suggestion[] = [];
   loading = false;
   erreur = '';
+  // ─── Recommandations ──────────────────────────────────
+  recommandations: Evenement[] = [];
+  recommandationsFiltrees: Evenement[] = [];
+  loadingRecommandations = false;
 
   searchQuery = '';
   typeFiltre = '';
@@ -43,7 +49,9 @@ export class EvenementListComponent implements OnInit, OnDestroy {
 
   constructor(
     private evenementService: EvenementService,
-    private router: Router
+    private router: Router,
+    public sound: SoundService,
+    private authService: AuthService 
   ) {}
 
   ngOnInit(): void {
@@ -61,6 +69,7 @@ export class EvenementListComponent implements OnInit, OnDestroy {
 
   // ─── Chargement ───────────────────────────────────────
   chargerEvenements(): void {
+    this.sound.nav(); 
     this.loading = true;
     this.evenementService.getEvenements().subscribe({
       next: (data) => {
@@ -73,6 +82,7 @@ export class EvenementListComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+    //window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   chargerSuggestions(): void {
@@ -94,24 +104,101 @@ export class EvenementListComponent implements OnInit, OnDestroy {
 
   // ─── Intéressé ────────────────────────────────────────
   chargerInteresses(): void {
-    const saved = localStorage.getItem('cityvoice_interesses');
-    if (saved) {
-      this.interesseSet = new Set(JSON.parse(saved));
+    const user = this.authService.getCurrentUser();
+
+    if (user?.userId) {
+      // ← Charger depuis la DB
+      this.evenementService.getInterets(user.userId).subscribe({
+        next: (ids) => {
+          this.interesseSet = new Set(ids);
+          // ← Charger recommandations si a des intérêts
+          if (ids.length > 0 && user?.userId) {
+            this.chargerRecommandations(user.userId);
+          }
+        },
+        error: () => {
+          // Fallback localStorage
+          const saved = localStorage.getItem('cityvoice_interesses');
+          if (saved) this.interesseSet = new Set(JSON.parse(saved));
+        }
+      });
+    } else {
+      // Non connecté → localStorage
+      const saved = localStorage.getItem('cityvoice_interesses');
+      if (saved) this.interesseSet = new Set(JSON.parse(saved));
     }
   }
 
   toggleInteresse(id: number): void {
-    if (this.interesseSet.has(id)) {
-      this.interesseSet.delete(id);
+    this.sound.toggle2(!this.interesseSet.has(id));
+    const user = this.authService.getCurrentUser();
+
+    if (user?.userId) {
+      // ← Appel API
+      this.evenementService.toggleInteret(user.userId, id).subscribe({
+        next: (res) => {
+          if (res.interesse) {
+            this.interesseSet.add(id);
+          } else {
+            this.interesseSet.delete(id);
+          }
+          // ← Recharger recommandations
+          if (this.interesseSet.size > 0 && user?.userId) {
+            this.chargerRecommandations(user.userId);
+          } else {
+            this.recommandations = [];
+            this.recommandationsFiltrees = [];
+          }
+        }
+      });
     } else {
-      this.interesseSet.add(id);
+      // Non connecté → localStorage
+      if (this.interesseSet.has(id)) {
+        this.interesseSet.delete(id);
+      } else {
+        this.interesseSet.add(id);
+      }
+      localStorage.setItem('cityvoice_interesses',
+        JSON.stringify([...this.interesseSet]));
     }
-    localStorage.setItem('cityvoice_interesses',
-      JSON.stringify([...this.interesseSet]));
   }
 
   isInteresse(id: number): boolean {
     return this.interesseSet.has(id);
+  }
+
+  // ─── Recommandations ──────────────────────────────────
+  chargerRecommandations(citoyenId: string): void {
+    this.loadingRecommandations = true;
+    this.evenementService.getRecommandations(citoyenId).subscribe({
+      next: (data) => {
+        this.recommandations = data;
+        this.filtrerRecommandations();
+        this.loadingRecommandations = false;
+      },
+      error: () => {
+        this.loadingRecommandations = false;
+      }
+    });
+  }
+
+  filtrerRecommandations(): void {
+    let result = [...this.recommandations];
+
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      result = result.filter(e =>
+        e.titre.toLowerCase().includes(q) ||
+        e.description?.toLowerCase().includes(q) ||
+        e.lieu.toLowerCase().includes(q)
+      );
+    }
+
+    if (this.typeFiltre) {
+      result = result.filter(e => e.type === this.typeFiltre);
+    }
+
+    this.recommandationsFiltrees = result;
   }
 
   // ─── Countdown ────────────────────────────────────────
@@ -159,12 +246,20 @@ export class EvenementListComponent implements OnInit, OnDestroy {
       this.page * this.pageSize,
       (this.page + 1) * this.pageSize
     );
+    this.filtrerRecommandations();
   }
 
   changerPage(p: number): void {
+    this.sound.nav();  
     this.page = p;
     this.filtrer();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onSearch(): void {
+    this.sound.nav();                                       
+    this.page = 0;
+    this.filtrer();
   }
 
   getPages(): number[] {
@@ -211,10 +306,22 @@ export class EvenementListComponent implements OnInit, OnDestroy {
     return map[statut] || '';
   }
   allerCalendrier(): void {
+  this.sound.nav();
   this.router.navigate(['/evenements/calendrier']);
   }
   // ─── Navigation ───────────────────────────────────────
-  voirDetail(id: number): void  { this.router.navigate(['/evenements', id]); }
-  nouvelEvenement(): void       { this.router.navigate(['/evenements/nouveau']); }
-  allerSuggestion(): void       { this.router.navigate(['/evenements/suggestion']); }
+  voirDetail(id: number): void  { 
+    this.sound.click();
+    this.router.navigate(['/evenements', id]); }
+  nouvelEvenement(): void       { 
+    this.sound.nav();
+    this.router.navigate(['/evenements/nouveau']); }
+  allerSuggestion(): void       { 
+    this.sound.nav();
+    this.router.navigate(['/evenements/suggestion']); }
+
+  allerMesSuggestions(): void {
+  this.sound.nav();
+  this.router.navigate(['/evenements/mes-suggestions']);
+  }
 }

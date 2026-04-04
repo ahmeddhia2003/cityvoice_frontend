@@ -55,11 +55,12 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials)
       .pipe(
         tap(res => {
+
           localStorage.setItem(this.TOKEN_KEY, res.token);
           localStorage.setItem(this.USER_KEY, JSON.stringify({
             userId: res.userId,
             role:   res.role,
-            email:  credentials.email,
+            email: credentials.email, 
           }));
           this.setLoading(true, 'Connexion en cours…');
           setTimeout(() => {
@@ -130,7 +131,26 @@ export class AuthService {
     const raw = localStorage.getItem(this.USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
-
+  getCurrentUserWithEmail(): { userId: string; role: string; email: string; nom: string } | null {
+    const raw = localStorage.getItem(this.USER_KEY);
+    if (!raw) return null;
+    
+    const user = JSON.parse(raw);
+    
+    if (!user.email) {
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          user.email = payload.sub || '';
+          user.nom = payload.sub?.split('@')[0] || '';
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        } catch (e) {}
+      }
+    }
+    
+    return user;
+  }
   getRole(): string | null {
     return this.getCurrentUser()?.role ?? null;
   }

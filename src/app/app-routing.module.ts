@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import {LandingComponent} from './features/landing/landing.component';
+import {AdminScanComponent} from './features/evenement/components/admin-scan/admin-scan.component';
 
 const routes: Routes = [
 

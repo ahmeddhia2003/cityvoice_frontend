@@ -253,3 +253,28 @@
 .sb-user:hover {
   background: rgba(255,255,255,.05);
 }
+.sb-subitem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px 7px 28px;  /* ← indenté à gauche */
+  border-radius: var(--r);
+  font-size: 12.5px; font-weight: 500;
+  color: rgba(236,232,225,.4);
+  cursor: pointer; transition: all .18s;
+  margin-bottom: 2px;
+  position: relative;
+}
+.sb-subitem::before {
+  content: '';
+  position: absolute;
+  left: 18px; top: 50%; transform: translateY(-50%);
+  width: 6px; height: 1px;
+  background: rgba(236,232,225,.2);
+}
+.sb-subitem:hover {
+  background: rgba(255,255,255,.07);
+  color: rgba(236,232,225,.7);
+}
+.sb-subitem.active {
+  color: #F7F4EF;
+  background: rgba(232,83,42,.1);
+}

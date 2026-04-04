@@ -13,6 +13,10 @@ export class SoundService {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
+    // ← Résumer si suspendu (après interaction utilisateur)
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
     return this.ctx;
   }
 

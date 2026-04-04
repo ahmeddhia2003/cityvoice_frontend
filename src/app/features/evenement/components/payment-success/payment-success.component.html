@@ -1,0 +1,40 @@
+<div class="ps-page">
+  <div class="ps-card" *ngIf="!loading && participant">
+    <div class="ps-icon">🎉</div>
+    <h1 class="ps-title">Paiement réussi !</h1>
+    <p class="ps-sub">Votre inscription est confirmée</p>
+
+    <div class="ps-info">
+      <div class="ps-info-row">
+        <span class="ps-info-label">Participant</span>
+        <span class="ps-info-val">{{ participant.nomCitoyen }}</span>
+      </div>
+      <div class="ps-info-row">
+        <span class="ps-info-label">Email</span>
+        <span class="ps-info-val">{{ participant.emailCitoyen }}</span>
+      </div>
+      <div class="ps-info-row">
+        <span class="ps-info-label">Statut</span>
+        <span class="ps-info-val" style="color:#0D9B76">✅ Payé</span>
+      </div>
+    </div>
+
+    <p class="ps-qr-info">
+      🎫 Votre QR Code d'entrée a été généré — conservez-le précieusement !
+    </p>
+
+    <button class="btn btn-primary" (click)="retour()">
+      Retour aux événements
+    </button>
+  </div>
+
+  <div class="ps-loading" *ngIf="loading">
+    <div class="ps-spinner"></div>
+    <p>Confirmation du paiement…</p>
+  </div>
+
+  <div class="ps-error" *ngIf="erreur">
+    <div class="ps-icon">❌</div>
+    <p>{{ erreur }}</p>
+  </div>
+</div>
