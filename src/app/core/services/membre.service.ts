@@ -1,0 +1,58 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { CV } from './cv.service';
+
+export type Fonction = 'CHEF' | 'TECHNICIEN' | 'AGENT'; // adapte selon Fonction.java
+
+export interface MembreEquipe {
+  id?: string;
+  nom: string;
+  prenom: string;
+  fonction: Fonction;
+  dateAdhesion?: string;   // LocalDateTime → string ISO (auto via @PrePersist)
+  cv?: CV;   
+  mail?: string;
+                // @OneToOne
+}
+
+@Injectable({ providedIn: 'root' })
+export class MembreEquipeService {
+
+  private base = `${environment.apiUrl}/personnel/membres`;
+
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<MembreEquipe[]> {
+    return this.http.get<MembreEquipe[]>(`${this.base}/get`);
+  }
+
+  getById(id: string): Observable<MembreEquipe> {
+    return this.http.get<MembreEquipe>(`${this.base}/${id}`);
+  }
+
+  getByNom(nom: string): Observable<MembreEquipe[]> {
+    return this.http.get<MembreEquipe[]>(`${this.base}/nom/${nom}`);
+  }
+
+  getByFonction(fonction: Fonction): Observable<MembreEquipe[]> {
+    return this.http.get<MembreEquipe[]>(`${this.base}/fonction/${fonction}`);
+  }
+
+  add(membre: MembreEquipe): Observable<MembreEquipe> {
+    return this.http.post<MembreEquipe>(`${this.base}/add`, membre);
+  }
+
+  update(id: string, membre: MembreEquipe): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}`, membre);
+  }
+
+  updateFonction(id: string, fonction: Fonction): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/${fonction}`, {});
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
+}

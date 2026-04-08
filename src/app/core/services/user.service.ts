@@ -172,4 +172,8 @@ export class UserService {
   getUserBadges(userId: string): Observable<UserBadgeDto[]> {
     return this.http.get<UserBadgeDto[]>(`${this.URL}/${userId}/badges`);
   }
+getUserId(): string {
+  return localStorage.getItem('userId')!;
+}
+
 }

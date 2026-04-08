@@ -15,6 +15,8 @@ export class AppComponent implements OnInit {
   isAdminRoute   = false;
   showAuthLoader = false;
   authLoaderMsg  = '';
+  showFooter = true;
+
 
   // ── Toast sur le loading screen ──────────────────────
   showLoaderToast    = false;

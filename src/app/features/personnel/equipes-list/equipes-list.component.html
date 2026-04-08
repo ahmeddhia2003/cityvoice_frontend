@@ -1,0 +1,349 @@
+<app-navbar></app-navbar>
+
+<!-- ══ SOUS-NAVBAR ══════════════════════════════════════ -->
+<div class="sub-nav">
+  <div class="sub-nav-inner">
+
+    <button class="snav-item"
+            [class.active]="activeSection === 'equipes'"
+            (click)="scrollTo('equipes')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Mes équipes
+    </button>
+
+    <button class="snav-item"
+            [class.active]="activeSection === 'ressources'"
+            (click)="scrollTo('ressources')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Ressources
+    </button>
+
+    <button class="snav-item"
+            [class.active]="activeSection === 'signalements'"
+            (click)="scrollTo('signalements')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Signalements
+    </button>
+
+  </div>
+</div>
+
+<div class="equipes-shell">
+
+  <!-- ══ SECTION ÉQUIPES ══════════════════════════════════ -->
+  <div id="equipes">
+
+    <!-- ── HERO ────────────────────────────────────────── -->
+    <div class="equipes-hero">
+      <div class="hero-geo"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="eyebrow-dot"></span>
+          Tableau de bord chef d'équipe
+        </div>
+        <h1 class="hero-title">Mes Équipes</h1>
+        <p class="hero-sub">Gérez et suivez vos équipes terrain en temps réel</p>
+
+        <div class="hero-stats">
+          <div class="hstat">
+            <div class="hstat-num">{{ equipes.length }}</div>
+            <div class="hstat-lbl">Équipes</div>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <div class="hstat-num">{{ totalMembres }}</div>
+            <div class="hstat-lbl">Membres</div>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <div class="hstat-num" style="color:#4ADE80">{{ countByEtat('LIBRE') }}</div>
+            <div class="hstat-lbl">Libres</div>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <div class="hstat-num" style="color:#FB923C">{{ countByEtat('EN_EXECUTION') }}</div>
+            <div class="hstat-lbl">En mission</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOOLBAR ─────────────────────────────────────── -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Rechercher une équipe…"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+          />
+        </div>
+
+        <div class="filter-tabs">
+          <button class="ftab" [class.active]="filterEtat === ''" (click)="setFilter('')">
+            Toutes
+          </button>
+          <button class="ftab" [class.active]="filterEtat === 'LIBRE'" (click)="setFilter('LIBRE')">
+            <span class="ftab-dot" style="background:#4ADE80"></span>Libres
+          </button>
+          <button class="ftab" [class.active]="filterEtat === 'EN_EXECUTION'" (click)="setFilter('EN_EXECUTION')">
+            <span class="ftab-dot" style="background:#FB923C"></span>En mission
+          </button>
+          <button class="ftab" [class.active]="filterEtat === 'N_ATTENTE'" (click)="setFilter('N_ATTENTE')">
+            <span class="ftab-dot" style="background:#94A3B8"></span>En attente
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <span class="result-pill">
+          {{ filtered.length }} résultat{{ filtered.length > 1 ? 's' : '' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ── LOADING ─────────────────────────────────────── -->
+    <div class="skeleton-grid" *ngIf="loading">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+
+    <!-- ── EMPTY ───────────────────────────────────────── -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+      <div class="empty-icon">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <p>Aucune équipe trouvée</p>
+      <span>Modifiez vos filtres ou créez une nouvelle équipe</span>
+    </div>
+
+    <!-- ── GRID ────────────────────────────────────────── -->
+    <div class="equipes-grid" *ngIf="!loading && filtered.length > 0">
+      <div
+        class="equipe-card"
+        *ngFor="let e of filtered; let i = index; trackBy: trackById"
+        [style.animation-delay]="(i * 0.06) + 's'"
+        (click)="selectEquipe(e)"
+        [class.selected]="selectedId === e.id"
+      >
+        <div class="card-bar" [style.background]="etatGradient(e.etat)"></div>
+
+        <div class="card-header">
+          <div class="card-avatar" [style.background]="avatarBg(e.specialite)">
+            {{ initiales(e.name) }}
+          </div>
+          <div class="card-head-info">
+            <h3 class="card-name">{{ e.name }}</h3>
+            <div class="card-specialite">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              {{ e.specialite }}
+            </div>
+          </div>
+          <div class="etat-badge" [ngClass]="etatClass(e.etat)">
+            <span class="etat-dot"></span>
+            {{ etatLabel(e.etat) }}
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <div class="card-body">
+          <div class="membres-info">
+            <div class="membres-avatars">
+              <div
+                class="mini-avatar"
+                *ngFor="let m of (e.membresEquipe || []).slice(0, 4)"
+                [title]="m.nom || ''"
+                [style.background]="avatarBg(m.nom || '')"
+              >
+                {{ (m.nom || '?')[0].toUpperCase() }}
+              </div>
+              <div class="mini-avatar mini-more" *ngIf="(e.membresEquipe?.length || 0) > 4">
+                +{{ (e.membresEquipe?.length || 0) - 4 }}
+              </div>
+            </div>
+            <span class="membres-count">
+              {{ e.membresEquipe?.length || 0 }} membre{{ (e.membresEquipe?.length || 0) > 1 ? 's' : '' }}
+            </span>
+          </div>
+          <div class="membres-bar-wrap">
+            <div class="membres-bar">
+              <div
+                class="membres-bar-fill"
+                [style.width.%]="membresPercent(e)"
+                [style.background]="etatGradient(e.etat)"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn-detail" (click)="$event.stopPropagation(); voirDetail(e)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            Voir détails
+          </button>
+          <div class="card-footer-actions">
+            <button class="icon-btn" title="Modifier" (click)="$event.stopPropagation(); modifier(e)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="icon-btn icon-btn--del" title="Supprimer" (click)="$event.stopPropagation(); supprimer(e)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <!-- ══ FIN SECTION ÉQUIPES ══════════════════════════════ -->
+
+  <!-- ══ SECTION RESSOURCES ═══════════════════════════════ -->
+  <div id="ressources" class="section-block">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <span class="section-dot" style="background:#3B82F6"></span>
+        Gestion des ressources
+      </div>
+      <h2 class="section-title">Ressources</h2>
+      <p class="section-sub">Matériel et équipements disponibles pour vos équipes</p>
+    </div>
+
+    <div class="placeholder-card">
+      <div class="placeholder-icon-wrap" style="background:rgba(59,130,246,0.08)">
+        <svg width="28" height="28" fill="none" stroke="#3B82F6" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      </div>
+      <p class="placeholder-title">Aucune ressource assignée</p>
+      <span class="placeholder-sub">Les ressources apparaîtront ici une fois assignées à vos équipes</span>
+    </div>
+  </div>
+
+  <!-- ══ SECTION SIGNALEMENTS ══════════════════════════════ -->
+  <div id="signalements" class="section-block">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <span class="section-dot" style="background:#E8532A"></span>
+        Incidents terrain
+      </div>
+      <h2 class="section-title">Signalements</h2>
+      <p class="section-sub">Problèmes urbains assignés à vos équipes</p>
+    </div>
+
+    <div class="placeholder-card">
+      <div class="placeholder-icon-wrap" style="background:rgba(232,83,42,0.08)">
+        <svg width="28" height="28" fill="none" stroke="#E8532A" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <p class="placeholder-title">Aucun signalement en cours</p>
+      <span class="placeholder-sub">Les incidents assignés à vos équipes apparaîtront ici</span>
+    </div>
+  </div>
+
+  <!-- ══ DETAIL PANEL (slide-in) ══════════════════════════ -->
+  <div class="detail-overlay" *ngIf="selectedEquipe" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+
+      <div class="detail-header" [style.background]="etatGradient(selectedEquipe.etat)">
+        <div class="detail-avatar">{{ initiales(selectedEquipe.name) }}</div>
+        <div class="detail-head-info">
+          <h2 class="detail-name">{{ selectedEquipe.name }}</h2>
+          <div class="detail-specialite">{{ selectedEquipe.specialite }}</div>
+        </div>
+        <button class="detail-close" (click)="closeDetail()">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="detail-body">
+        <div class="detail-section">
+          <div class="ds-label">Statut</div>
+          <div class="etat-badge" [ngClass]="etatClass(selectedEquipe.etat)" style="width:fit-content">
+            <span class="etat-dot"></span>
+            {{ etatLabel(selectedEquipe.etat) }}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="ds-label">
+            Membres ({{ selectedEquipe.membresEquipe?.length || 0 }})
+          </div>
+          <div class="membres-list">
+            <div class="membre-row" *ngFor="let m of selectedEquipe.membresEquipe">
+              <div class="membre-av" [style.background]="avatarBg(m.nom || '')">
+                {{ (m.nom || '?')[0].toUpperCase() }}
+              </div>
+              <div class="membre-info">
+                <div class="membre-nom">{{ m.nom }}</div>
+                <div class="membre-role">{{ m.fonction || 'Membre' }}</div>
+              </div>
+              <div class="membre-status"></div>
+            </div>
+            <div class="no-membres" *ngIf="!selectedEquipe.membresEquipe?.length">
+              Aucun membre dans cette équipe
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-footer">
+        <button class="btn-modifier" (click)="modifier(selectedEquipe)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Modifier l'équipe
+        </button>
+        <button class="btn-close-panel" (click)="closeDetail()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

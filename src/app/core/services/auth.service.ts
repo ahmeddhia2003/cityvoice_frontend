@@ -225,4 +225,14 @@ export class AuthService {
   isCitoyen(): boolean {
     return this.getRole() === 'CITOYEN';
   }
+  canViewCv(): boolean {
+  const role = this.getRole();
+
+  return role !== 'CITOYEN' && role !== 'MEMBRE_EQUIPE';
+}
+getUserId(): string | null {
+  return this.getCurrentUser()?.userId ?? null;
+}
+
+
 }

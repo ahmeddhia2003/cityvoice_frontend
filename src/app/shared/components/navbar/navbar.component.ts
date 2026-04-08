@@ -274,4 +274,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       }, 3000);
     }, 50);
   }
+  isChefEquipe(): boolean {
+  return this.currentUser?.role === 'CHEF_EQUIPE';
+}
+
+
 }
