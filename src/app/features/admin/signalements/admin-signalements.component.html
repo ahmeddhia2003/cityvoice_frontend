@@ -40,6 +40,16 @@
         </svg>
         Exporter CSV
       </button>
+      <button class="btn-rapport-pdf" (click)="telechargerRapport()" [disabled]="rapportLoading" title="Générer rapport PDF mensuel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        {{ rapportLoading ? 'Génération...' : 'Rapport PDF' }}
+      </button>
       <button class="btn-refresh" (click)="load()" title="Rafraîchir">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
@@ -467,7 +477,13 @@
             <!-- Actions -->
             <td class="col-actions" (click)="$event.stopPropagation()">
               <div class="action-btns">
-<button class="action-btn btn-delete" (click)="openDelete(s, $event)" title="Supprimer">
+<button class="action-btn btn-statut" (click)="openEditStatut(s, $event)" title="Changer le statut">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="action-btn btn-delete" (click)="openDelete(s, $event)" title="Supprimer">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
                     <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -579,8 +595,8 @@
       <p class="drawer-value">{{ detailItem.adresse || '—' }}</p>
     </div>
 
-    <!-- Coordonnées -->
-    <div class="drawer-row-pair">
+    <!-- Coordonnées + édition localisation -->
+    <div class="drawer-row-pair" *ngIf="!editingLocation">
       <div class="drawer-field">
         <label>Latitude</label>
         <p class="drawer-value mono">{{ detailItem.latitude }}</p>
@@ -589,6 +605,18 @@
         <label>Longitude</label>
         <p class="drawer-value mono">{{ detailItem.longitude }}</p>
       </div>
+    </div>
+
+    <!-- Bouton corriger localisation -->
+    <div class="loc-edit-trigger">
+      <button class="loc-btn-edit" (click)="openLocMap(detailItem)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="10" r="3"/>
+          <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+        </svg>
+        Corriger la localisation sur la carte
+      </button>
     </div>
 
     <!-- IA — équipe + délai + confiance -->
@@ -659,6 +687,37 @@
     <div class="drawer-field drawer-field-full" *ngIf="detailItem.commentaireIA">
       <label>Commentaire IA</label>
       <p class="drawer-desc italic">{{ detailItem.commentaireIA }}</p>
+    </div>
+
+    <!-- Audio vocal (signalement par voix) -->
+    <div class="drawer-field drawer-field-full" *ngIf="detailItem.voiceSessionId">
+      <label>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+             style="vertical-align:middle;margin-right:4px">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        Enregistrement vocal
+      </label>
+      <div class="voice-tracks">
+        <div class="voice-track">
+          <span class="voice-track-label">Description</span>
+          <audio controls preload="metadata" style="width:100%;height:32px"
+                 [src]="voiceAudioUrl(detailItem, 'description')">
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        </div>
+        <div class="voice-track">
+          <span class="voice-track-label">Localisation</span>
+          <audio controls preload="metadata" style="width:100%;height:32px"
+                 [src]="voiceAudioUrl(detailItem, 'location')">
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        </div>
+      </div>
     </div>
 
     <!-- Photos -->
@@ -789,6 +848,187 @@
   </div>
 </div>
 
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL — CHANGEMENT DE STATUT
+     (éléments gardés dans le DOM, déplacés vers <body> via ngAfterViewInit
+      pour échapper au containing block du grid layout admin)
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay statut-modal-layer" id="statut-modal-overlay"
+     [class.statut-modal-visible]="editingStatut"
+     (click)="closeEditStatut()"></div>
+<div class="modal-card statut-modal-layer" id="statut-modal"
+     [class.statut-modal-visible]="editingStatut"
+     (click)="$event.stopPropagation()">
+  <ng-container *ngIf="editingStatut">
+  <div class="modal-header">
+    <div class="modal-info-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </div>
+    <h3>Changer le statut — <span class="modal-id-ref">#{{ editingStatut.id }}</span></h3>
+    <button class="modal-close" (click)="closeEditStatut()">✕</button>
+  </div>
+  <div class="modal-body">
+    <p style="margin-bottom:12px;color:#6b7280;font-size:13px">
+      Statut actuel :
+      <span class="statut-pill statut-{{ editingStatut.statut?.toLowerCase() }}">{{ statutLabel(editingStatut.statut) }}</span>
+    </p>
+
+    <!-- ── Chemin IA : seul REJETE est possible ── -->
+    <div class="modal-ai-notice" *ngIf="editingStatut.equipeIALabel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M4.93 4.93a10 10 0 000 14.14"/>
+      </svg>
+      Ce signalement est géré par l'IA (équipe <strong>{{ editingStatut.equipeIALabel }}</strong>).
+      Le passage en cours et la résolution sont gérés automatiquement.
+      Seul le rejet admin est disponible ici.
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label" for="statut-select">Nouveau statut</label>
+      <select id="statut-select" class="modal-select" [(ngModel)]="nouveauStatutChoix">
+        <!-- Chemin sans IA : toutes les transitions -->
+        <ng-container *ngIf="!editingStatut.equipeIALabel">
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="EN_COURS">En cours de traitement</option>
+          <option value="RESOLU">Résolu</option>
+        </ng-container>
+        <!-- Toujours disponible (les 2 chemins) -->
+        <option value="REJETE">Rejeté</option>
+      </select>
+    </div>
+    <!-- ── Choix équipe (chemin sans IA, seulement quand EN_COURS) ── -->
+    <div class="modal-field modal-equipe-field"
+         *ngIf="!editingStatut.equipeIALabel && nouveauStatutChoix === 'EN_COURS'"
+         style="margin-top:12px">
+      <label class="modal-label" for="equipe-select">
+        Assigner une équipe
+        <span class="modal-label-required">requis</span>
+      </label>
+      <select id="equipe-select" class="modal-select" [(ngModel)]="equipeChoix">
+        <option value="" disabled>— Sélectionner une équipe —</option>
+        <option *ngFor="let e of equipesList" [value]="e.id">{{ e.label }}</option>
+      </select>
+      <p class="modal-field-hint">
+        L'équipe sera notifiée et un contrat de travail sera généré.
+      </p>
+    </div>
+
+    <div class="modal-field" style="margin-top:12px">
+      <label class="modal-label" for="statut-comment">Commentaire (optionnel)</label>
+      <textarea id="statut-comment" class="modal-textarea" rows="3"
+                placeholder="Ex : Intervention programmée le 10/04…"
+                [(ngModel)]="statutComment"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-btn-cancel" (click)="closeEditStatut()">Annuler</button>
+    <button class="modal-btn-confirm"
+            [disabled]="statutPending || (!editingStatut.equipeIALabel && nouveauStatutChoix === 'EN_COURS' && !equipeChoix)"
+            (click)="confirmStatut()">
+      <span *ngIf="!statutPending">Confirmer</span>
+      <span *ngIf="statutPending" class="btn-spin"></span>
+    </button>
+  </div>
+  </ng-container>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL CARTE CORRECTION LOCALISATION
+══════════════════════════════════════════════════════════════ -->
+<div class="locmap-overlay" id="locmap-overlay" *ngIf="showLocMap" (click)="onLocMapOverlayClick($event)">
+  <div class="locmap-modal" id="locmap-modal">
+
+    <!-- Header -->
+    <div class="locmap-header" id="locmap-header">
+      <div class="locmap-header__left">
+        <div class="locmap-header__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="locmap-header__title">Corriger la localisation</h3>
+          <p class="locmap-header__sub">Déplacez le pin à l'emplacement exact du problème</p>
+        </div>
+      </div>
+      <button class="locmap-close" (click)="closeLocMap()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Map -->
+    <div class="locmap-body">
+      <div id="loc-correction-map" class="locmap-canvas"></div>
+
+      <!-- Floating coords + adresse -->
+      <div class="locmap-info-panel" id="locmap-info">
+        <div class="locmap-info__coords">
+          <span class="locmap-info__coord">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {{ locEditLat | number:'1.5-6' }}
+          </span>
+          <span class="locmap-info__sep">·</span>
+          <span class="locmap-info__coord">{{ locEditLon | number:'1.5-6' }}</span>
+        </div>
+        <div class="locmap-info__addr">
+          <span *ngIf="locMapGeocoding" class="locmap-info__geocoding">
+            <span class="locmap-spin"></span> Identification…
+          </span>
+          <span *ngIf="!locMapGeocoding && locEditAdresse">{{ locEditAdresse }}</span>
+          <span *ngIf="!locMapGeocoding && !locEditAdresse" class="locmap-info__noaddr">Adresse non trouvée</span>
+        </div>
+      </div>
+
+      <!-- Hint -->
+      <div class="locmap-hint" id="locmap-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Cliquez sur la carte ou faites glisser le marqueur
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="locmap-footer" id="locmap-footer">
+      <div class="locmap-footer__addr-edit">
+        <label class="locmap-footer__label">Adresse (modifiable)</label>
+        <input class="locmap-footer__input" type="text"
+               placeholder="Rue, quartier, point de repère…"
+               [(ngModel)]="locEditAdresse"/>
+      </div>
+      <div class="locmap-footer__actions">
+        <button class="locmap-btn-cancel" (click)="closeLocMap()">Annuler</button>
+        <button class="locmap-btn-confirm" (click)="confirmLocMap()" [disabled]="locSaving">
+          <svg *ngIf="!locSaving" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span *ngIf="locSaving" class="locmap-spin locmap-spin--white"></span>
+          {{ locSaving ? 'Enregistrement…' : 'Confirmer la localisation' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════════
      LIGHTBOX

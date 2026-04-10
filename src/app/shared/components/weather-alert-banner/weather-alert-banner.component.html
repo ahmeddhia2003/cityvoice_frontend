@@ -1,0 +1,67 @@
+<ng-container *ngIf="alert && visible && !dismissed">
+
+  <div class="wab-banner"
+       [style.--wab-c]="alert.color"
+       [style.--wab-ce]="alert.colorEnd">
+
+    <!-- Banner content -->
+    <div class="wab-content">
+
+      <!-- Left: icon + text -->
+      <div class="wab-left">
+        <div class="wab-icon-wrap"
+             [class.wab-pulse]="alert.level === 'storm'"
+             [class.wab-pulse-heat]="alert.level === 'heat'">
+          {{ alert.icon }}
+        </div>
+        <div class="wab-text">
+          <div class="wab-title">{{ alert.title }}</div>
+          <div class="wab-desc">{{ alert.message }}</div>
+          <div class="wab-meta">
+            <span class="wab-badge-meta">{{ alert.description }}</span>
+            <span class="wab-badge-meta" *ngIf="alert.level === 'heat'">🌡️ {{ alert.temperature }} °C</span>
+            <span class="wab-badge-meta" *ngIf="alert.level !== 'heat'">💨 {{ alert.windSpeed }} km/h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: actions -->
+      <div class="wab-right">
+        <button class="wab-toggle" (click)="toggleExpanded()">
+          <span>{{ expanded ? 'Masquer' : 'Voir les signalements utiles' }}</span>
+          <svg [style.transform]="expanded ? 'rotate(180deg)' : ''"
+               width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <button class="wab-signaler-btn" (click)="goSignaler()">
+          + Signaler maintenant
+        </button>
+        <button class="wab-close" (click)="dismiss()" title="Fermer">✕</button>
+      </div>
+
+    </div>
+
+    <!-- Expandable: suggested types -->
+    <div class="wab-chips-row" *ngIf="expanded">
+      <span class="wab-chips-label">Signalements fréquents par ce temps :</span>
+      <div class="wab-chips">
+        <button class="wab-chip"
+                *ngFor="let t of alert.suggestedTypes"
+                (click)="selectType(t.code)">
+          <span class="wab-chip-emoji">{{ t.emoji }}</span>
+          {{ t.label }}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+               style="margin-left:4px;opacity:.7">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</ng-container>

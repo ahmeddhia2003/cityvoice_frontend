@@ -45,6 +45,16 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
   votedIds  = new Set<number>();   // chargé depuis localStorage au démarrage
   votingIds = new Set<number>();   // en-cours seulement (mémoire)
 
+  /* ── Weather banner ────────────────────────────────── */
+  weatherBannerHeight  = 0;
+  festiveBannerHeight  = 0;
+
+  /* ── Detail popup ──────────────────────────────────── */
+  selectedSig: SignalementResponse | null = null;
+
+  openPopup(sig: SignalementResponse): void  { this.selectedSig = sig; }
+  closePopup(): void                         { this.selectedSig = null; }
+
   /* ── Toast ─────────────────────────────────────────── */
   toast: { msg: string; type: 'success' | 'error' } | null = null;
   private toastTimer: any;

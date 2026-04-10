@@ -40,7 +40,7 @@ export interface AnalyzeResponse {
 export class AiService {
 
   /** URL du service FastAPI — changer en prod */
-  private readonly BASE = 'http://localhost:8091/api/v1';
+  private readonly BASE = 'http://localhost:8090/api/v1';
 
   constructor(private http: HttpClient) {}
 

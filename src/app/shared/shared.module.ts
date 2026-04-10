@@ -1,22 +1,30 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { LoaderComponent } from './components/loader/loader.component';
 import { FooterComponent } from './components/footer/footer.component';
-import {TranslatePipe} from './pipes/translate.pipe';
-import {RouterModule} from '@angular/router';
-
-
+import { TranslatePipe } from './pipes/translate.pipe';
+import { RouterModule } from '@angular/router';
+import { SignalementDetailPopupComponent } from './components/signalement-detail-popup/signalement-detail-popup.component';
+import { WeatherAlertBannerComponent } from './components/weather-alert-banner/weather-alert-banner.component';
+import { FestiveBannerComponent } from './components/festive-banner/festive-banner.component';
+import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 @NgModule({
   declarations: [
     NavbarComponent,
     LoaderComponent,
     FooterComponent,
-    TranslatePipe
+    TranslatePipe,
+    SignalementDetailPopupComponent,
+    WeatherAlertBannerComponent,
+    FestiveBannerComponent,
+    ChatbotComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
   ],
   exports: [
@@ -24,7 +32,11 @@ import {RouterModule} from '@angular/router';
     FooterComponent,
     LoaderComponent,
     TranslatePipe,
-    RouterModule
+    RouterModule,
+    SignalementDetailPopupComponent,
+    WeatherAlertBannerComponent,
+    FestiveBannerComponent,
+    ChatbotComponent,
   ],
 })
 export class SharedModule { }

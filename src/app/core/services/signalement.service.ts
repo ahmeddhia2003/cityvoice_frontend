@@ -34,6 +34,7 @@ export interface SignalementResponse {
   dateSignalement:   string;
   mediaUrls:         string[];
   commentaireIA?:    string;
+  voiceSessionId?:   string;   // présent si créé par signalement vocal
 }
 
 @Injectable({ providedIn: 'root' })
@@ -79,14 +80,24 @@ export class SignalementService {
     return this.http.get<Record<string, number>>(`${this.BASE}/stats`);
   }
 
-  changerStatut(id: number, nouveauStatut: string, commentaire: string, userId: string): Observable<SignalementResponse> {
+  changerStatut(
+    id: number,
+    nouveauStatut: string,
+    commentaire: string,
+    userId: string,
+    equipeIA?: string,
+    equipeIALabel?: string
+  ): Observable<SignalementResponse> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'X-User-Id':    userId,
     });
+    const body: any = { nouveauStatut, commentaire };
+    if (equipeIA)      body.equipeIA      = equipeIA;
+    if (equipeIALabel) body.equipeIALabel = equipeIALabel;
     return this.http.patch<SignalementResponse>(
       `${this.BASE}/${id}/statut`,
-      { nouveauStatut, commentaire },
+      body,
       { headers }
     );
   }

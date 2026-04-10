@@ -10,6 +10,7 @@ import { SoundService } from '../../../core/services/sound.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { NotificationService, AppNotification } from '../../../core/services/notification.service';
+import { ThemeService } from '../../../core/services/theme.service';
 declare const gsap: any;
 
 @Component({
@@ -45,6 +46,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     public lang: LangService,
     public sound: SoundService,
+    public theme: ThemeService,
     private authService: AuthService,
     private userService: UserService,
     public notifSvc: NotificationService,
@@ -201,6 +203,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   toggleSound(): void {
     this.sound.toggle();
     if (this.sound.isEnabled) this.sound.click();
+  }
+
+  toggleTheme(event: MouseEvent): void {
+    this.sound.nav();
+    this.theme.toggle(event.currentTarget as HTMLElement);
   }
 
   onBtnClick(): void { this.sound.click(); }

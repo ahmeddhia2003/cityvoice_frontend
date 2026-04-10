@@ -71,11 +71,16 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/user/user.module').then(m => m.UserModule)
   },
-  { 
-  path: 'mes-signalements', 
-  redirectTo: 'signaler/mes-signalements', 
-  pathMatch: 'full' 
-},
+  {
+    path: 'mes-signalements',
+    redirectTo: 'signaler/mes-signalements',
+    pathMatch: 'full'
+  },
+  {
+    path: 'signalement/voice',
+    redirectTo: 'signaler/voice',
+    pathMatch: 'full'
+  },
 
   { path: '**', redirectTo: '' },
 ];

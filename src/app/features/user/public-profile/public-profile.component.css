@@ -1,7 +1,7 @@
 .pp-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 .pp-loading {

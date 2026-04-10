@@ -1,4 +1,23 @@
- <!-- KPI Row -->
+ <!-- Dashboard Actions -->
+      <div class="dash-actions-row">
+        <div class="dash-welcome">
+          <span class="dash-welcome-title">Tableau de bord</span>
+          <span class="dash-welcome-sub">Vue en temps réel · Tunis</span>
+        </div>
+        <button class="btn-rapport" (click)="telechargerRapport()" [disabled]="rapportLoading">
+          <span class="btn-rapport-icon" *ngIf="!rapportLoading">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </span>
+          <span class="btn-rapport-spinner" *ngIf="rapportLoading">⏳</span>
+          {{ rapportLoading ? 'Génération...' : 'Rapport PDF mensuel' }}
+        </button>
+      </div>
+
+      <!-- KPI Row -->
       <div class="kpi-row">
 
         <div class="kpi-card" style="--ka:var(--coral);--kb:var(--coral-l)">

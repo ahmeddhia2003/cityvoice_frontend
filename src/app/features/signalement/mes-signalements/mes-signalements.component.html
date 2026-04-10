@@ -1,3 +1,4 @@
+
 <!-- ── TOAST ───────────────────────────────────────────────── -->
 <div class="ms-toast" *ngIf="toast"
   [class.ms-toast--success]="toast.type === 'success'"
@@ -93,7 +94,7 @@
              [attr.data-statut]="sig.statut">
 
           <!-- Header -->
-          <div class="ms-card-header">
+          <div class="ms-card-header" style="cursor:pointer" (click)="openPopup(sig)">
             <div class="ms-card-type">{{ typeLabel(sig.type) }}</div>
             <span class="ms-statut" [class]="'statut-' + sig.statut">
               {{ statutLabel(sig.statut) }}
@@ -173,6 +174,16 @@
               <span>{{ formatDate(sig.dateSignalement) }}</span>
             </div>
 
+            <!-- Bouton détails -->
+            <button class="btn-detail" (click)="openPopup(sig); $event.stopPropagation()" title="Voir les détails">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Détails
+            </button>
+
             <!-- Bouton vote -->
             <button
               class="btn-vote"
@@ -217,3 +228,9 @@
     </ng-container>
   </div>
 </div>
+
+<!-- ══ DETAIL POPUP ══════════════════════════════════════════ -->
+<app-signalement-detail-popup
+  [sig]="selectedSig"
+  (closed)="closePopup()">
+</app-signalement-detail-popup>

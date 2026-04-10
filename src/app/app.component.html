@@ -9,13 +9,32 @@
     <app-navbar></app-navbar>
   </ng-container>
 
-  <main>
+  <!-- ══ GLOBAL BANNERS (weather + holidays) — visible on all citizen pages ══ -->
+  <ng-container *ngIf="!isAdminRoute && !isAuthRoute">
+
+    <!-- Weather alert (storm / rain / fog / wind / heat) -->
+    <app-weather-alert-banner
+      (heightChange)="weatherBannerHeight = $event">
+    </app-weather-alert-banner>
+
+    <!-- Tunisian holiday / Eid festive banner -->
+    <app-festive-banner
+      [weatherBannerHeight]="weatherBannerHeight"
+      (heightChange)="festiveBannerHeight = $event">
+    </app-festive-banner>
+
+  </ng-container>
+
+  <!-- Expose total banner offset as CSS var so pages can compensate padding -->
+  <main [style.--banner-offset.px]="bannerOffset">
     <router-outlet></router-outlet>
   </main>
 
   <ng-container *ngIf="!isAdminRoute">
     <app-footer></app-footer>
     <app-onboarding></app-onboarding>
+    <!-- Floating chatbot — visible on all citizen pages -->
+    <app-chatbot></app-chatbot>
   </ng-container>
 
 </div>

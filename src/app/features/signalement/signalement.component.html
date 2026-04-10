@@ -1,3 +1,4 @@
+
 <!-- ── TOAST GLOBAL ──────────────────────────────────────────── -->
 <div class="global-toast"
      *ngIf="toast"
@@ -65,7 +66,7 @@
           </button>
         </div>
 
-        <a routerLink="/signaler/new" class="btn btn--primary">
+        <a routerLink="/signaler/choix" class="btn btn--primary">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <circle cx="12" cy="12" r="10"/>
@@ -280,6 +281,15 @@
           <div class="sig-card__footer">
             <span class="sig-card__date">{{ formatDate(s.dateSignalement) }}</span>
 
+            <button class="btn-details-pub" (click)="openPopup(s); $event.stopPropagation()" title="Voir les détails">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Détails
+            </button>
+
             <button class="btn-vote"
                     [id]="'vote-btn-' + s.id"
                     [class.voted]="votedIds.has(s.id)"
@@ -324,7 +334,7 @@
                 (click)="searchQuery=''; setFilter('TOUS')">
           Réinitialiser les filtres
         </button>
-        <a routerLink="/signaler/new" class="btn btn--primary">
+        <a routerLink="/signaler/choix" class="btn btn--primary">
           Faire un signalement
         </a>
       </div>
@@ -333,6 +343,12 @@
   </ng-container>
 
   <!-- ── VUE CARTE ─────────────────────────────────────────────── -->
+  <!-- DETAIL POPUP -->
+  <app-signalement-detail-popup
+    [sig]="selectedSig"
+    (closed)="closePopup()">
+  </app-signalement-detail-popup>
+
   <div *ngIf="!loading && !error && viewMode === 'map'">
     <div class="map-legend">
       <span class="legend-item">

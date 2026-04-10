@@ -28,6 +28,20 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   votedIds  = new Set<number>();
   votingIds = new Set<number>();
 
+  /* ── Weather banner ──────────────────────── */
+  weatherBannerHeight  = 0;
+  festiveBannerHeight  = 0;
+
+  /* ── Detail popup ────────────────────────── */
+  selectedSig: SignalementResponse | null = null;
+
+  openPopup(sig: SignalementResponse): void {
+    this.selectedSig = sig;
+  }
+  closePopup(): void {
+    this.selectedSig = null;
+  }
+
   /* ── Toast ───────────────────────────────── */
   toast: { msg: string; type: 'success' | 'error' } | null = null;
   private toastTimer: any;
@@ -262,7 +276,7 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   }
 
   /* ── Navigation ──────────────────────────── */
-  goNew(): void { this.router.navigate(['/signaler/new']); }
+  goNew(): void { this.router.navigate(['/signaler/choix']); }
 
   /* ── Helpers ─────────────────────────────── */
   typeLabel(type: string): string {

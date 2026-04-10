@@ -3,8 +3,10 @@ import {
   ElementRef, ViewChild, NgZone,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { SoundService } from '../../../core/services/sound.service';
 import { SignalementService, SignalementResponse } from '../../../core/services/signalement.service';
+import { environment } from '../../../../environments/environment';
 
 declare const gsap: any;
 declare const Chart: any;
@@ -96,6 +98,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   mapFilter = 'all';
   private mapMarkers: any[] = [];
 
+  /* ── Rapport PDF ── */
+  rapportLoading = false;
+
   private map: any;
   private charts: any[] = [];
   private feedTimer: any;
@@ -111,12 +116,64 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     private ngZone: NgZone,
     private router: Router,
     private signalementSvc: SignalementService,
+    private http: HttpClient,
   ) {}
 
   /** Navigation vers la liste complète des signalements */
   goToSignalements(): void {
     this.sound.nav();
     this.router.navigate(['/admin/signalements']);
+  }
+
+  /** Génère et télécharge le rapport PDF mensuel depuis Madina AI */
+  telechargerRapport(): void {
+    if (this.rapportLoading) return;
+    this.sound.click();
+    this.rapportLoading = true;
+
+    // Construire la répartition par type depuis les signalements chargés
+    const typeBreakdown: Record<string, number> = {};
+    this.signalements.forEach(s => {
+      typeBreakdown[s.type] = (typeBreakdown[s.type] ?? 0) + 1;
+    });
+
+    // Déterminer la période (mois courant en français)
+    const now = new Date();
+    const moisFr = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const periode = `${moisFr[now.getMonth()]} ${now.getFullYear()}`;
+
+    const payload = {
+      total:    this.stats['total']     ?? 0,
+      resolus:  this.stats['resolus']   ?? 0,
+      enCours:  this.stats['enCours']   ?? 0,
+      enAttente:this.stats['enAttente'] ?? 0,
+      rejetes:  this.stats['rejetes']   ?? 0,
+      typeBreakdown,
+      periode,
+      ville: 'Tunis',
+    };
+
+    this.http.post(`${environment.aiUrl}/api/v1/rapport-mensuel`, payload, {
+      responseType: 'blob',
+    }).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rapport-madina-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.rapportLoading = false;
+        this.sound.success();
+      },
+      error: (err) => {
+        console.error('[Rapport] Erreur génération PDF', err);
+        this.rapportLoading = false;
+      },
+    });
   }
 
   ngOnInit(): void {

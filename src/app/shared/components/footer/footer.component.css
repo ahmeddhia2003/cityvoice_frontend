@@ -158,3 +158,10 @@
     padding: 16px 24px;
   }
 }
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE — footer stays dark navy (--navy flips to light)
+   ══════════════════════════════════════════════════════════ */
+:host-context(html.dark) .footer {
+  background: #06101E;
+}

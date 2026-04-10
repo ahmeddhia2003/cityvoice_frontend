@@ -982,3 +982,90 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════ */
+
+/* Right panel */
+:host-context(html.dark) .auth-right {
+  background: #0D1117;
+}
+:host-context(html.dark) .auth-right-deco {
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .auth-pin-1,
+:host-context(html.dark) .auth-pin-2 {
+  background: rgba(28,35,51,.9);
+  border-color: rgba(255,255,255,.08);
+  color: #E2EAF8;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+
+/* Form heading */
+:host-context(html.dark) .auth-form-title { color: #E2EAF8; }
+:host-context(html.dark) .auth-form-sub   { color: #586880; }
+:host-context(html.dark) .field-label     { color: #A8B8D0; }
+
+/* Social buttons */
+:host-context(html.dark) .social-btn {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.09);
+  color: #E2EAF8;
+}
+:host-context(html.dark) .social-btn:hover {
+  border-color: rgba(255,255,255,.18);
+  box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+
+/* Divider */
+:host-context(html.dark) .auth-divider { color: #586880; }
+:host-context(html.dark) .auth-divider::before,
+:host-context(html.dark) .auth-divider::after {
+  background: rgba(255,255,255,.07);
+}
+
+/* Inputs */
+:host-context(html.dark) .auth-input {
+  background: #161B22;
+  border-color: rgba(255,255,255,.09);
+  color: #E2EAF8;
+}
+:host-context(html.dark) .auth-input::placeholder { color: #586880; }
+:host-context(html.dark) .auth-input:focus {
+  border-color: #E2EAF8;
+  box-shadow: 0 0 0 3px rgba(226,234,248,.07);
+}
+:host-context(html.dark) .auth-input:disabled {
+  background: #0D1117;
+  color: #586880;
+}
+:host-context(html.dark) .fi { color: rgba(226,234,248,.3); }
+:host-context(html.dark) .fs { color: rgba(226,234,248,.35); }
+:host-context(html.dark) .fs:hover { color: #E2EAF8; }
+
+/* Password strength bar empty state */
+:host-context(html.dark) .pwd-bar { background: rgba(255,255,255,.08); }
+
+/* Forgot / links */
+:host-context(html.dark) .forgot a       { color: #586880; }
+:host-context(html.dark) .forgot a:hover { color: #E2EAF8; }
+:host-context(html.dark) .terms-row      { color: #586880; }
+:host-context(html.dark) .terms-row a    { color: #A8B8D0; }
+:host-context(html.dark) .switch-link    { color: #586880; }
+:host-context(html.dark) .switch-link a  { color: #A8B8D0; }
+
+/* Photo zone */
+:host-context(html.dark) .photo-zone {
+  background: #161B22;
+  border-color: rgba(255,255,255,.1);
+}
+:host-context(html.dark) .photo-zone:hover {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.18);
+}
+:host-context(html.dark) .optional-tag {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.08);
+  color: #586880;
+}

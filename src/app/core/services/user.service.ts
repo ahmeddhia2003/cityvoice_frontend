@@ -26,6 +26,10 @@ export interface UserDto {
   trustLevel:       string;
   emailVerified:    boolean;
 
+  // ── Notifications ────────────────────────────────────
+  whatsappNotifs:   boolean;
+  callmebotApiKey:  string;
+
   // ── Champs calculés ──────────────────────────────────
   statut: string;       // ACTIF | NOUVEAU | INCOMPLET | EN_ATTENTE_VERIFICATION | SUSPENDU
   civicIndex:       number;   // 0-100, -1 si non citoyen

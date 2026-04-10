@@ -3,7 +3,7 @@ import {
   ElementRef, ViewChild, NgZone
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AiService, AssistResponse, AnalyzeResponse } from '../../../core/services/ai.service';
 import { SoundService } from '../../../core/services/sound.service';
 import { CameraModalComponent } from '../../../shared/components/camera-modal/camera-modal.component';
@@ -26,8 +26,8 @@ export class SignalerFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('pickMap') pickMapRef!: ElementRef;
   @ViewChild('cameraModal') cameraModalRef!: CameraModalComponent;
-doublon: any = null;
-showDoublonWarning = false;
+  doublon: any = null;
+  showDoublonWarning = false;
   private map:        any;
   private marker:     any;
   private recognition: any;
@@ -45,6 +45,9 @@ showDoublonWarning = false;
   previewB64:  string | null = null;
   cameraMode   = false;
   shutterFlash = false;
+
+  /* Météo pré-sélection */
+  weatherPreselectedType: { value: string; label: string; emoji: string } | null = null;
 
   /* GPS */
   geoStatus:  GeoStatus = 'idle';
@@ -86,14 +89,15 @@ showDoublonWarning = false;
   priorites = ['Faible', 'Moyenne', 'Haute', 'Urgente'];
 
   constructor(
-    private fb:     FormBuilder,
-    private router: Router,
-    private ngZone: NgZone,
-      private authService: AuthService,    // ← ajouter
-    private ai:     AiService,
-     private userService: UserService,
-    private sigService: SignalementService,
-    public  sound:  SoundService,
+    private fb:          FormBuilder,
+    private router:      Router,
+    private route:       ActivatedRoute,
+    private ngZone:      NgZone,
+    private authService: AuthService,
+    private ai:          AiService,
+    private userService: UserService,
+    private sigService:  SignalementService,
+    public  sound:       SoundService,
   ) {}
 
   ngOnInit(): void {
@@ -111,6 +115,19 @@ showDoublonWarning = false;
       nom:         [''],
       email:       ['', Validators.email],
     });
+
+    // ── Pré-sélection depuis la bannière météo (?type=xxx) ──────────────────
+    const typeParam = this.route.snapshot.queryParamMap.get('type');
+    if (typeParam) {
+      const validType = this.typeOptions.find(t => t.value === typeParam);
+      if (validType) {
+        this.form.patchValue({ type: typeParam });
+        this.weatherPreselectedType = validType; // afficher le hint sur étape 1
+        // Rester sur l'étape 1 mais déclencher le GPS automatiquement
+        // (l'utilisateur n'a qu'à confirmer la position et passer à l'étape 2)
+        setTimeout(() => this.getLocation(), 400);
+      }
+    }
 
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) this.voiceStatus = 'unsupported';
@@ -800,7 +817,6 @@ if (auth?.userId) {
 
   get selectedType()      { return this.typeOptions.find(t => t.value === this.form.get('type')?.value); }
   get descriptionLength() { return (this.form.get('description')?.value || '').length; }
-
   /** true si la confiance IA est trop faible pour appliquer automatiquement (< 40%) */
   get aiConfidenceLow():  boolean { return (this.aiSuggestion?.confidence ?? 1) < 0.40; }
   /** Pourcentage entier de confiance (0–100) */

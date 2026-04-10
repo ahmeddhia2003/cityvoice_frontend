@@ -305,3 +305,321 @@ body {
   70%  { transform: scale(2);   opacity: 0;  }
   100% { transform: scale(2);   opacity: 0;  }
 }
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — html.dark overrides
+   All variables remapped + component-specific overrides
+   ═══════════════════════════════════════════════════════════ */
+
+html.dark {
+  /* ── Backgrounds ─────────────────── */
+  --cream:    #0D1117;
+  --cream2:   #161B22;
+  --white:    #1C2333;
+
+  /* ── Text (navy/ink flip to light) ─ */
+  --navy:     #E2EAF8;
+  --navy2:    #B8C8E0;
+  --ink:      #EEF2FF;
+  --ink2:     #A8B8D0;
+  --ink3:     #586880;
+
+  /* ── Accents (slightly brighter for dark bg) ─ */
+  --coral:    #FF6B47;
+  --coral-l:  #2A1208;
+  --teal:     #10B981;
+  --teal-l:   #062A18;
+  --gold:     #D4A848;
+  --gold-l:   #1E1405;
+
+  /* ── Borders & shadows ────────────── */
+  --border:   rgba(255,255,255,.09);
+  --border2:  rgba(255,255,255,.05);
+  --shadow:   0 2px 12px rgba(0,0,0,.45);
+  --shadow-m: 0 8px 32px rgba(0,0,0,.55);
+  --shadow-l: 0 20px 60px rgba(0,0,0,.65);
+}
+
+/* ── Body base ────────────────────────────────────── */
+html.dark body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+html.dark ::-webkit-scrollbar-track { background: var(--cream2); }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.14); }
+
+/* ── Global sections ──────────────────────────────── */
+html.dark .section-white { background: var(--white); }
+html.dark .section-cream { background: var(--cream); }
+html.dark .section-navy  { background: #0A1628; }   /* stays dark, just deeper */
+
+/* ── Heading display ──────────────────────────────── */
+html.dark .heading-display        { color: var(--navy); }
+html.dark .heading-display .italic{ color: var(--ink3); }
+
+/* ── Pills ────────────────────────────────────────── */
+html.dark .pill-navy  { background: rgba(255,255,255,.08); color: var(--navy); }
+html.dark .pill-coral { background: var(--coral-l);        color: var(--coral); }
+html.dark .pill-teal  { background: var(--teal-l);         color: var(--teal);  }
+html.dark .pill-gold  { background: var(--gold-l);         color: var(--gold);  }
+
+/* ── Buttons ──────────────────────────────────────── */
+html.dark .btn-outline {
+  color: var(--navy);
+  border-color: var(--border);
+}
+html.dark .btn-outline:hover { background: var(--cream2); }
+
+/* ── Leaflet map popups ───────────────────────────── */
+html.dark .leaflet-popup-content-wrapper {
+  background: #1C2333 !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+html.dark .leaflet-control-zoom a {
+  background: #1C2333 !important;
+  color: var(--navy) !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+
+/* APM popup hardcoded text colors — must be dark-aware */
+html.dark .apm-popup-type { color: #E2EAF8 !important; }
+html.dark .apm-popup-addr { color: #A8B8D0 !important; }
+html.dark .apm-popup-dist { color: #586880 !important; }
+html.dark .apm-popup-wrap .leaflet-popup-content-wrapper {
+  background: #1C2333 !important;
+  border-color: rgba(255,255,255,.1) !important;
+}
+
+/* ══════════════════════════════════════════════════
+   NAVBAR dark overrides
+   ══════════════════════════════════════════════════ */
+html.dark nav.solid {
+  background: rgba(13, 17, 23, 0.96) !important;
+  box-shadow: 0 1px 0 rgba(255,255,255,.07) !important;
+}
+html.dark .nav-logo-text { color: var(--navy); }
+html.dark .nav-logo-icon  { background: rgba(255,255,255,.1); }
+html.dark .nav-links a    { color: var(--ink2); }
+html.dark .nav-links a:hover { color: var(--navy); }
+
+html.dark .lang-btn        { color: var(--ink2); }
+html.dark .lang-btn.active { color: var(--navy); }
+html.dark .lang-sep        { background: var(--border); }
+
+html.dark .icon-btn        { color: var(--ink2); }
+html.dark .icon-btn:hover  { background: rgba(255,255,255,.08); color: var(--navy); }
+
+html.dark .nav-login { color: var(--ink2); }
+html.dark .nav-login:hover { color: var(--navy); }
+
+/* Notification dropdown */
+html.dark .notif-dropdown {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+}
+html.dark .nd-header, html.dark .nd-footer { border-color: rgba(255,255,255,.08); }
+html.dark .nd-title  { color: var(--navy); }
+html.dark .nd-mark-all { color: var(--coral); }
+html.dark .nd-item       { border-color: rgba(255,255,255,.05); }
+html.dark .nd-item:hover { background: rgba(255,255,255,.05); }
+html.dark .nd-item--unread { background: rgba(232,83,42,.08); }
+html.dark .nd-msg  { color: var(--ink); }
+html.dark .nd-time { color: var(--ink3); }
+html.dark .nd-footer a { color: var(--ink2); }
+
+/* User dropdown */
+html.dark .user-dropdown {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+}
+html.dark .ud-name   { color: var(--navy); }
+html.dark .ud-email  { color: var(--ink2); }
+html.dark .ud-divider{ background: rgba(255,255,255,.07); }
+html.dark .ud-item   { color: var(--ink2); }
+html.dark .ud-item:hover { background: rgba(255,255,255,.06); color: var(--navy); }
+html.dark .ud-logout { color: #EF4444; }
+html.dark .ud-logout:hover { background: rgba(239,68,68,.08); }
+html.dark .ud-points { color: var(--gold); }
+
+html.dark .user-avatar-sm {
+  background: var(--navy2);
+  color: var(--cream);
+}
+html.dark .user-name-sm  { color: var(--navy); }
+html.dark .user-points-sm{ color: var(--gold); }
+
+/* Nav toast */
+html.dark .nav-toast {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+}
+
+/* ══════════════════════════════════════════════════
+   LANDING PAGE dark overrides
+   ══════════════════════════════════════════════════ */
+
+/* Hero — already dark background, just tune text */
+html.dark .hero-desc     { color: rgba(255,255,255,.7); }
+html.dark .hero-trust    { color: rgba(255,255,255,.55); }
+html.dark .trust-check   { color: var(--teal); }
+
+/* Live panel */
+html.dark .live-panel {
+  background: #0A1628;
+  border-color: rgba(255,255,255,.08);
+}
+html.dark .live-item {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .live-status { color: var(--ink2); }
+
+/* Marquee strip */
+html.dark .marquee-strip { background: var(--cream2); }
+html.dark .marquee-item  { color: var(--ink2); }
+
+/* Stat cards */
+html.dark .stat-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .stat-desc { color: var(--ink2); }
+
+/* Feature cards */
+html.dark .feature-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .feature-card-title { color: var(--navy); }
+html.dark .feature-card-text  { color: var(--ink2); }
+html.dark .feature-card--featured { background: #0A1628; }
+
+/* How-it-works steps */
+html.dark .step-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .step-title { color: var(--navy); }
+html.dark .step-desc  { color: var(--ink2); }
+
+/* Map section */
+html.dark .map-top h2     { color: var(--navy); }
+html.dark .map-pill       { background: rgba(255,255,255,.07); color: var(--ink2); border-color: rgba(255,255,255,.1); }
+html.dark .map-pill.active{ background: rgba(255,255,255,.14); color: var(--navy); }
+
+/* Testimonials */
+html.dark .testi-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .testi-text { color: var(--ink2); }
+html.dark .testi-name { color: var(--navy); }
+html.dark .testi-loc  { color: var(--ink3); }
+
+/* FAQ */
+html.dark .faq-item {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .faq-q    { color: var(--navy); }
+html.dark .faq-a    { color: var(--ink2); }
+html.dark .faq-chevron { color: var(--ink3); }
+
+/* CTA section */
+html.dark .cta-title { color: #fff; }
+
+/* ══════════════════════════════════════════════════
+   SIGNALEMENT PAGES dark overrides
+   ══════════════════════════════════════════════════ */
+
+/* Page header (already dark navy) — keep as is */
+
+/* Sig cards */
+html.dark .sig-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+html.dark .sig-card__type        { color: var(--navy); }
+html.dark .sig-card__description { color: var(--ink2); }
+html.dark .sig-card__location    { color: var(--ink3); }
+html.dark .sig-card__date        { color: var(--ink3); }
+html.dark .sig-card__equipe      { color: var(--ink2); }
+html.dark .equipe-delay          { color: var(--ink3); }
+
+/* Filter bar */
+html.dark .filter-bar   { background: var(--white); border-color: rgba(255,255,255,.07); }
+html.dark .filter-tab   { color: var(--ink2); border-color: rgba(255,255,255,.07); }
+html.dark .filter-tab.active { background: var(--cream); color: var(--navy); }
+html.dark .search-box   { background: var(--cream); border-color: rgba(255,255,255,.07); }
+html.dark .search-box input { color: var(--navy); background: transparent; }
+html.dark .search-box input::placeholder { color: var(--ink3); }
+
+/* Scope switcher */
+html.dark .scope-btn      { background: var(--white); color: var(--ink2); border-color: rgba(255,255,255,.07); }
+html.dark .scope-btn.active { background: var(--cream); color: var(--navy); border-color: rgba(255,255,255,.15); }
+html.dark .radius-pill    { background: var(--cream); color: var(--ink2); border-color: rgba(255,255,255,.07); }
+html.dark .radius-pill.active { background: var(--cream2); color: var(--navy); }
+
+/* Empty state */
+html.dark .empty-title { color: var(--navy); }
+html.dark .empty-sub   { color: var(--ink2); }
+
+/* Popup overlay */
+html.dark .popup-overlay { background: rgba(0,0,0,.75); }
+html.dark .popup-card    { background: var(--white); }
+html.dark .popup-title   { color: var(--navy); }
+
+/* Signaler form */
+html.dark .form-page { background: var(--cream); }
+html.dark .step-card-form { background: var(--white); border-color: rgba(255,255,255,.07); }
+html.dark .form-label { color: var(--ink2); }
+html.dark .form-input, html.dark .form-select, html.dark .form-textarea {
+  background: var(--cream);
+  color: var(--navy);
+  border-color: rgba(255,255,255,.1);
+}
+html.dark .form-input::placeholder,
+html.dark .form-textarea::placeholder { color: var(--ink3); }
+html.dark .type-option { border-color: rgba(255,255,255,.1); color: var(--ink2); background: var(--cream); }
+html.dark .type-option.selected { background: rgba(13,155,118,.15); border-color: var(--teal); color: var(--teal); }
+
+/* Mes signalements */
+html.dark .ms-page { background: var(--cream); }
+html.dark .ms-title { color: var(--navy); }
+html.dark .ms-sub   { color: var(--ink2); }
+html.dark .ms-card  { background: var(--white); border-color: rgba(255,255,255,.07); }
+
+/* ══════════════════════════════════════════════════
+   USER PAGES dark overrides (profile, leaderboard…)
+   ══════════════════════════════════════════════════ */
+
+html.dark .profile-shell,
+html.dark .lb-shell,
+html.dark .badges-shell,
+html.dark .points-shell { background: var(--cream); }
+
+html.dark .lb-card,
+html.dark .badge-card,
+html.dark .points-card {
+  background: var(--white);
+  border-color: rgba(255,255,255,.07);
+}
+
+/* ══════════════════════════════════════════════════
+   ADMIN — NO DARK MODE (preserve admin design)
+   ══════════════════════════════════════════════════ */
+html.dark .admin-shell {
+  /* Reset all dark vars for admin context */
+  --cream:    #F7F4EF;
+  --cream2:   #EDE8E0;
+  --white:    #FFFFFF;
+  --navy:     #0C1F3F;
+  --navy2:    #162B5C;
+  --ink:      #1A1A2E;
+  --ink2:     #4A4A6A;
+  --ink3:     #8888A8;
+  --border:   rgba(12,31,63,.1);
+  --border2:  rgba(12,31,63,.06);
+}
+

@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
@@ -11,11 +11,29 @@ declare const gsap: any;
 })
 export class AppComponent implements OnInit {
 
-
   showLoader     = true;
   isAdminRoute   = false;
+  isAuthRoute    = false;   // hide banners on signin/signup/etc.
   showAuthLoader = false;
   authLoaderMsg  = '';
+
+  // Banner heights — fed by the two banner components in the template
+  private _weatherBannerHeight = 0;
+  private _festiveBannerHeight = 0;
+
+  get weatherBannerHeight() { return this._weatherBannerHeight; }
+  set weatherBannerHeight(v: number) {
+    // setTimeout(0) évite NG0100 ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => { this._weatherBannerHeight = v; this.cdr.detectChanges(); });
+  }
+
+  get festiveBannerHeight() { return this._festiveBannerHeight; }
+  set festiveBannerHeight(v: number) {
+    setTimeout(() => { this._festiveBannerHeight = v; this.cdr.detectChanges(); });
+  }
+
+  /** Total extra offset que les bannières ajoutent — lu via CSS var */
+  get bannerOffset(): number { return this._weatherBannerHeight + this._festiveBannerHeight; }
 
 
   // ── Toast sur le loading screen ──────────────────────
@@ -27,6 +45,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private ngZone: NgZone,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -37,10 +56,13 @@ export class AppComponent implements OnInit {
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
     ).subscribe((e: any) => {
-      this.isAdminRoute = (e.urlAfterRedirects as string).startsWith('/admin');
+      const url = e.urlAfterRedirects as string;
+      this.isAdminRoute = url.startsWith('/admin');
+      this.isAuthRoute  = url.startsWith('/auth');
     });
 
     this.isAdminRoute = this.router.url.startsWith('/admin');
+    this.isAuthRoute  = this.router.url.startsWith('/auth');
 
     // ── Auth loading screen ──────────────────────────
     this.authService.authLoading$.subscribe(({ loading, message, toastMsg, toastType }) => {

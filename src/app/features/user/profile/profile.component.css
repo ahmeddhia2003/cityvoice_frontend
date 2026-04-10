@@ -8,7 +8,7 @@
 .profile-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 @keyframes spin {
@@ -1821,4 +1821,296 @@
   .card-fullname {
     font-size: 16px;
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════════════════════ */
+
+/* Tabs bar */
+:host-context(html.dark) .profile-tabs {
+  background: #0D1117;
+  border-bottom-color: rgba(255,255,255,.08);
+}
+:host-context(html.dark) .ptab {
+  color: #586880;
+}
+:host-context(html.dark) .ptab:hover {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .ptab.active {
+  color: #E8532A;
+  border-bottom-color: #E8532A;
+}
+
+/* AI trigger / AI panel */
+:host-context(html.dark) .ai-trigger {
+  background: #1C2333;
+  border-color: rgba(139,92,246,.25);
+}
+:host-context(html.dark) .ai-trigger-title {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .ai-panel {
+  background: #1C2333;
+  border-color: rgba(139,92,246,.25);
+}
+
+/* Form sections */
+:host-context(html.dark) .form-section {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .form-section:hover {
+  border-color: rgba(255,255,255,.12);
+}
+:host-context(html.dark) .form-section-title,
+:host-context(html.dark) .fs-title {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .form-section-sub,
+:host-context(html.dark) .fs-sub {
+  color: #586880;
+}
+:host-context(html.dark) .form-section-icon {
+  background: #161B22;
+  color: #A8B8D0;
+}
+
+/* Form fields */
+:host-context(html.dark) .field-label {
+  color: #586880;
+}
+:host-context(html.dark) .field-input {
+  background: #161B22;
+  border-color: rgba(255,255,255,.09);
+  color: #E2EAF8;
+}
+:host-context(html.dark) .field-input:focus {
+  background: #161B22;
+  border-color: #E2EAF8;
+  box-shadow: 0 0 0 4px rgba(226,234,248,.06);
+}
+:host-context(html.dark) .field-input:disabled {
+  background: #0D1117;
+  color: #586880;
+}
+:host-context(html.dark) .field-icon {
+  color: #586880;
+}
+
+/* Upload button */
+:host-context(html.dark) .pz-upload-btn {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+  color: #A8B8D0;
+}
+:host-context(html.dark) .pz-upload-btn:hover {
+  border-color: #E2EAF8;
+  color: #E2EAF8;
+}
+
+/* Agent status buttons */
+:host-context(html.dark) .agent-status-btn {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.09);
+  color: #A8B8D0;
+}
+:host-context(html.dark) .agent-status-btn:hover,
+:host-context(html.dark) .agent-status-btn.active {
+  background: #161B22;
+}
+
+/* Quick action cards (Points, Badges, Classement, Ma Carte) */
+:host-context(html.dark) .qab-card {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .qab-label {
+  color: #A8B8D0;
+}
+
+/* Card identity / photo edit overlay */
+:host-context(html.dark) .pz-overlay-btn {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.15);
+}
+
+/* Save/cancel buttons secondary */
+:host-context(html.dark) .cc-btn--secondary {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+  color: #E2EAF8;
+}
+:host-context(html.dark) .cc-btn--secondary:hover {
+  border-color: #E2EAF8;
+}
+
+/* Misc dividers */
+:host-context(html.dark) .form-divider {
+  border-color: rgba(255,255,255,.06);
+}
+:host-context(html.dark) .field-group-label {
+  color: #586880;
+}
+
+/* Select dropdowns inside form-section */
+:host-context(html.dark) select.field-input {
+  background: #161B22;
+  color: #E2EAF8;
+}
+
+/* ══════════════════════════════════════════════════════════
+   WHATSAPP NOTIFICATION TOGGLE
+   ══════════════════════════════════════════════════════════ */
+
+.notif-section .form-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.whatsapp-no-phone {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(249,115,22,.08);
+  border: 1px solid rgba(249,115,22,.22);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+
+.whatsapp-no-phone svg {
+  flex-shrink: 0;
+  color: #F97316;
+  margin-top: 1px;
+}
+
+.whatsapp-no-phone span {
+  font-size: 13px;
+  color: #C9602A;
+  line-height: 1.5;
+}
+
+.whatsapp-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.wt-toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  border-radius: 50px;
+  background: #D1D5DB;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.wt-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wt-toggle.on {
+  background: #25D366;
+}
+
+.wt-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+}
+
+.wt-toggle.on .wt-thumb {
+  transform: translateX(24px);
+}
+
+.wt-info {
+  flex: 1;
+}
+
+.wt-phone {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0C1F3F;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wt-desc {
+  font-size: 12px;
+  color: #8888A8;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.wt-status {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.wt-status.success {
+  background: rgba(13,155,118,.09);
+  color: #0D9B76;
+}
+
+.wt-status.error {
+  background: rgba(232,83,42,.09);
+  color: #E8532A;
+}
+
+/* ── Dark mode for WhatsApp section ─────────────────────── */
+:host-context(html.dark) .whatsapp-no-phone {
+  background: rgba(249,115,22,.07);
+  border-color: rgba(249,115,22,.18);
+}
+
+:host-context(html.dark) .whatsapp-no-phone span {
+  color: #F97316;
+}
+
+:host-context(html.dark) .wt-toggle {
+  background: #2D3748;
+}
+
+:host-context(html.dark) .wt-toggle.on {
+  background: #25D366;
+}
+
+:host-context(html.dark) .wt-phone {
+  color: #E2EAF8;
+}
+
+:host-context(html.dark) .wt-desc {
+  color: #586880;
+}
+
+:host-context(html.dark) .wt-status.success {
+  background: rgba(13,155,118,.12);
+  color: #4ADE80;
+}
+
+:host-context(html.dark) .wt-status.error {
+  background: rgba(232,83,42,.12);
+  color: #FF7A59;
 }

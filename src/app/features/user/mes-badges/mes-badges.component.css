@@ -1,7 +1,7 @@
 .badges-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 .badges-loading {
@@ -351,4 +351,75 @@
   .bf-inner   { padding: 0 24px; }
   .badges-body { padding: 28px 24px 60px; }
   .badge-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════════════════════ */
+:host-context(html.dark) .badges-shell {
+  background: #0D1117;
+}
+:host-context(html.dark) .badges-filters {
+  background: #0D1117;
+  border-bottom-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .bfilter {
+  color: #586880;
+}
+:host-context(html.dark) .bfilter:hover {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .bfilter.active {
+  color: #E8532A;
+  border-bottom-color: #E8532A;
+}
+:host-context(html.dark) .bc-count {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.08);
+  color: #586880;
+}
+:host-context(html.dark) .badge-card {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .badge-card:hover {
+  border-color: rgba(255,255,255,.15);
+}
+:host-context(html.dark) .badge-obtained {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+}
+:host-context(html.dark) .badge-name {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .badge-desc {
+  color: #A8B8D0;
+}
+:host-context(html.dark) .badge-pts {
+  color: #FBBF24;
+}
+:host-context(html.dark) .badge-date {
+  color: #586880;
+}
+:host-context(html.dark) .badge-group-label {
+  color: #586880;
+}
+:host-context(html.dark) .bg-count {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+  color: #586880;
+}
+:host-context(html.dark) .badge-detail {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.1);
+}
+:host-context(html.dark) .bd-name {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .bd-desc {
+  color: #A8B8D0;
+}
+:host-context(html.dark) .bd-close {
+  border-color: rgba(255,255,255,.1);
+  color: #A8B8D0;
 }
