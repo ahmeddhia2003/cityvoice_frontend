@@ -9,6 +9,7 @@ import frLocale from '@fullcalendar/core/locales/fr';
 import { Evenement } from '../../models/evenement.model';
 import { EvenementService } from '../../services/evenement.service';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-evenement-calendrier',
@@ -24,7 +25,8 @@ export class EvenementCalendrierComponent implements OnInit {
   constructor(
     private router: Router,
     private evenementService: EvenementService,
-    public sound: SoundService
+    public sound: SoundService,
+    public i18n: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -61,10 +63,10 @@ export class EvenementCalendrierComponent implements OnInit {
         right:  'dayGridMonth,timeGridWeek,listWeek'
       },
       buttonText: {
-        today: 'Aujourd\'hui',
-        month: 'Mois',
-        week:  'Semaine',
-        list:  'Liste'
+        today: this.i18n.t('cal.btn.today'),
+        month: this.i18n.t('cal.btn.month'),
+        week:  this.i18n.t('cal.btn.week'),
+        list:  this.i18n.t('cal.btn.list'),
       },
       events:           this.buildEvents(),
       eventClick:       this.onEventClick.bind(this),
@@ -73,7 +75,7 @@ export class EvenementCalendrierComponent implements OnInit {
       height:           'auto',
       aspectRatio:      1.8,
       dayMaxEvents:     3,
-      moreLinkText:     'de plus',
+      moreLinkText:     this.i18n.t('cal.more'),
       nowIndicator:     true,
       weekends:         true,
       editable:         false,

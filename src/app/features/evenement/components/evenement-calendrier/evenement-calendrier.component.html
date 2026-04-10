@@ -6,13 +6,13 @@
          stroke-width="2.5" viewBox="0 0 24 24">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
-    Retour aux événements
+    {{ 'cal.retour' | t }}
   </button>
 
   <!-- ─── Loading ──────────────────────────────────────── -->
   <div *ngIf="loading" class="ev-loading">
     <div class="ev-spinner"></div>
-    <p>Chargement du calendrier…</p>
+    <p>{{ 'cal.loading' | t }}</p>
   </div>
 
   <!-- ─── Calendrier ───────────────────────────────────── -->
@@ -29,12 +29,12 @@
             <line x1="8" y1="2" x2="8" y2="6"/>
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
-          Calendrier
+          {{ 'cal.pill' | t }}
         </span>
-        <h3 class="ev-cal-title">Agenda des événements à venir</h3>
+        <h3 class="ev-cal-title">{{ 'cal.title' | t }}</h3>
         <p class="ev-cal-sub">
           {{ evenements.length }} événement{{ evenements.length > 1 ? 's' : '' }}
-          — cliquez sur un événement pour voir les détails
+          {{ 'cal.sub.click' | t }}
         </p>
       </div>
 
@@ -42,23 +42,23 @@
       <div class="ev-cal-legend">
         <div class="ev-legend-item">
           <span class="ev-legend-dot" style="background:#0D9B76"></span>
-          Éducation / Recyclage
+          {{ 'cal.legend.edu' | t }}
         </div>
         <div class="ev-legend-item">
           <span class="ev-legend-dot" style="background:#C9973E"></span>
-          Bénévolat
+          {{ 'cal.legend.benev' | t }}
         </div>
         <div class="ev-legend-item">
           <span class="ev-legend-dot" style="background:#E8532A"></span>
-          Payant
+          {{ 'cal.legend.payant' | t }}
         </div>
         <div class="ev-legend-item">
           <span class="ev-legend-dot" style="background:#0C1F3F"></span>
-          Séminaire
+          {{ 'cal.legend.seminaire' | t }}
         </div>
         <div class="ev-legend-item">
           <span class="ev-legend-dot" style="background:#4A4A6A"></span>
-          Autre
+          {{ 'cal.legend.autre' | t }}
         </div>
       </div>
     </div>

@@ -138,7 +138,7 @@
   font-size: 20px; font-weight: 700;
   color: var(--navy); letter-spacing: -.02em;
   padding-bottom: 12px;
-  border-bottom: 2px solid var(--border);
+  border-bottom: none;
   margin: 0;
 }
 
@@ -200,8 +200,11 @@
   display: flex; flex-direction: column; gap: 16px;
   position: sticky; top: 88px;
   align-self: start;
-  max-height: calc(100vh - 120px);
+  max-height: calc(80vh - 120px);
   overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 /* ─── Price card ─────────────────────────────────────── */
@@ -585,4 +588,30 @@
   font-size: 15.5px !important;
   line-height: 2 !important;
   font-style: italic;
+}
+.ev-btn-gcal {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 12px 16px;
+  background: #fff; color: #4285F4;
+  border: 2px solid #4285F4;
+  border-radius: 12px; cursor: pointer;
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  transition: all .2s; margin-top: 8px;
+}
+.ev-btn-gcal:hover {
+  background: #4285F4; color: #fff;
+  box-shadow: 0 4px 14px rgba(66,133,244,.3);
+}
+.ev-detail-sidebar::-webkit-scrollbar {
+  width: 4px; /* ← fine */
+}
+.ev-detail-sidebar::-webkit-scrollbar-track {
+  background: transparent; /* ← fond invisible */
+}
+.ev-detail-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border); /* ← couleur neutre grise */
+  border-radius: 4px;
+}
+.ev-detail-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--ink3); /* ← un peu plus foncée au hover */
 }

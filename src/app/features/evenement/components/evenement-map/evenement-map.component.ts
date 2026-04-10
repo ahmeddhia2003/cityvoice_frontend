@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { Evenement } from '../../models/evenement.model';
-
+import { I18nService } from '../../../../core/services/i18n.service';
 @Component({
   selector: 'app-evenement-map',
   templateUrl: './evenement-map.component.html',
@@ -16,7 +16,7 @@ export class EvenementMapComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mapEl') mapEl!: ElementRef;
 
   private map!: L.Map;
-
+  constructor(private i18n: I18nService) {}
   ngAfterViewInit(): void {
     setTimeout(() => this.initMap(), 100);
   }

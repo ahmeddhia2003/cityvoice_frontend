@@ -3,8 +3,8 @@
   <!-- Header -->
   <div class="ae-header">
     <div>
-      <div class="ae-title">Gestion des <em>Événements</em></div>
-      <div class="ae-sub">{{ evenements.length }} événements au total</div>
+      <div class="ae-title">{{ 'adm.ev.title' | t }} <em>{{ 'adm.ev.title.em' | t }}</em></div>
+      <div class="ae-sub">{{ evenements.length }} {{ 'adm.ev.sub' | t }}</div>
     </div>
     <div class="ae-actions">
       <button class="btn-export" (click)="exportCSV()">
@@ -12,14 +12,14 @@
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
-        Exporter CSV
+        {{ 'adm.ev.export.csv' | t }}
       </button>
       <button class="btn-export" (click)="exportPDF()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
         </svg>
-        Exporter PDF
+        {{ 'adm.ev.export.pdf' | t }}
       </button>
       <button class="btn-stats" (click)="sound.nav(); router.navigate(['/admin/evenements/stats'])">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@
           <line x1="12" y1="20" x2="12" y2="4"/>
           <line x1="6" y1="20" x2="6" y2="14"/>
         </svg>
-        Statistiques
+        {{ 'adm.ev.stats' | t }}
       </button>
       <button class="btn-nouveau" (click)="sound.nav(); router.navigate(['/admin/evenements/nouveau'])">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@
           <line x1="12" y1="8" x2="12" y2="16"/>
           <line x1="8" y1="12" x2="16" y2="12"/>
         </svg>
-        Nouvel événement
+        {{ 'adm.ev.nouveau' | t }}
       </button>
     </div>
   </div>
@@ -51,25 +51,29 @@
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" [(ngModel)]="recherche" (input)="appliquerFiltres()"
-             placeholder="Rechercher par titre ou lieu…">
+             [placeholder]="'adm.ev.filtre.search' | t">
     </div>
+
     <select [(ngModel)]="filtreStatut" (change)="sound.nav(); appliquerFiltres()" class="filter-select">
-      <option value="">Tous les statuts</option>
-      <option value="BROUILLON">🟡 Brouillon</option>
-      <option value="PUBLIE">🟢 Publié</option>
-      <option value="ANNULE">🔴 Annulé</option>
-      <option value="TERMINE">⚫ Terminé</option>
+      <option value="">{{ 'adm.ev.filtre.statuts' | t }}</option>
+      <option value="BROUILLON">{{ 'adm.ev.statut.brouillon' | t }}</option>
+      <option value="PUBLIE">{{ 'adm.ev.statut.publie' | t }}</option>
+      <option value="ANNULE">{{ 'adm.ev.statut.annule' | t }}</option>
+      <option value="TERMINE">{{ 'adm.ev.statut.termine' | t }}</option>
     </select>
+
     <select [(ngModel)]="filtreType" (change)="sound.nav(); appliquerFiltres()" class="filter-select">
-      <option value="">Tous les types</option>
-      <option value="BENEVOLE">Bénévolat</option>
-      <option value="EDUCATION">Éducation</option>
-      <option value="RECYCLAGE">Recyclage</option>
-      <option value="SEMINAIRE">Séminaire</option>
-      <option value="PAYANT">Payant</option>
+      <option value="">{{ 'adm.ev.filtre.types' | t }}</option>
+      <option value="BENEVOLE">{{ 'adm.ev.type.benevole' | t }}</option>
+      <option value="EDUCATION">{{ 'adm.ev.type.education' | t }}</option>
+      <option value="RECYCLAGE">{{ 'adm.ev.type.recyclage' | t }}</option>
+      <option value="SEMINAIRE">{{ 'adm.ev.type.seminaire' | t }}</option>
+      <option value="PAYANT">{{ 'adm.ev.type.payant' | t }}</option>
     </select>
-    <button class="filter-reset" (click)="sound.nav(); recherche=''; filtreStatut=''; filtreType=''; appliquerFiltres()">
-      Réinitialiser
+
+    <button class="filter-reset"
+            (click)="sound.nav(); recherche=''; filtreStatut=''; filtreType=''; appliquerFiltres()">
+      {{ 'adm.ev.filtre.reset' | t }}
     </button>
   </div>
 
@@ -78,20 +82,20 @@
 
     <div class="ae-loading" *ngIf="loading">
       <div class="ae-spinner"></div>
-      <span>Chargement…</span>
+      <span>{{ 'adm.ev.loading' | t }}</span>
     </div>
 
     <table class="ae-table" *ngIf="!loading">
       <thead>
         <tr>
-          <th>Événement</th>
-          <th>Type</th>
-          <th>Statut</th>
-          <th>Date début</th>
-          <th>Lieu</th>
-          <th>Inscrits</th>
-          <th>Prix</th>
-          <th>Actions</th>
+          <th>{{ 'adm.ev.th.evenement' | t }}</th>
+          <th>{{ 'adm.ev.th.type' | t }}</th>
+          <th>{{ 'adm.ev.th.statut' | t }}</th>
+          <th>{{ 'adm.ev.th.date' | t }}</th>
+          <th>{{ 'adm.ev.th.lieu' | t }}</th>
+          <th>{{ 'adm.ev.th.inscrits' | t }}</th>
+          <th>{{ 'adm.ev.th.prix' | t }}</th>
+          <th>{{ 'adm.ev.th.actions' | t }}</th>
         </tr>
       </thead>
       <tbody>
@@ -108,10 +112,10 @@
               </div>
             </div>
           </td>
-          <td><span class="type-badge">{{ ev.type }}</span></td>
+          <td><span class="type-badge">{{ getTypeLabel(ev.type) }}</span></td>
           <td>
             <span class="statut-badge" [ngClass]="getStatutClass(ev.statut || '')">
-              {{ ev.statut }}
+              {{ getStatutLabel(ev.statut || '') }}
             </span>
           </td>
           <td class="date-cell">{{ ev.dateDebut | date:'dd/MM/yyyy' }}</td>
@@ -124,48 +128,43 @@
           </td>
           <td>
             <span class="prix-badge" [class.gratuit]="!ev.estPayant">
-              {{ ev.estPayant ? (ev.prix + ' TND') : 'Gratuit' }}
+              {{ ev.estPayant ? (ev.prix + ' TND') : ('adm.ev.gratuit' | t) }}
             </span>
           </td>
           <td>
             <div class="action-btns">
-              <!-- Voir -->
               <button class="act-btn act-voir"
-                      (click)="sound.nav(); router.navigate(['/admin/evenements', ev.id])" title="Voir">
+                      (click)="sound.nav(); router.navigate(['/admin/evenements', ev.id])"
+                      [title]="'adm.ev.th.evenement' | t">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                   <circle cx="12" cy="12" r="3"/>
                 </svg>
               </button>
-              <!-- Modifier — ajouter après act-voir -->
-                <button class="act-btn act-modifier"
-                        (click)="sound.nav(); router.navigate(['/admin/evenements', ev.id, 'edit'])"
-                        title="Modifier">
+              <button class="act-btn act-modifier"
+                      (click)="sound.nav(); router.navigate(['/admin/evenements', ev.id, 'edit'])">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
-                </button>
-              <!-- Publier -->
+              </button>
               <button class="act-btn act-publier"
                       *ngIf="ev.statut === 'BROUILLON'"
-                      (click)="sound.nav(); publier(ev.id!)" title="Publier">
+                      (click)="sound.nav(); publier(ev.id!)">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </button>
-              <!-- Annuler -->
               <button class="act-btn act-annuler"
                       *ngIf="ev.statut === 'PUBLIE'"
-                      (click)="annuler(ev.id!)" title="Annuler">
+                      (click)="annuler(ev.id!)">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               </button>
-              <!-- Supprimer -->
               <button class="act-btn act-supprimer"
-                      (click)="supprimer(ev.id!)" title="Supprimer">
+                      (click)="supprimer(ev.id!)">
                 <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <polyline points="3 6 5 6 21 6"/>
                   <path d="M19 6l-1 14H6L5 6"/>
@@ -175,10 +174,11 @@
             </div>
           </td>
         </tr>
+
         <tr *ngIf="evenementsFiltres.length === 0 && !loading">
           <td colspan="8" class="empty-state">
             <div class="empty-icon">📅</div>
-            <div>Aucun événement trouvé</div>
+            <div>{{ 'adm.ev.empty' | t }}</div>
           </td>
         </tr>
       </tbody>

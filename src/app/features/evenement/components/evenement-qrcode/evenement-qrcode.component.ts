@@ -6,6 +6,7 @@ import * as QRCode from 'qrcode';
 import { Participant } from '../../models/participant.model';
 import { Evenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-evenement-qrcode',
@@ -30,7 +31,8 @@ export class EvenementQrcodeComponent implements AfterViewInit, OnChanges {
     }
   }
   constructor(
-      public sound: SoundService
+      public sound: SoundService,
+      public i18n: I18nService
     ) {}
 
  private generateQR(): void {

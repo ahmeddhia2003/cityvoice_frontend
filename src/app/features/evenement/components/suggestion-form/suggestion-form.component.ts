@@ -5,6 +5,7 @@ import { EvenementService } from '../../services/evenement.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TypeEvenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-suggestion-form',
@@ -24,7 +25,8 @@ export class SuggestionFormComponent {
     private evenementService: EvenementService,
     private authService: AuthService,
     private router: Router,
-    public sound: SoundService
+    public sound: SoundService,
+    public i18n: I18nService
   ) {
     const user = this.authService.getCurrentUser();
     this.form = this.fb.group({
@@ -52,13 +54,13 @@ export class SuggestionFormComponent {
 
   soumettre(): void {
     if (!this.authService.isLoggedIn()) {
-      this.erreur = '🔒 Vous devez être connecté pour soumettre une suggestion.';
+      this.erreur = this.i18n.t('sug.form.err.login');
       setTimeout(() => this.router.navigate(['/auth/signin']), 2000);
       return;
     }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.erreur = '⚠️ Veuillez corriger les erreurs du formulaire.';
+      this.erreur = this.i18n.t('sug.form.err.form');
       return;
     }
     this.sound.click();
@@ -68,13 +70,13 @@ export class SuggestionFormComponent {
     this.evenementService.soumettreSuggestion(this.form.value).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '✅ Votre suggestion a été soumise ! Consultez vos suggestions pour suivre son statut.';
+        this.succes = this.i18n.t('sug.form.succes');
         this.loading = false;
         this.form.reset();
         setTimeout(() => this.router.navigate(['/evenements/mes-suggestions']), 2000);
       },
       error: () => {
-        this.erreur = 'Erreur lors de la soumission. Réessayez.';
+        this.erreur = this.i18n.t('sug.form.err.submit');
         this.loading = false;
       }
     });

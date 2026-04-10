@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { EvenementService } from '../../services/evenement.service';
 import { Suggestion, SuggestionAnalyse } from '../../models/suggestion.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-admin-suggestion-list',
@@ -30,7 +31,8 @@ export class AdminSuggestionListComponent implements OnInit {
   constructor(
     private evenementService: EvenementService,
     public router: Router,
-    public sound: SoundService
+    public sound: SoundService,
+    public i18n: I18nService
   ) {}
 
   ngOnInit(): void { this.charger(); }
@@ -45,7 +47,7 @@ export class AdminSuggestionListComponent implements OnInit {
         this.appliquerFiltre();
         this.loading = false;
       },
-      error: () => { this.erreur = 'Erreur chargement'; this.loading = false; }
+      error: () => { this.erreur = this.i18n.t('adm.sug.err.load'); this.loading = false; }
     });
   }
 
@@ -67,7 +69,7 @@ export class AdminSuggestionListComponent implements OnInit {
         this.sound.success();
       },
       error: () => {
-        this.erreur = 'Erreur lors de l\'analyse AI';
+        this.erreur = this.i18n.t('adm.sug.err.analyse');
         this.analyseEnCours = null;
       }
     });
@@ -77,7 +79,7 @@ export class AdminSuggestionListComponent implements OnInit {
     this.sound.success();
     this.evenementService.traiterSuggestion(s.id!, 'ACCEPTEE', 'Suggestion acceptée').subscribe({
       next: () => {
-        this.succes = '✅ Suggestion acceptée !';
+        this.succes = this.i18n.t('adm.sug.succes.accepter');
         this.charger();
         // Naviguer vers création événement pré-rempli
         this.router.navigate(['/admin/evenements/nouveau'], {
@@ -103,7 +105,7 @@ export class AdminSuggestionListComponent implements OnInit {
   confirmerRejet(): void {
     if (!this.commentaireModal?.id) return;
     if (!this.commentaire || this.commentaire.trim().length < 10) {
-      this.erreur = '⚠️ Le commentaire doit contenir au moins 10 caractères.';
+      this.erreur = this.i18n.t('adm.sug.err.commentaire');
       return;
     }
     this.sound.click(); 
@@ -112,7 +114,7 @@ export class AdminSuggestionListComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '❌ Suggestion rejetée';
+        this.succes = this.i18n.t('adm.sug.succes.rejeter');
         this.commentaireModal = null;
         this.charger();
         setTimeout(() => this.succes = '', 3000);
@@ -129,6 +131,15 @@ export class AdminSuggestionListComponent implements OnInit {
     return map[statut] || 'statut-soumise';
   }
 
+  getStatutLabel(statut: string): string {
+    const map: any = {
+      'SOUMISE':  this.i18n.t('ms.statut.soumise'),
+      'ACCEPTEE': this.i18n.t('ms.statut.acceptee'),
+      'REJETEE':  this.i18n.t('ms.statut.rejetee'),
+    };
+    return map[statut] || statut;
+  }
+  
   getScoreColor(score: number): string {
     if (score >= 70) return '#0D9B76';
     if (score >= 40) return '#C9973E';

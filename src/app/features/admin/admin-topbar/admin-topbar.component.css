@@ -55,3 +55,37 @@
   background: var(--cream); border: 1.5px solid var(--border);
   border-radius: var(--r); padding: 6px 12px; white-space: nowrap;
 }
+.lang-sw {
+  display: flex;
+  align-items: center;
+  background: var(--cream);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1.5px solid var(--border);
+}
+
+.lang-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--fb);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3);
+  background: transparent;
+  letter-spacing: 0.04em;
+  transition: all 0.18s;
+}
+
+.lang-btn.active {
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: 0 1px 4px rgba(12, 31, 63, 0.1);
+}
+
+.lang-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+}

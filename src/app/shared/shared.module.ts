@@ -27,4 +27,8 @@ import {RouterModule} from '@angular/router';
     RouterModule
   ],
 })
-export class SharedModule { }
+export class SharedModule {
+  constructor() {
+    console.log('PIPE REGISTERED');
+  }
+ }

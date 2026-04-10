@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {SoundService} from '../../../core/services/sound.service';
-import {LangService} from '../../../core/services/lang.service';
+import {LangService,Lang } from '../../../core/services/lang.service';
 @Component({
   selector: 'app-admin-topbar',
   templateUrl: './admin-topbar.component.html',
@@ -21,4 +21,5 @@ export class AdminTopbarComponent implements OnInit {
       weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
     });
   }
+  setLang(l: Lang): void { this.sound.nav(); this.lang.switch(l); }
 }

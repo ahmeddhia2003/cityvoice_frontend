@@ -1,7 +1,7 @@
 <div class="qr-card">
   <div class="qr-header">
     <div class="qr-icon-check">✅</div>
-    <h3>Votre Badge d'Entrée</h3>
+    <h3>{{ 'qr.titre' | t }}</h3>
     <p class="qr-ev-title">{{ evenement.titre }}</p>
   </div>
 
@@ -11,15 +11,15 @@
     </div>
     
     <div class="qr-info">
-      <p><strong>Participant :</strong> {{ participant.nomCitoyen }}</p>
-      <p><strong>Lieu :</strong> {{ evenement.lieu }}</p>
-      <p><strong>Date :</strong> {{ evenement.dateDebut | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>{{ 'qr.participant' | t }}</strong> {{ participant.nomCitoyen }}</p>
+      <p><strong>{{ 'qr.lieu' | t }}</strong> {{ evenement.lieu }}</p>
+      <p><strong>{{ 'qr.date' | t }}</strong> {{ evenement.dateDebut | date:'dd/MM/yyyy HH:mm' }}</p>
     </div>
   </div>
 
   <div class="qr-footer">
     <button class="btn-download" (click)='telecharger()'>
-      <span>📥</span> Télécharger mon QR Code
+      <span>📥</span> {{ 'qr.telecharger' | t }}
     </button>
   </div>
 </div>

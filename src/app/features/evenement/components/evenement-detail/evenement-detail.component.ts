@@ -8,6 +8,8 @@ import { EvenementService } from '../../services/evenement.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { SoundService } from '../../../../core/services/sound.service';
 import { MeteoService, MeteoData } from '../../../../core/services/meteo.service';
+import { GoogleCalendarService } from '../../../../core/services/google-calendar.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-evenement-detail',
@@ -57,7 +59,9 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     private evenementService: EvenementService,
     private authService: AuthService,
     public sound: SoundService,
-    private meteoService: MeteoService
+    private meteoService: MeteoService,
+    private googleCalendarService: GoogleCalendarService,
+    public i18n: I18nService
   ) {
     const user = this.authService.getCurrentUserWithEmail();
     this.isAdmin = this.authService.isAdmin();
@@ -65,7 +69,8 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     this.inscriptionForm = this.fb.group({
       citoyenId: [user?.userId || ''],
       email:     [user?.email || ''],
-      nom:       [user?.email?.split('@')[0] || '']
+      nom:       [user?.email?.split('@')[0] || ''],
+      telCitoyen: [''] 
     });
   }
 
@@ -74,6 +79,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     this.chargerEvenement(id);
     this.chargerSponsors(id);
     this.chargerInteresse(id);
+    this.verifierInscription(id); 
     if (this.isAdmin) {
       this.chargerParticipants(id);
     }
@@ -98,7 +104,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
         this.chargerSimilaires(data.type, data.id!); 
         this.chargerMeteo(data);
        },
-      error: () => { this.erreur = 'Événement introuvable'; this.loading = false; }
+      error: () => { this.erreur = this.i18n.t('adm.ev.err.load'); this.loading = false; }
     });
   }
   chargerSponsors(id: number): void {
@@ -155,7 +161,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     inscrire(): void {
       if (!this.authService.isLoggedIn()) {
         this.sound.click();
-        this.erreur = '🔒 Vous devez être connecté pour vous inscrire à un événement.';
+        this.erreur = this.i18n.t('ev.detail.err.login');
         setTimeout(() => this.router.navigate(['/auth/signin']), 2000);
         return;
       }
@@ -178,11 +184,13 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
 
     inscrireGratuit(): void {
       const user = this.authService.getCurrentUserWithEmail();
+      console.log('Form value:', this.inscriptionForm.value);
       // ← Forcer les valeurs avant envoi
       this.inscriptionForm.patchValue({
         citoyenId: user?.userId || '',
         email: user?.email || '',
         nom: user?.email?.split('@')[0] || 'Citoyen'
+        //telCitoyen: ''
       });
 
       console.log('Form value after patch:', this.inscriptionForm.value);
@@ -197,7 +205,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
           console.log("DEBUG: QR Token récupéré ->", res.qrToken);
           this.participantInscrit = res;
           this.inscriptionReussie = true;
-          this.succes = '✅ Inscription confirmée ! Votre QR Code est prêt ci-dessous.';
+          this.succes = this.i18n.t('ev.detail.succes.inscription');
           this.inscriptionLoading = false;
           this.inscriptionForm.reset();
           this.chargerEvenement(this.evenement!.id!);
@@ -205,11 +213,11 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
         error: (err) => {
           const erreurServeur = err.error?.erreur || err.error?.message;
           if (erreurServeur?.includes('déjà inscrit')) {
-            this.erreur = '⚠️ Vous êtes déjà inscrit à cet événement !';
+            this.erreur = this.i18n.t('ev.detail.err.deja');
           } else if (erreurServeur?.includes('complet')) {
-            this.erreur = '😔 Cet événement est complet, plus de places disponibles.';
+            this.erreur = this.i18n.t('ev.detail.err.complet');
           } else {
-            this.erreur = '❌ Erreur lors de l\'inscription. Veuillez réessayer.';
+            this.erreur = this.i18n.t('ev.detail.err.inscription');
           }
           this.inscriptionLoading = false;
         }
@@ -229,9 +237,9 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
         error: (err) => {
           const erreurServeur = err.error?.erreur || err.error?.message;
           if (erreurServeur?.includes('déjà inscrit')) {
-            this.erreur = '⚠️ Vous êtes déjà inscrit à cet événement !';
+            this.erreur = this.i18n.t('ev.detail.err.deja')
           } else {
-            this.erreur = '❌ Erreur lors du paiement.';
+            this.erreur = this.i18n.t('ev.detail.err.paiement');
           }
           this.inscriptionLoading = false;
           this.afficherChoixPaiement = false;
@@ -251,7 +259,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
               this.sound.success();  
               this.participantInscrit = res;
               this.inscriptionReussie = true;
-              this.succes = '✅ Réservation confirmée ! Payez en espèces le jour J. Votre QR Code est ci-dessous.';
+              this.succes = this.i18n.t('ev.detail.succes.especes');
               this.inscriptionLoading = false;
               this.afficherChoixPaiement = false;
               this.inscriptionForm.reset();
@@ -262,11 +270,11 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
         error: (err) => {
           const erreurServeur = err.error?.erreur || err.error?.message;
           if (erreurServeur?.includes('déjà inscrit')) {
-            this.erreur = '⚠️ Vous êtes déjà inscrit à cet événement !';
+            this.erreur = this.i18n.t('ev.detail.err.deja');
           } else if (erreurServeur?.includes('complet')) {
-            this.erreur = '😔 Cet événement est complet, plus de places disponibles.';
+            this.erreur = this.i18n.t('ev.detail.err.complet');
           } else {
-            this.erreur = '❌ Erreur lors de la réservation.';
+            this.erreur = this.i18n.t('ev.detail.err.reservation');
           }
           this.inscriptionLoading = false;
           this.afficherChoixPaiement = false;
@@ -275,17 +283,17 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     }
 
   supprimerParticipant(participantId: number): void {
-    if (!confirm('Désinscrire ce participant ?')) return;
+    if (!confirm(this.i18n.t('ev.detail.confirm.desinscrire'))) return;
     this.sound.click();       
     this.evenementService.supprimerParticipant(participantId).subscribe({
       next: () => {
         this.sound.success();  
-        this.succes = '✅ Participant supprimé';
+        this.succes = this.i18n.t('ev.detail.succes.suppr.participant');
         this.chargerParticipants(this.evenement!.id!);
         this.chargerEvenement(this.evenement!.id!);
         setTimeout(() => this.succes = '', 3000);
       },
-      error: () => this.erreur = 'Erreur lors de la suppression'
+      error: () => this.erreur = this.i18n.t('ev.detail.err.suppr')
     });
   }
 
@@ -294,11 +302,11 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     this.evenementService.confirmerPresence(participantId).subscribe({
       next: () => {
         this.sound.success();  
-        this.succes = '✅ Présence confirmée';
+        this.succes = this.i18n.t('ev.detail.succes.presence');
         this.chargerParticipants(this.evenement!.id!);
         setTimeout(() => this.succes = '', 3000);
       },
-      error: () => this.erreur = 'Erreur lors de la confirmation'
+      error: () => this.erreur = this.i18n.t('ev.detail.err.presence')
     });
   }
 
@@ -311,8 +319,8 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     if (!this.evenement?.id) return;
     this.sound.click();
     this.evenementService.annulerEvenement(this.evenement.id).subscribe({
-      next: (ev) => { this.evenement = ev; this.succes = '⚠️ Événement annulé'; },
-      error: () => this.erreur = 'Erreur lors de l\'annulation'
+      next: (ev) => { this.evenement = ev; this.succes = this.i18n.t('adm.ev.succes.cancel'); },
+      error: () => this.erreur = this.i18n.t('adm.ev.err.cancel')
     });
   }
 
@@ -322,8 +330,8 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
     this.evenementService.publierEvenement(this.evenement.id).subscribe({
       next: (ev) => { 
         this.sound.success();
-        this.evenement = ev; this.succes = '✅ Événement publié !'; },
-      error: () => this.erreur = 'Erreur lors de la publication'
+        this.evenement = ev; this.succes = this.i18n.t('adm.ev.succes.publish'); },
+      error: () => this.erreur = this.i18n.t('adm.ev.err.publish')
     });
   }
   // ─── Countdown ────────────────────────────────────────
@@ -369,14 +377,14 @@ chargerInteresse(evenementId: number): void {
 toggleInteresse(): void {
   if (this.interesseLoading || !this.evenement?.id) return;
   const user = this.authService.getCurrentUserWithEmail();
-  if (!user?.userId) { this.showToast('🔒 Connectez-vous pour marquer votre intérêt', 'error'); return; }
+  if (!user?.userId) { this.showToast(this.i18n.t('ev.detail.err.login.interet'), 'error'); return; }
   this.sound.toggle2(!this.interesse);
   this.interesseLoading = true;
   this.evenementService.toggleInteret(user.userId, this.evenement.id).subscribe({
     next: (res) => {
       this.interesse = res.interesse;
       this.interesseLoading = false;
-      this.showToast(res.interesse ? '❤️ Ajouté à vos intérêts !' : '💔 Retiré de vos intérêts', 'success');
+      this.showToast(res.interesse ? this.i18n.t('ev.detail.interet.ajoute'): this.i18n.t('ev.detail.interet.retire'), 'success');
     },
     error: () => { this.interesseLoading = false; }
   });
@@ -451,29 +459,26 @@ getTypePill(type: string): string {
   }
 
   get whatsappText(): string {
-    const titre    = this.evenement?.titre || '';
-    const lieu     = this.evenement?.lieu || '';
-    const date     = this.evenement?.dateDebut 
+    const titre = this.evenement?.titre || '';
+    const lieu  = this.evenement?.lieu || '';
+    const date  = this.evenement?.dateDebut 
       ? new Date(this.evenement.dateDebut).toLocaleDateString('fr-FR', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        })
-      : '';
-    const prix     = this.evenement?.estPayant 
+        }) : '';
+    const prix  = this.evenement?.estPayant 
       ? `💰 Prix : ${this.evenement.prix} TND` 
       : '✅ Entrée gratuite';
-    const lien     = window.location.href;
+    const lien  = window.location.href;
 
-    return encodeURIComponent(
-  `🎉 *${titre}*
+    const message = 
+      `🎉 *${titre}*\n\n` +
+      `📍 Lieu : ${lieu}\n` +
+      `📅 Date : ${date}\n` +
+      `${prix}\n\n` +
+      `👉 Inscription : ${lien}\n\n` +
+      `_Partagé via CityVoice 🌍_`;
 
-  📍 Lieu : ${lieu}
-  📅 Date : ${date}
-  ${prix}
-
-  👉 Plus d'infos et inscription : ${lien}
-
-  _Partagé via CityVoice 🌍_`
-    );
+    return encodeURIComponent(message);
   }
 
   get twitterText(): string {
@@ -509,22 +514,33 @@ getTypePill(type: string): string {
   } 
   // Météo
   chargerMeteo(ev: Evenement): void {
-    if (!ev.latitude || !ev.longitude || !ev.dateDebut) return;
+    console.log('🌤 chargerMeteo appelé:', ev.latitude, ev.longitude, ev.dateDebut);
+    if (!ev.latitude || !ev.longitude || !ev.dateDebut) {
+      console.log('❌ Données manquantes');
+      return;
+    }
 
-    // Vérifier si la date est dans les 16 prochains jours
     const now = new Date();
     const eventDate = new Date(ev.dateDebut);
     const diffDays = Math.ceil((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    console.log('📅 diffDays:', diffDays);
 
-    if (diffDays < 0 || diffDays > 16) return; // ← API limite à 16 jours
+    if (diffDays < 0 || diffDays > 16) {
+      console.log('❌ Date hors plage:', diffDays);
+      return;
+    }
 
     this.meteoLoading = true;
     this.meteoService.getMeteo(ev.latitude, ev.longitude, ev.dateDebut).subscribe({
       next: (data) => {
+        console.log('✅ Météo reçue:', data);
         this.meteo = data;
         this.meteoLoading = false;
       },
-      error: () => { this.meteoLoading = false; }
+      error: (err) => {
+        console.log('❌ Erreur météo:', err);
+        this.meteoLoading = false;
+      }
     });
   }
   chargerParticipantInscrit(participantId: number): void {
@@ -577,6 +593,54 @@ getTypePill(type: string): string {
   getDescription(): string {
     return this.descriptionTraduite ||
           this.evenement?.description || '';
+  }
+  
+  async ajouterAuCalendar(): Promise<void> {
+    if (!this.evenement) return;
+    this.sound.click();
+    
+    const eventId = await this.googleCalendarService.ajouterEvenement(this.evenement);
+    if (eventId) {
+      this.showToast('✅ Ajouté à Google Calendar !', 'success');
+    } else {
+      this.showToast('❌ Erreur Google Calendar', 'error');
+    }
+  }
+  verifierInscription(evenementId: number): void {
+    const user = this.authService.getCurrentUserWithEmail();
+    if (!user?.userId || this.isAdmin) return;
+
+    // Chercher si le user est déjà inscrit
+    this.evenementService.getParticipants(evenementId).subscribe({
+      next: (participants) => {
+        const p = participants.find(p => p.citoyenId === user.userId);
+        if (p) {
+          this.participantInscrit = p;
+          this.inscriptionReussie = true;
+        }
+      },
+      error: () => {}
+    });
+  }
+  getStatutLabel(statut: string): string {
+    const map: any = {
+    'PUBLIE':    this.i18n.t('adm.ev.statut.publie'),
+    'BROUILLON': this.i18n.t('adm.ev.statut.brouillon'),
+    'ANNULE':    this.i18n.t('adm.ev.statut.annule'),
+    'TERMINE':   this.i18n.t('adm.ev.statut.termine'),
+  };
+  return map[statut] || statut;
+  }
+
+  getTypeLabel(type: string): string {
+    const map: any = {
+    'BENEVOLE':  this.i18n.t('adm.ev.type.benevole'),
+    'EDUCATION': this.i18n.t('adm.ev.type.education'),
+    'RECYCLAGE': this.i18n.t('adm.ev.type.recyclage'),
+    'SEMINAIRE': this.i18n.t('adm.ev.type.seminaire'),
+    'PAYANT':    this.i18n.t('adm.ev.type.payant'),
+    };
+    return map[type] || type;
   }
   retour(): void {
     this.sound.nav();  

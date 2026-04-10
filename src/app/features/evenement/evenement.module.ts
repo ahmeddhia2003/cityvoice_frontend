@@ -14,6 +14,7 @@ import { SharedEvenementModule }     from './shared-evenement.module';
 import { MesSuggestionsComponent } from './components/mes-suggestions/mes-suggestions.component';
 import { PaymentSuccessComponent } from './components/payment-success/payment-success.component';
 import { PaymentCancelComponent }  from './components/payment-cancel/payment-cancel.component';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { PaymentCancelComponent }  from './components/payment-cancel/payment-can
     MesSuggestionsComponent,
     PaymentSuccessComponent,
     PaymentCancelComponent,
+    
   ],
   imports: [
     CommonModule,
@@ -34,7 +36,8 @@ import { PaymentCancelComponent }  from './components/payment-cancel/payment-can
     EvenementRoutingModule,
     FormsModule,
     FullCalendarModule,
-    SharedEvenementModule
+    SharedEvenementModule,
+    SharedModule
   ]
 })
 export class EvenementModule {}

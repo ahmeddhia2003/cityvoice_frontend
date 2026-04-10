@@ -3,8 +3,8 @@
   <!-- ── Header ─────────────────────────────────────────── -->
   <div class="sp-header">
     <div>
-      <div class="sp-title">Sponsors <em>& Partenaires</em></div>
-      <div class="sp-sub">{{ sponsors.length }} sponsor(s) enregistré(s)</div>
+      <div class="sp-title">{{ 'adm.sp.title' | t }} <em>{{ 'adm.sp.title.em' | t }}</em></div>
+      <div class="sp-sub">{{ sponsors.length }} {{ 'adm.sp.sub' | t }}</div>
     </div>
     <div class="sp-header-actions">
       <button class="sp-btn-export" (click)="exportCSV()">
@@ -28,7 +28,7 @@
           <line x1="12" y1="8" x2="12" y2="16"/>
           <line x1="8" y1="12" x2="16" y2="12"/>
         </svg>
-        Nouveau sponsor
+        {{ 'adm.sp.nouveau' | t }}
       </button>
     </div>
   </div>
@@ -42,22 +42,22 @@
     <div class="sp-kpi" style="--ka: var(--navy)">
       <div class="sp-kpi-icon">🤝</div>
       <div class="sp-kpi-num">{{ totalSponsors }}</div>
-      <div class="sp-kpi-label">Total sponsors</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.total' | t }}</div>
     </div>
     <div class="sp-kpi" style="--ka: #0D9B76">
       <div class="sp-kpi-icon">✅</div>
       <div class="sp-kpi-num">{{ sponsorsActifs }}</div>
-      <div class="sp-kpi-label">Sponsors actifs</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.actifs' | t }}</div>
     </div>
     <div class="sp-kpi" style="--ka: #C9973E">
       <div class="sp-kpi-icon">🥇</div>
       <div class="sp-kpi-num">{{ sponsorsPremium }}</div>
-      <div class="sp-kpi-label">Niveau Or / Platine</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.premium' | t }}</div>
     </div>
     <div class="sp-kpi" style="--ka: #6366F1">
       <div class="sp-kpi-icon">💰</div>
       <div class="sp-kpi-num">{{ totalMontant | number:'1.0-0' }}</div>
-      <div class="sp-kpi-label">Montant total TND</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.montant' | t }}</div>
     </div>
   </div>
 
@@ -69,13 +69,13 @@
         <line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input type="text" [(ngModel)]="recherche"
-            (ngModelChange)="page = 1; appliquerFiltres()"
-            placeholder="Rechercher un sponsor…">
+             (ngModelChange)="page = 1; appliquerFiltres()"
+             [placeholder]="'adm.sp.filtre.search' | t">
     </div>
 
     <select class="filter-select" [(ngModel)]="filtreNiveau"
             (change)="sound.nav(); appliquerFiltres()">
-      <option value="">Tous les niveaux</option>
+      <option value="">{{ 'adm.sp.filtre.niveaux' | t }}</option>
       <option *ngFor="let n of niveaux" [value]="n">
         {{ getNiveauIcon(n) }} {{ n }}
       </option>
@@ -83,14 +83,14 @@
 
     <select class="filter-select" [(ngModel)]="triPar"
             (change)="sound.nav(); appliquerFiltres()">
-      <option value="nom">Trier par nom</option>
-      <option value="evenements">Trier par événements</option>
-      <option value="niveau">Trier par niveau</option>
+      <option value="nom">{{ 'adm.sp.tri.nom' | t }}</option>
+      <option value="evenements">{{ 'adm.sp.tri.ev' | t }}</option>
+      <option value="niveau">{{ 'adm.sp.tri.niveau' | t }}</option>
     </select>
 
     <button class="filter-reset"
             (click)="sound.nav(); recherche=''; filtreNiveau=''; triPar='nom'; appliquerFiltres()">
-      Réinitialiser
+      {{ 'adm.sp.filtre.reset' | t }}
     </button>
 
     <button class="sp-tri-btn" (click)="sound.nav(); triDesc = !triDesc; appliquerFiltres()"
@@ -132,10 +132,10 @@
   <!-- ── Empty ─────────────────────────────────────────── -->
   <div class="sp-empty" *ngIf="!loading && sponsorsFiltres.length === 0">
     <div class="sp-empty-icon">🤝</div>
-    <h3>Aucun sponsor trouvé</h3>
-    <p>Ajoutez vos premiers partenaires et sponsors</p>
+    <h3>{{ 'adm.sp.empty.title' | t }}</h3>
+    <p>{{ 'adm.sp.empty.sub' | t }}</p>
     <button class="btn btn-primary" (click)="ouvrirCreation()">
-      Ajouter un sponsor →
+      {{ 'adm.sp.empty.btn' | t }}
     </button>
   </div>
 
@@ -174,26 +174,26 @@
       </div>
 
       <div class="sp-card-actions">
-        <button class="sp-btn sp-btn-link" (click)="ouvrirAssociation(s)" title="Lier">
+        <button class="sp-btn sp-btn-link" (click)="ouvrirAssociation(s)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
             <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
           </svg>
-          Lier
+          {{ 'adm.sp.btn.lier' | t }}
         </button>
-        <button class="sp-btn sp-btn-edit" (click)="ouvrirEdition(s)" title="Modifier">
+        <button class="sp-btn sp-btn-edit" (click)="ouvrirEdition(s)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          Modifier
+          {{ 'adm.sp.btn.modifier' | t }}
         </button>
-        <button class="sp-btn sp-btn-delete" (click)="supprimer(s.id!)" title="Supprimer">
+        <button class="sp-btn sp-btn-delete" (click)="supprimer(s.id!)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14H6L5 6"/>
           </svg>
-          Supprimer
+          {{ 'adm.sp.btn.supprimer' | t }}
         </button>
       </div>
     </div>
@@ -204,7 +204,6 @@
     <div class="sp-liste-item" *ngFor="let s of sponsorsPagines; let i = index"
          [style.animation-delay]="(i * 40) + 'ms'">
 
-      <!-- Logo -->
       <div class="sp-liste-logo">
         <img *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.nomEntreprise"
              (error)="$any($event.target).src=''" class="sp-liste-img">
@@ -213,7 +212,6 @@
         </div>
       </div>
 
-      <!-- Infos -->
       <div class="sp-liste-info">
         <div class="sp-liste-nom">{{ s.nomEntreprise }}</div>
         <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="sp-card-site"
@@ -222,7 +220,6 @@
         </a>
       </div>
 
-      <!-- Niveau -->
       <div class="sp-liste-niveau">
         <span *ngIf="s.niveauSponsorat" class="sp-niveau-badge"
               [ngClass]="getNiveauClass(s.niveauSponsorat)">
@@ -230,15 +227,11 @@
         </span>
       </div>
 
-      <!-- Montant -->
       <div class="sp-liste-montant">
-        <span *ngIf="s.montantSponsorat">
-          {{ s.montantSponsorat | number:'1.0-0' }} TND
-        </span>
+        <span *ngIf="s.montantSponsorat">{{ s.montantSponsorat | number:'1.0-0' }} TND</span>
         <span *ngIf="!s.montantSponsorat" style="color:var(--ink-3)">—</span>
       </div>
 
-      <!-- Événements -->
       <div class="sp-liste-ev">
         <span class="sp-ev-badge"
               [class.sp-ev-none]="!s.evenementIds || s.evenementIds.length === 0">
@@ -246,28 +239,27 @@
         </span>
       </div>
 
-      <!-- Actions -->
       <div class="sp-card-actions" style="padding-top:0; border-top:none">
         <button class="sp-btn sp-btn-link" (click)="ouvrirAssociation(s)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
             <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
           </svg>
-          Lier
+          {{ 'adm.sp.btn.lier' | t }}
         </button>
         <button class="sp-btn sp-btn-edit" (click)="ouvrirEdition(s)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          Modifier
+          {{ 'adm.sp.btn.modifier' | t }}
         </button>
         <button class="sp-btn sp-btn-delete" (click)="supprimer(s.id!)">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6l-1 14H6L5 6"/>
           </svg>
-          Supprimer
+          {{ 'adm.sp.btn.supprimer' | t }}
         </button>
       </div>
     </div>
@@ -288,64 +280,64 @@
   <div class="ms-modal-overlay" *ngIf="modalOuvert" (click)="fermerModal()">
     <div class="ms-modal" (click)="$event.stopPropagation()">
       <div class="ms-modal-header">
-        <h3>{{ modeEdition ? '✏️ Modifier le sponsor' : '🤝 Nouveau sponsor' }}</h3>
+        <h3>{{ modeEdition ? ('adm.sp.modal.modifier' | t) : ('adm.sp.modal.nouveau' | t) }}</h3>
         <button class="ms-modal-close" (click)="fermerModal()">✕</button>
       </div>
 
       <form [formGroup]="sponsorForm" (ngSubmit)="sauvegarder()" class="ms-modal-form">
         <div class="ev-form-group">
-          <label class="ev-label">Nom de l'entreprise *</label>
+          <label class="ev-label">{{ 'adm.sp.form.nom' | t }}</label>
           <input type="text" class="ev-input" formControlName="nomEntreprise"
-                 placeholder="Ex: Google Tunisia"
+                 [placeholder]="'adm.sp.form.nom.ph' | t"
                  [class.ev-input-error]="sponsorForm.get('nomEntreprise')?.invalid
                    && sponsorForm.get('nomEntreprise')?.touched">
           <span class="ev-field-error"
                 *ngIf="sponsorForm.get('nomEntreprise')?.errors?.['required']
                   && sponsorForm.get('nomEntreprise')?.touched">
-            Le nom est obligatoire
+            {{ 'adm.sp.err.nom.required' | t }}
           </span>
           <span class="ev-field-error"
                 *ngIf="sponsorForm.get('nomEntreprise')?.errors?.['minlength']
                   && sponsorForm.get('nomEntreprise')?.touched">
-            Minimum 2 caractères
+            {{ 'adm.sp.err.nom.min' | t }}
           </span>
         </div>
 
         <div class="ev-form-group">
-          <label class="ev-label">URL du logo</label>
+          <label class="ev-label">{{ 'adm.sp.form.logo' | t }}</label>
           <input type="text" class="ev-input" formControlName="logoUrl"
-                 placeholder="https://logo.clearbit.com/entreprise.com"
+                 [placeholder]="'adm.sp.form.logo.ph' | t"
                  [class.ev-input-error]="sponsorForm.get('logoUrl')?.invalid
                    && sponsorForm.get('logoUrl')?.touched">
           <span class="ev-field-error"
                 *ngIf="sponsorForm.get('logoUrl')?.errors?.['pattern']
                   && sponsorForm.get('logoUrl')?.touched">
-            L'URL doit commencer par http:// ou https://
+            {{ 'adm.sp.err.url' | t }}
           </span>
-          <small class="ev-field-hint">
-            💡 Astuce : utilisez https://logo.clearbit.com/nomdomaine.com
-          </small>
+          <small class="ev-field-hint">{{ 'adm.sp.form.logo.hint' | t }}</small>
         </div>
 
         <div class="ev-form-group">
-          <label class="ev-label">Site web</label>
+          <label class="ev-label">{{ 'adm.sp.form.site' | t }}</label>
           <input type="text" class="ev-input" formControlName="siteWeb"
-                 placeholder="https://www.entreprise.com"
+                 [placeholder]="'adm.sp.form.site.ph' | t"
                  [class.ev-input-error]="sponsorForm.get('siteWeb')?.invalid
                    && sponsorForm.get('siteWeb')?.touched">
           <span class="ev-field-error"
                 *ngIf="sponsorForm.get('siteWeb')?.errors?.['pattern']
                   && sponsorForm.get('siteWeb')?.touched">
-            L'URL doit commencer par http:// ou https://
+            {{ 'adm.sp.err.url' | t }}
           </span>
         </div>
 
         <div class="ms-modal-footer">
-          <button type="button" class="btn btn-outline" (click)="fermerModal()">Annuler</button>
+          <button type="button" class="btn btn-outline" (click)="fermerModal()">
+            {{ 'adm.sp.modal.annuler' | t }}
+          </button>
           <button type="submit" class="btn btn-primary"
                   [disabled]="sponsorForm.invalid || formLoading">
             <span *ngIf="formLoading" class="ev-btn-spinner"></span>
-            {{ modeEdition ? 'Sauvegarder' : 'Créer le sponsor' }}
+            {{ modeEdition ? ('adm.sp.modal.sauvegarder' | t) : ('adm.sp.modal.creer' | t) }}
           </button>
         </div>
       </form>
@@ -356,29 +348,29 @@
   <div class="ms-modal-overlay" *ngIf="associationModal" (click)="fermerAssociation()">
     <div class="ms-modal" (click)="$event.stopPropagation()">
       <div class="ms-modal-header">
-        <h3>🔗 Lier {{ associationModal.nomEntreprise }} à un événement</h3>
+        <h3>{{ 'adm.sp.assoc.titre' | t }} {{ associationModal.nomEntreprise }} {{ 'adm.sp.assoc.a' | t }}</h3>
         <button class="ms-modal-close" (click)="fermerAssociation()">✕</button>
       </div>
 
       <form [formGroup]="associationForm" (ngSubmit)="associer()" class="ms-modal-form">
         <div class="ev-form-group">
-          <label class="ev-label">Événement *</label>
+          <label class="ev-label">{{ 'adm.sp.assoc.ev' | t }}</label>
           <select class="ev-select-input" formControlName="evenementId"
                   [class.ev-input-error]="associationForm.get('evenementId')?.invalid
                     && associationForm.get('evenementId')?.touched">
-            <option value="">-- Sélectionner un événement --</option>
+            <option value="">{{ 'adm.sp.assoc.ev.select' | t }}</option>
             <option *ngFor="let ev of evenements" [value]="ev.id">{{ ev.titre }}</option>
           </select>
           <span class="ev-field-error"
                 *ngIf="associationForm.get('evenementId')?.errors?.['required']
                   && associationForm.get('evenementId')?.touched">
-            Veuillez sélectionner un événement
+            {{ 'adm.sp.assoc.ev.required' | t }}
           </span>
         </div>
 
         <div class="ev-form-row">
           <div class="ev-form-group">
-            <label class="ev-label">Niveau de sponsoring *</label>
+            <label class="ev-label">{{ 'adm.sp.assoc.niveau' | t }}</label>
             <select class="ev-select-input" formControlName="niveauSponsorat">
               <option *ngFor="let n of niveaux" [value]="n">
                 {{ getNiveauIcon(n) }} {{ n }}
@@ -386,31 +378,33 @@
             </select>
           </div>
           <div class="ev-form-group">
-            <label class="ev-label">Montant (TND) *</label>
+            <label class="ev-label">{{ 'adm.sp.assoc.montant' | t }}</label>
             <input type="number" class="ev-input"
                    formControlName="montantSponsorat"
-                   placeholder="Min. 100 TND"
+                   [placeholder]="'adm.sp.assoc.montant.ph' | t"
                    [class.ev-input-error]="associationForm.get('montantSponsorat')?.invalid
                      && associationForm.get('montantSponsorat')?.touched">
             <span class="ev-field-error"
                   *ngIf="associationForm.get('montantSponsorat')?.errors?.['required']
                     && associationForm.get('montantSponsorat')?.touched">
-              Le montant est obligatoire
+              {{ 'adm.sp.err.montant.req' | t }}
             </span>
             <span class="ev-field-error"
                   *ngIf="associationForm.get('montantSponsorat')?.errors?.['min']
                     && associationForm.get('montantSponsorat')?.touched">
-              Le montant minimum est de 100 TND
+              {{ 'adm.sp.err.montant.min' | t }}
             </span>
           </div>
         </div>
 
         <div class="ms-modal-footer">
-          <button type="button" class="btn btn-outline" (click)="fermerAssociation()">Annuler</button>
+          <button type="button" class="btn btn-outline" (click)="fermerAssociation()">
+            {{ 'adm.sp.modal.annuler' | t }}
+          </button>
           <button type="submit" class="btn btn-primary"
                   [disabled]="associationForm.invalid || associationLoading">
             <span *ngIf="associationLoading" class="ev-btn-spinner"></span>
-            Associer
+            {{ 'adm.sp.assoc.btn' | t }}
           </button>
         </div>
       </form>

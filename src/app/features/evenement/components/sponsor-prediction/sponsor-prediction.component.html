@@ -1,0 +1,84 @@
+<div class="sp-card">
+  <div class="sp-header">
+    <h3>🤖 Prédiction AI Sponsoring</h3>
+    <p>Estimez le niveau et montant optimal pour vos sponsors</p>
+  </div>
+
+  <!-- Formulaire -->
+  <form [formGroup]="form" (ngSubmit)="predire()" class="sp-form">
+    <div class="sp-field">
+      <label>Budget événement (TND)</label>
+      <input type="number" formControlName="budgetEvenement"
+             placeholder="Ex: 5000" min="100">
+    </div>
+    <button type="submit" class="sp-btn" [disabled]="loading">
+      <span *ngIf="!loading">⚡ Prédire avec AI</span>
+      <span *ngIf="loading">🔄 Analyse en cours...</span>
+    </button>
+  </form>
+
+  <!-- Erreur -->
+  <div class="sp-error" *ngIf="erreur">{{ erreur }}</div>
+
+  <!-- Résultat -->
+  <div class="sp-result" *ngIf="prediction">
+
+    <!-- Niveau recommandé -->
+    <div class="sp-niveau-card"
+         [style.border-color]="getNiveauColor(prediction.niveau_recommande)">
+      <div class="sp-niveau-icon">
+        {{ getNiveauIcon(prediction.niveau_recommande) }}
+      </div>
+      <div class="sp-niveau-info">
+        <div class="sp-niveau-label">Niveau recommandé</div>
+        <div class="sp-niveau-value"
+             [style.color]="getNiveauColor(prediction.niveau_recommande)">
+          {{ prediction.niveau_recommande }}
+        </div>
+      </div>
+      <div class="sp-montant">
+        <div class="sp-montant-label">Montant optimal</div>
+        <div class="sp-montant-value">{{ prediction.montant_optimal }} TND</div>
+      </div>
+      <div class="sp-proba">
+        <div class="sp-proba-label">Probabilité acceptation</div>
+        <div class="sp-proba-value">{{ prediction.probabilite_acceptation }}%</div>
+      </div>
+    </div>
+
+    <!-- Barres de probabilité -->
+    <div class="sp-probas">
+      <div class="sp-probas-title">Probabilités par niveau</div>
+      <div *ngFor="let niveau of ['PLATINE','OR','ARGENT','BRONZE']"
+           class="sp-proba-row">
+        <span class="sp-proba-label">
+          {{ getNiveauIcon(niveau) }} {{ niveau }}
+        </span>
+        <div class="sp-proba-bar">
+          <div class="sp-proba-fill"
+               [style.width.%]="getBarWidth(niveau)"
+               [style.background]="getNiveauColor(niveau)">
+          </div>
+        </div>
+        <span class="sp-proba-pct">{{ getBarWidth(niveau) }}%</span>
+      </div>
+    </div>
+
+    <!-- Explication Ollama -->
+    <div class="sp-explication">
+      <div class="sp-explication-title">💡 Analyse AI</div>
+      <p>{{ prediction.explication }}</p>
+    </div>
+
+    <!-- Email de démarchage -->
+    <div class="sp-email">
+      <div class="sp-email-header">
+        <span class="sp-email-title">📧 Email de démarchage</span>
+        <button class="sp-copy-btn" (click)="copierEmail()">
+          {{ emailCopied ? '✅ Copié !' : '📋 Copier' }}
+        </button>
+      </div>
+      <pre class="sp-email-body">{{ prediction.email_demarche }}</pre>
+    </div>
+  </div>
+</div>

@@ -4,20 +4,19 @@
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
-    Retour aux événements
+    {{ 'sug.form.retour' | t }}
   </button>
 
   <div class="ev-form-page">
     <div class="ev-form-main">
 
       <div class="ev-form-header">
-        <span class="pill pill-gold" style="margin-bottom:12px">💡 Proposition citoyenne</span>
+        <span class="pill pill-gold" style="margin-bottom:12px">{{ 'sug.form.pill' | t }}</span>
         <h2 class="heading-display">
-          Suggérer un <span class="italic" style="color:var(--ink3)">événement</span>
+          {{ 'sug.form.heading' | t }}
+          <span class="italic" style="color:var(--ink3)">{{ 'sug.form.heading.em' | t }}</span>
         </h2>
-        <p class="ev-form-sub">
-          Votre idée peut devenir réalité — proposez un événement à votre municipalité
-        </p>
+        <p class="ev-form-sub">{{ 'sug.form.sub' | t }}</p>
       </div>
 
       <div *ngIf="succes" class="ev-alert ev-alert-success">
@@ -32,63 +31,63 @@
 
         <!-- Titre -->
         <div class="ev-form-group">
-          <label class="ev-label">Titre de votre suggestion *</label>
+          <label class="ev-label">{{ 'sug.form.titre.label' | t }}</label>
           <input type="text" class="ev-input" formControlName="titre"
-                 placeholder="Ex: Atelier de recyclage pour les jeunes"
+                 [placeholder]="'sug.form.titre.ph' | t"
                  [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
           <span class="ev-field-error"
                 *ngIf="form.get('titre')?.errors?.['required'] && form.get('titre')?.touched">
-            Le titre est obligatoire
+            {{ 'sug.form.err.titre.req' | t }}
           </span>
           <span class="ev-field-error"
                 *ngIf="form.get('titre')?.errors?.['minlength'] && form.get('titre')?.touched">
-            Le titre doit contenir au moins 5 caractères
+            {{ 'sug.form.err.titre.min' | t }}
           </span>
           <span class="ev-field-error"
                 *ngIf="form.get('titre')?.errors?.['maxlength'] && form.get('titre')?.touched">
-            Le titre ne peut pas dépasser 100 caractères
+            {{ 'sug.form.err.titre.max' | t }}
           </span>
         </div>
 
         <!-- Description -->
         <div class="ev-form-group">
-          <label class="ev-label">Description</label>
+          <label class="ev-label">{{ 'sug.form.desc.label' | t }}</label>
           <textarea class="ev-textarea" formControlName="description"
-                    placeholder="Décrivez votre idée, les objectifs, le public cible…"
+                    [placeholder]="'sug.form.desc.ph' | t"
                     rows="4"
                     [class.ev-input-error]="form.get('description')?.invalid
                       && form.get('description')?.touched"></textarea>
           <span class="ev-field-error"
                 *ngIf="form.get('description')?.errors?.['minlength']
                   && form.get('description')?.touched">
-            La description doit contenir au moins 20 caractères
+            {{ 'sug.form.err.desc.min' | t }}
           </span>
           <span class="ev-field-error"
                 *ngIf="form.get('description')?.errors?.['maxlength']
                   && form.get('description')?.touched">
-            La description ne peut pas dépasser 1000 caractères
+            {{ 'sug.form.err.desc.max' | t }}
           </span>
         </div>
 
         <!-- Type + Lieu -->
         <div class="ev-form-row">
           <div class="ev-form-group">
-            <label class="ev-label">Type souhaité</label>
+            <label class="ev-label">{{ 'sug.form.type.label' | t }}</label>
             <select class="ev-select-input" formControlName="typeSouhaite">
-              <option value="">-- Sélectionner --</option>
+              <option value="">{{ 'sug.form.type.select' | t }}</option>
               <option *ngFor="let t of types" [value]="t">{{ t }}</option>
             </select>
           </div>
           <div class="ev-form-group">
-            <label class="ev-label">Lieu souhaité</label>
+            <label class="ev-label">{{ 'sug.form.lieu.label' | t }}</label>
             <input type="text" class="ev-input" formControlName="lieuSouhaite"
-                   placeholder="Ex: Sfax, Parc Ennahli"
+                   [placeholder]="'sug.form.lieu.ph' | t"
                    [class.ev-input-error]="form.get('lieuSouhaite')?.invalid
                      && form.get('lieuSouhaite')?.touched">
             <span class="ev-field-error"
-                    *ngIf="form.get('lieuSouhaite')?.errors?.['minlength']
-                      && form.get('lieuSouhaite')?.touched">
-                Le lieu doit contenir au moins 3 caractères
+                  *ngIf="form.get('lieuSouhaite')?.errors?.['minlength']
+                    && form.get('lieuSouhaite')?.touched">
+              {{ 'sug.form.err.lieu.min' | t }}
             </span>
           </div>
         </div>
@@ -96,33 +95,33 @@
         <!-- Date + Email -->
         <div class="ev-form-row">
           <div class="ev-form-group">
-            <label class="ev-label">Date souhaitée</label>
+            <label class="ev-label">{{ 'sug.form.date.label' | t }}</label>
             <input type="date" class="ev-input" formControlName="dateSouhaitee"
                    [class.ev-input-error]="form.get('dateSouhaitee')?.invalid
                      && form.get('dateSouhaitee')?.touched">
             <span class="ev-field-error"
                   *ngIf="form.get('dateSouhaitee')?.errors?.['datePasse']
                     && form.get('dateSouhaitee')?.touched">
-              La date souhaitée doit être dans le futur
+              {{ 'sug.form.err.date.passe' | t }}
             </span>
           </div>
           <div class="ev-form-group">
-            <label class="ev-label">Votre email</label>
+            <label class="ev-label">{{ 'sug.form.email.label' | t }}</label>
             <input type="email" class="ev-input" formControlName="emailCitoyen"
-                   placeholder="vous@exemple.com"
+                   [placeholder]="'sug.form.email.ph' | t"
                    [class.ev-input-error]="form.get('emailCitoyen')?.invalid
                      && form.get('emailCitoyen')?.touched">
             <span class="ev-field-error"
                   *ngIf="form.get('emailCitoyen')?.errors?.['email']
                     && form.get('emailCitoyen')?.touched">
-              Adresse email invalide
+              {{ 'sug.form.err.email' | t }}
             </span>
           </div>
         </div>
 
         <div class="ev-form-footer">
           <button type="button" class="btn btn-outline" (click)="retour()">
-            Annuler
+            {{ 'sug.form.btn.annuler' | t }}
           </button>
           <button type="submit" class="btn btn-primary"
                   [disabled]="form.invalid || loading">
@@ -132,7 +131,7 @@
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
-            Soumettre ma suggestion
+            {{ 'sug.form.btn.soumettre' | t }}
           </button>
         </div>
 
@@ -142,26 +141,26 @@
     <!-- Info sidebar -->
     <div class="ev-form-tips">
       <div class="ev-tips-card">
-        <h4 class="ev-tips-title">🗳️ Comment ça marche ?</h4>
+        <h4 class="ev-tips-title">{{ 'sug.form.tip.titre' | t }}</h4>
         <div class="ev-tip-item">
           <div class="ev-tip-icon">1️⃣</div>
           <div>
-            <div class="ev-tip-label">Soumettez votre idée</div>
-            <p class="ev-tip-text">Remplissez ce formulaire avec votre proposition</p>
+            <div class="ev-tip-label">{{ 'sug.form.tip1.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'sug.form.tip1.text' | t }}</p>
           </div>
         </div>
         <div class="ev-tip-item">
           <div class="ev-tip-icon">2️⃣</div>
           <div>
-            <div class="ev-tip-label">Examen municipal</div>
-            <p class="ev-tip-text">La municipalité examine les suggestions reçues</p>
+            <div class="ev-tip-label">{{ 'sug.form.tip2.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'sug.form.tip2.text' | t }}</p>
           </div>
         </div>
         <div class="ev-tip-item">
           <div class="ev-tip-icon">3️⃣</div>
           <div>
-            <div class="ev-tip-label">Notification</div>
-            <p class="ev-tip-text">Vous serez notifié par email de la décision</p>
+            <div class="ev-tip-label">{{ 'sug.form.tip3.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'sug.form.tip3.text' | t }}</p>
           </div>
         </div>
       </div>

@@ -60,7 +60,7 @@ export class AuthService {
           localStorage.setItem(this.USER_KEY, JSON.stringify({
             userId: res.userId,
             role:   res.role,
-            email: credentials.email, 
+            email: credentials.email
           }));
           this.setLoading(true, 'Connexion en cours…');
           setTimeout(() => {

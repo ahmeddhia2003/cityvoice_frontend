@@ -1,10 +1,10 @@
 <div class="ps-page">
   <div class="ps-card">
     <div class="ps-icon">❌</div>
-    <h1 class="ps-title">Paiement annulé</h1>
-    <p class="ps-sub">Votre paiement a été annulé. Aucun montant n'a été débité.</p>
+    <h1 class="ps-title">{{ 'pay.cancel.titre' | t }}</h1>
+    <p class="ps-sub">{{ 'pay.cancel.sub' | t }}</p>
     <button class="btn btn-primary" (click)="retour()">
-      Retour aux événements
+      {{ 'pay.cancel.retour' | t }}
     </button>
   </div>
 </div>

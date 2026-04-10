@@ -9,6 +9,7 @@ import { EvenementService } from '../../services/evenement.service';
 import { TypeEvenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
 import { OcrService, OcrResult } from '../../../../core/services/ocr.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-evenement-form',
@@ -42,7 +43,8 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
     private router: Router,
     private route: ActivatedRoute,
     public sound: SoundService,
-    private ocrService: OcrService
+    private ocrService: OcrService,
+    public i18n: I18nService
   ) {
     this.form = this.fb.group({
       titre:          ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -133,7 +135,7 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
         }
       },
       error: () => {
-        this.erreur = 'Erreur lors du chargement de l\'événement';
+        this.erreur = this.i18n.t('ev.form.err.load');
         this.loading = false;
       }
     });
@@ -238,7 +240,7 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
         },
         error: () => {
           this.ocrLoading = false;
-          this.ocrErreur = '❌ Erreur OCR — vérifiez que le service Python tourne sur port 5000';
+          this.ocrErreur = this.i18n.t('ev.form.err.ocr');
         }
       });
     };
@@ -247,7 +249,15 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
   soumettre(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.erreur = '⚠️ Veuillez corriger les erreurs du formulaire.';
+      // ← Ajouter ce log
+      console.log('Form errors:', this.form.errors);
+      Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        if (control?.invalid) {
+          console.log(`Champ invalide: ${key}`, control.errors);
+        }
+      });
+      this.erreur = this.i18n.t('ev.form.err.form');
       return;
     }
     this.sound.click();  
@@ -258,12 +268,12 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
       this.evenementService.modifierEvenement(this.editId!, this.form.value).subscribe({
         next: () => {
           this.sound.success(); 
-          this.succes = '✅ Événement modifié avec succès !';
+          this.succes = this.i18n.t('ev.form.succes.modif');
           this.loading = false;
           setTimeout(() => this.retour(), 1500);
         },
         error: () => {
-          this.erreur = 'Erreur lors de la modification';
+          this.erreur = this.i18n.t('ev.form.err.modif');
           this.loading = false;
         }
       });
@@ -271,12 +281,12 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
       this.evenementService.creerEvenement(this.form.value).subscribe({
         next: () => {
           this.sound.success();  
-          this.succes = '✅ Événement créé en brouillon !';
+          this.succes = this.i18n.t('ev.form.succes.creer');
           this.loading = false;
           setTimeout(() => this.retour(), 1500);
         },
         error: () => {
-          this.erreur = 'Erreur lors de la création';
+          this.erreur = this.i18n.t('ev.form.err.creer');
           this.loading = false;
         }
       });

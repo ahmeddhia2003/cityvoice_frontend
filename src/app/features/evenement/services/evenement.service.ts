@@ -175,4 +175,10 @@ export class EvenementService {
         { texte, langue }
       );
     }
+    predictSponsor(payload: any): Observable<any> {
+      return this.http.post(`${this.apiUrl}/sponsors/predict`, payload);
+    }
+    predictBudget(payload: any): Observable<any> {
+      return this.http.post(`${this.apiUrl}/budget/predict`, payload);
+    }
 }

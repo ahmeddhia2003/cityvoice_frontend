@@ -5,6 +5,7 @@ import { Suggestion } from '../../models/suggestion.model';
 import { EvenementService } from '../../services/evenement.service';
 import { SoundService } from '../../../../core/services/sound.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-evenement-list',
@@ -51,7 +52,8 @@ export class EvenementListComponent implements OnInit, OnDestroy {
     private evenementService: EvenementService,
     private router: Router,
     public sound: SoundService,
-    private authService: AuthService 
+    private authService: AuthService,
+    public i18n: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +61,7 @@ export class EvenementListComponent implements OnInit, OnDestroy {
     this.chargerSuggestions();
     this.chargerInteresses();
     this.startCountdown();
+    this.i18n.init(); 
   }
 
   ngOnDestroy(): void {
@@ -78,7 +81,7 @@ export class EvenementListComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: () => {
-        this.erreur = 'Impossible de charger les événements';
+        this.erreur = this.i18n.t('ev.list.err.load');
         this.loading = false;
       }
     });
@@ -212,7 +215,7 @@ export class EvenementListComponent implements OnInit, OnDestroy {
     const eventDate = new Date(dateDebut).getTime();
     const diff = eventDate - now;
 
-    if (diff <= 0) return 'Terminé';
+    if (diff <= 0) return this.i18n.t('ev.list.termine');
 
     const days    = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours   = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -304,6 +307,27 @@ export class EvenementListComponent implements OnInit, OnDestroy {
       ANNULE:    'badge-annule',    TERMINE:   'badge-termine'
     };
     return map[statut] || '';
+  }
+
+  getStatutLabel(statut: string): string {
+    const map: any = {
+      'PUBLIE':    this.i18n.t('adm.ev.statut.publie'),
+      'BROUILLON': this.i18n.t('adm.ev.statut.brouillon'),
+      'ANNULE':    this.i18n.t('adm.ev.statut.annule'),
+      'TERMINE':   this.i18n.t('adm.ev.statut.termine'),
+    };
+    return map[statut] || statut;
+  }
+
+  getTypeLabel(type: string): string {
+    const map: any = {
+      'BENEVOLE':  this.i18n.t('adm.ev.type.benevole'),
+      'EDUCATION': this.i18n.t('adm.ev.type.education'),
+      'RECYCLAGE': this.i18n.t('adm.ev.type.recyclage'),
+      'SEMINAIRE': this.i18n.t('adm.ev.type.seminaire'),
+      'PAYANT':    this.i18n.t('adm.ev.type.payant'),
+    };
+    return map[type] || type;
   }
   allerCalendrier(): void {
   this.sound.nav();

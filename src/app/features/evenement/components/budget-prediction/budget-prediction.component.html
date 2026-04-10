@@ -1,0 +1,54 @@
+<div class="bp-card">
+  <div class="bp-header">
+    <h3>💰 Prédiction Budget AI</h3>
+    <p>Estimez le budget optimal pour votre événement</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="predire()" class="bp-form">
+    <div class="bp-field">
+      <label>Nombre de sponsors prévus</label>
+      <input type="number" formControlName="nbSponsors"
+             placeholder="Ex: 3" min="0" max="20">
+    </div>
+    <button type="submit" class="bp-btn" [disabled]="loading">
+      <span *ngIf="!loading">💰 Estimer le budget</span>
+      <span *ngIf="loading">🔄 Calcul en cours...</span>
+    </button>
+  </form>
+
+  <div class="bp-error" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="bp-result" *ngIf="prediction">
+
+    <!-- Budget principal -->
+    <div class="bp-main">
+      <div class="bp-main-label">Budget recommandé</div>
+      <div class="bp-main-value">{{ prediction.budget_recommande | number }} TND</div>
+    </div>
+
+    <!-- Fourchette -->
+    <div class="bp-range">
+      <div class="bp-range-header">
+        <span>Fourchette estimée</span>
+        <span>{{ prediction.fourchette_min | number }} — {{ prediction.fourchette_max | number }} TND</span>
+      </div>
+      <div class="bp-range-bar">
+        <div class="bp-range-fill"></div>
+        <div class="bp-range-cursor" [style.left.%]="getBarWidth()">
+          <div class="bp-range-tooltip">{{ prediction.budget_recommande | number }} TND</div>
+        </div>
+      </div>
+      <div class="bp-range-labels">
+        <span>Min : {{ prediction.fourchette_min | number }} TND</span>
+        <span>Max : {{ prediction.fourchette_max | number }} TND</span>
+      </div>
+    </div>
+
+    <!-- Explication -->
+    <div class="bp-explication">
+      <div class="bp-explication-title">💡 Analyse AI</div>
+      <p>{{ prediction.explication }}</p>
+    </div>
+
+  </div>
+</div>

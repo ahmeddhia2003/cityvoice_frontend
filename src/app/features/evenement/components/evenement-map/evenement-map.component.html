@@ -1,3 +1,4 @@
+<!-- Avec coordonnées -->
 <div class="ev-map-shell" *ngIf="hasCoordinates()">
 
   <!-- Header -->
@@ -7,7 +8,7 @@
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
       <circle cx="12" cy="10" r="3"/>
     </svg>
-    Localisation de l'événement
+    {{ 'ev.detail.localisation' | t }}
   </div>
 
   <!-- Map -->
@@ -16,12 +17,10 @@
   <!-- Footer -->
   <div class="ev-map-footer">
     <span>📍 {{ evenement.lieu }}</span>
-    <a [href]="'https://www.google.com/maps?q='
-               + evenement.latitude + ','
-               + evenement.longitude"
+    <a [href]="'https://www.google.com/maps?q=' + evenement.latitude + ',' + evenement.longitude"
        target="_blank"
        class="ev-map-directions">
-      Ouvrir dans Google Maps →
+      {{ 'ev.map.gmaps' | t }}
     </a>
   </div>
 
@@ -34,5 +33,5 @@
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
     <circle cx="12" cy="10" r="3"/>
   </svg>
-  <span>Localisation non disponible pour cet événement</span>
+  <span>{{ 'ev.map.no.location' | t }}</span>
 </div>

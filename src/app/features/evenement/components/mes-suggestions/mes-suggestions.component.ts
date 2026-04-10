@@ -6,6 +6,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 import { Suggestion } from '../../models/suggestion.model';
 import { TypeEvenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-mes-suggestions',
@@ -29,7 +30,8 @@ export class MesSuggestionsComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private fb: FormBuilder,
-    public sound: SoundService
+    public sound: SoundService,
+    public i18n: I18nService
   ) {
     this.editForm = this.fb.group({
       titre:         ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
@@ -66,7 +68,7 @@ export class MesSuggestionsComponent implements OnInit {
 
     this.evenementService.getSuggestionsCitoyen(user.userId).subscribe({
       next: (data) => { this.suggestions = data; this.loading = false; },
-      error: () => { this.erreur = 'Erreur lors du chargement'; this.loading = false; }
+      error: () => { this.erreur = this.i18n.t('ms.err.load'); this.loading = false; }
     });
   }
 
@@ -92,7 +94,7 @@ export class MesSuggestionsComponent implements OnInit {
   sauvegarder(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
-      this.erreur = '⚠️ Veuillez corriger les erreurs du formulaire.';
+      this.erreur =  this.i18n.t('ms.err.form');
       return;
     }
     this.sound.click(); 
@@ -110,31 +112,31 @@ export class MesSuggestionsComponent implements OnInit {
     this.evenementService.modifierSuggestion(this.suggestionEnEdition.id, data).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '✅ Suggestion modifiée avec succès !';
+        this.succes = this.i18n.t('ms.succes.modif');
         this.editLoading = false;
         this.fermerEdition();
         this.charger();
         setTimeout(() => this.succes = '', 3000);
       },
       error: (err) => {
-        this.erreur = err.error?.message || 'Erreur lors de la modification';
+        this.erreur = err.error?.message || this.i18n.t('ms.err.modif');
         this.editLoading = false;
       }
     });
   }
 
   supprimer(id: number): void {
-    if (!confirm('Supprimer cette suggestion ?')) return;
+    if (!confirm(this.i18n.t('ms.confirm.suppr'))) return;
     this.sound.click();
     this.evenementService.supprimerSuggestion(id).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '🗑️ Suggestion supprimée';
+        this.succes = this.i18n.t('ms.succes.suppr');
         this.charger();
         setTimeout(() => this.succes = '', 3000);
       },
       error: (err) => {
-        this.erreur = err.error?.message || 'Erreur lors de la suppression';
+        this.erreur = err.error?.message || this.i18n.t('ms.err.suppr');
       }
     });
   }
@@ -155,6 +157,15 @@ export class MesSuggestionsComponent implements OnInit {
       'REJETEE':  '❌'
     };
     return map[statut] || '⏳';
+  }
+  
+  getStatutLabel(statut: string): string {
+    const map: any = {
+      'SOUMISE':  this.i18n.t('ms.statut.soumise'),
+      'ACCEPTEE': this.i18n.t('ms.statut.acceptee'),
+      'REJETEE':  this.i18n.t('ms.statut.rejetee'),
+    };
+    return map[statut] || statut;
   }
 
   peutModifier(s: Suggestion): boolean {

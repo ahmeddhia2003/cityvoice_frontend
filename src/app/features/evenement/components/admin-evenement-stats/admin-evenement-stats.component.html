@@ -2,17 +2,17 @@
 
   <div class="stats-header">
     <div>
-      <div class="stats-title">Statistiques <em>Événements</em></div>
-      <div class="stats-sub">Vue d'ensemble des performances</div>
+      <div class="stats-title">{{ 'adm.stats.title' | t }} <em>{{ 'adm.stats.title.em' | t }}</em></div>
+      <div class="stats-sub">{{ 'adm.stats.sub' | t }}</div>
     </div>
     <button class="btn-back" (click)="retour()">
-      ← Retour à la liste
+      {{ 'adm.stats.retour' | t }}
     </button>
   </div>
 
   <div class="ae-loading" *ngIf="loading">
     <div class="ae-spinner"></div>
-    <span>Chargement…</span>
+    <span>{{ 'adm.stats.loading' | t }}</span>
   </div>
 
   <ng-container *ngIf="!loading">
@@ -22,26 +22,26 @@
       <div class="kpi-card" style="--ka: var(--coral, #E8532A)">
         <div class="kpi-header">
           <div class="kpi-icon">📅</div>
-          <div class="kpi-trend">Total</div>
+          <div class="kpi-trend">{{ 'adm.stats.kpi.total' | t }}</div>
         </div>
         <div class="kpi-num">{{ totalEvenements }}</div>
-        <div class="kpi-label">Événements</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.ev' | t }}</div>
       </div>
       <div class="kpi-card" style="--ka: var(--teal, #0D9B76)">
         <div class="kpi-header">
           <div class="kpi-icon">✅</div>
-          <div class="kpi-trend" style="background:rgba(13,155,118,.1);color:var(--teal)">Actifs</div>
+          <div class="kpi-trend" style="background:rgba(13,155,118,.1);color:var(--teal)">{{ 'adm.stats.kpi.actifs' | t }}</div>
         </div>
         <div class="kpi-num">{{ evenementsPublies }}</div>
-        <div class="kpi-label">Événements publiés</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.publies' | t }}</div>
       </div>
       <div class="kpi-card" style="--ka: #3B82F6">
         <div class="kpi-header">
           <div class="kpi-icon">👥</div>
-          <div class="kpi-trend" style="background:#eff6ff;color:#3B82F6">Inscrits</div>
+          <div class="kpi-trend" style="background:#eff6ff;color:#3B82F6">{{ 'adm.stats.kpi.inscrits' | t }}</div>
         </div>
         <div class="kpi-num">{{ totalInscrits }}</div>
-        <div class="kpi-label">Participants total</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.partici' | t }}</div>
       </div>
       <div class="kpi-card" style="--ka: var(--gold, #C9973E)">
         <div class="kpi-header">
@@ -49,22 +49,22 @@
           <div class="kpi-trend" style="background:rgba(201,151,62,.1);color:var(--gold)">TND</div>
         </div>
         <div class="kpi-num">{{ totalRevenus | number:'1.0-0' }}</div>
-        <div class="kpi-label">Revenus générés</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.revenus' | t }}</div>
       </div>
     </div>
 
     <!-- Charts -->
     <div class="charts-grid">
       <div class="chart-card">
-        <div class="chart-title">Répartition par <em>type</em></div>
+        <div class="chart-title">{{ 'adm.stats.chart.type' | t }} <em>{{ 'adm.stats.chart.type.em' | t }}</em></div>
         <div style="height: 240px"><canvas id="type-chart"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">Répartition par <em>statut</em></div>
+        <div class="chart-title">{{ 'adm.stats.chart.type' | t }} <em>{{ 'adm.stats.chart.statut.em' | t }}</em></div>
         <div style="height: 240px"><canvas id="statut-chart"></canvas></div>
       </div>
       <div class="chart-card chart-full">
-        <div class="chart-title">Top 5 événements par <em>nombre d'inscrits</em></div>
+        <div class="chart-title">{{ 'adm.stats.chart.top5' | t }} <em>{{ 'adm.stats.chart.top5.em' | t }}</em></div>
         <div style="height: 240px"><canvas id="inscrits-chart"></canvas></div>
       </div>
     </div>

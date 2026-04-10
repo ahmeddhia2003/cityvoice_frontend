@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { EvenementService } from '../../services/evenement.service';
 import { Evenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 declare const Chart: any;
 
@@ -20,7 +21,9 @@ export class AdminEvenementStatsComponent implements OnInit {
   totalRevenus    = 0;
   evenementsPublies = 0;
 
-  constructor(public router: Router, private evenementService: EvenementService, public sound: SoundService) {}
+  constructor(public router: Router, private evenementService: EvenementService, public sound: SoundService,
+    public i18n: I18nService
+  ) {}
 
   ngOnInit(): void {
     this.evenementService.getTousEvenements().subscribe({

@@ -2,6 +2,7 @@ import { Component, OnDestroy, ElementRef, ViewChild, NgZone, AfterViewInit } fr
 import { HttpClient } from '@angular/common/http';
 import jsQR from 'jsqr';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 interface QrVerificationResponse {
   statut: 'VALIDE' | 'DEJA_SCANNE' | 'INVALIDE';
@@ -29,7 +30,7 @@ export class AdminScanComponent implements AfterViewInit, OnDestroy {
   private animFrameId: number | null = null;
   private readonly API_URL = 'http://localhost:8084/api/qr/verify';
     
-  constructor(private http: HttpClient, private zone: NgZone, public sound: SoundService) {}
+  constructor(private http: HttpClient, private zone: NgZone, public sound: SoundService, public i18n: I18nService) {}
 
   ngAfterViewInit() {
     console.log("Scanner prêt");

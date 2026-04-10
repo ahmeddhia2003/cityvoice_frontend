@@ -5,13 +5,13 @@
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
-    Retour aux événements
+    {{ 'ev.detail.retour' | t }}
   </button>
 
   <!-- Loading -->
   <div *ngIf="loading" class="ev-loading">
     <div class="ev-spinner"></div>
-    <p>Chargement…</p>
+    <p>{{ 'ev.detail.chargement' | t }}</p>
   </div>
 
   <div *ngIf="evenement && !loading" class="ev-detail-wrapper">
@@ -24,7 +24,7 @@
         <div class="ev-hero-pills">
           <span class="ev-pill-type">{{ evenement.type }}</span>
           <span class="ev-pill-statut" [ngClass]="getStatutClass(evenement.statut!)">
-            {{ evenement.statut }}
+            {{ getStatutLabel(evenement.statut!) }}
           </span>
         </div>
         <!-- Contenu en bas -->
@@ -54,12 +54,13 @@
             </span>
             <span class="ev-hero-chip ev-hero-chip--price"
                   [class.gratuit]="!evenement.estPayant">
-              {{ evenement.estPayant ? (evenement.prix + ' TND') : 'Gratuit' }}
+              {{ evenement.estPayant ? (evenement.prix + ' TND') : ('ev.list.gratuit' | t) }}
             </span>
           </div>
         </div>
       </div>
     </div>
+
     <!-- ─── Body ──────────────────────────────────────────── -->
     <div class="ev-detail-body">
       <!-- Colonne gauche -->
@@ -68,17 +69,17 @@
         <div class="ev-detail-section">
           <!-- Header avec dropdown traduire -->
           <div class="ev-section-header">
-            <h2 class="ev-section-title">Description</h2>
+            <h2 class="ev-section-title">{{ 'ev.detail.description' | t }}</h2>
 
             <div class="ev-translate-wrap">
               <select class="ev-translate-select"
                       (change)="traduire($any($event.target).value)"
                       [disabled]="traductionLoading">
-                <option value="fr">🌐 Langue</option>
-                <option value="fr">🇫🇷 Français</option>
-                <option value="en">🇬🇧 Anglais</option>
-                <option value="ar">🇸🇦 Arabe</option>
-                <option value="tn">🇹🇳 Tunisien</option>
+                <option value="fr">{{ 'ev.detail.langue' | t }}</option>
+                <option value="fr">{{ 'ev.detail.lang.fr' | t }}</option>
+                <option value="en">{{ 'ev.detail.lang.en' | t }}</option>
+                <option value="ar">{{ 'ev.detail.lang.ar' | t }}</option>
+                <option value="tn">{{ 'ev.detail.lang.tn' | t }}</option>
               </select>
               <svg class="ev-select-arrow" width="14" height="14"
                   fill="none" stroke="currentColor"
@@ -91,7 +92,7 @@
           <!-- Loading traduction -->
           <div *ngIf="traductionLoading" class="ev-translate-loading">
             <div class="ev-spinner-sm"></div>
-            <span>Traduction en cours…</span>
+            <span>{{ 'ev.detail.traduction.cours' | t }}</span>
           </div>
 
           <!-- Description -->
@@ -101,9 +102,9 @@
               [class.ev-desc-tn]="langueActive === 'tn'">
 
             <span class="ev-lang-badge" *ngIf="langueActive !== 'fr'">
-              {{ langueActive === 'ar' ? '🇸🇦 Arabe'   :
-                langueActive === 'tn' ? '🇹🇳 Tunisien' :
-                langueActive === 'en' ? '🇬🇧 Anglais'  : '' }}
+              {{ langueActive === 'ar' ? ('ev.detail.lang.ar' | t) :
+                 langueActive === 'tn' ? ('ev.detail.lang.tn' | t) :
+                 langueActive === 'en' ? ('ev.detail.lang.en' | t) : '' }}
               <button class="ev-lang-reset" (click)="traduire('fr')">✕</button>
             </span>
 
@@ -113,8 +114,9 @@
             </p>
           </div>
         </div>
+
         <div class="ev-detail-section">
-          <h2 class="ev-section-title">Informations</h2>
+          <h2 class="ev-section-title">{{ 'ev.detail.informations' | t }}</h2>
           <div class="ev-meta-grid">
             <div class="ev-meta-card">
               <div class="ev-meta-card-icon">
@@ -124,7 +126,7 @@
                 </svg>
               </div>
               <div>
-                <div class="ev-meta-card-label">Lieu</div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.lieu' | t }}</div>
                 <div class="ev-meta-card-value">{{ evenement.lieu }}</div>
               </div>
             </div>
@@ -138,7 +140,7 @@
                 </svg>
               </div>
               <div>
-                <div class="ev-meta-card-label">Date de début</div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.date.debut' | t }}</div>
                 <div class="ev-meta-card-value">{{ evenement.dateDebut | date:'EEEE dd MMMM yyyy, HH:mm' }}</div>
               </div>
             </div>
@@ -150,7 +152,7 @@
                 </svg>
               </div>
               <div>
-                <div class="ev-meta-card-label">Date de fin</div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.date.fin' | t }}</div>
                 <div class="ev-meta-card-value">{{ evenement.dateFin | date:'EEEE dd MMMM yyyy, HH:mm' }}</div>
               </div>
             </div>
@@ -162,10 +164,10 @@
                 </svg>
               </div>
               <div>
-                <div class="ev-meta-card-label">Participants</div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.participants' | t }}</div>
                 <div class="ev-meta-card-value">
-                  {{ evenement.nbInscrits || 0 }} inscrits
-                  <span *ngIf="evenement.capaciteMax"> / {{ evenement.capaciteMax }} places</span>
+                  {{ evenement.nbInscrits || 0 }} {{ 'ev.detail.inscrits' | t }}
+                  <span *ngIf="evenement.capaciteMax"> / {{ evenement.capaciteMax }} {{ 'ev.detail.places' | t }}</span>
                 </div>
               </div>
             </div>
@@ -178,7 +180,7 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Publier cet événement
+            {{ 'ev.detail.publier.ev' | t }}
           </button>
         </div>
 
@@ -189,26 +191,41 @@
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Modifier
+            {{ 'ev.detail.modifier' | t }}
           </button>
           <button class="btn btn-primary" *ngIf="evenement.statut === 'BROUILLON'" (click)="publier()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            Publier
+            {{ 'ev.detail.publier.btn' | t }}
           </button>
           <button class="btn btn-danger" *ngIf="evenement.statut === 'PUBLIE'" (click)="annuler()">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
-            Annuler l'événement
+            {{ 'ev.detail.annuler.ev' | t }}
           </button>
         </div>
-
+        <div *ngIf="isAdmin && evenement" style="margin-top: 16px;">
+          <app-budget-prediction
+            [typeEvenement]="evenement.type"
+            [capaciteMax]="evenement.capaciteMax || 100"
+            [lieu]="evenement.lieu"
+            [estPayant]="evenement.estPayant || false">
+          </app-budget-prediction>
+        </div>
+        <div *ngIf="isAdmin && evenement" style="margin-top: 24px;">
+          <app-sponsor-prediction
+            [typeEvenement]="evenement.type"
+            [capaciteMax]="evenement.capaciteMax || 100"
+            [lieu]="evenement.lieu"
+            [evenementId]="evenement.id!">
+          </app-sponsor-prediction>
+        </div>
         <!-- Partage réseaux sociaux -->
         <div class="ev-share">
-          <span class="ev-share-label">Partager :</span>
+          <span class="ev-share-label">{{ 'ev.detail.partager' | t }}</span>
           <a class="ev-share-btn ev-share-fb" [href]="'https://www.facebook.com/sharer/sharer.php?u='+currentUrl" target="_blank" title="Partager sur Facebook">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
           </a>
@@ -234,16 +251,16 @@
       <div class="ev-detail-sidebar">
         <div class="ev-price-card">
           <div class="ev-price-header">
-            <span class="ev-price-label">{{ evenement.estPayant ? 'Tarif' : 'Entrée' }}</span>
+            <span class="ev-price-label">{{ evenement.estPayant ? ('ev.detail.tarif' | t) : ('ev.detail.entree' | t) }}</span>
             <span class="ev-price-val" [class.gratuit]="!evenement.estPayant">
-              {{ evenement.estPayant ? (evenement.prix + ' TND') : 'Gratuite' }}
+              {{ evenement.estPayant ? (evenement.prix + ' TND') : ('ev.detail.gratuite' | t) }}
             </span>
           </div>
           <div *ngIf="evenement.capaciteMax" class="ev-cap-section">
             <div class="ev-cap-header">
-              <span>Places disponibles</span>
+              <span>{{ 'ev.detail.places.dispo' | t }}</span>
               <span class="ev-cap-count" [style.color]="getCapaciteColor()">
-                {{ getPlacesRestantes() }} restantes
+                {{ getPlacesRestantes() }} {{ 'ev.detail.restantes' | t }}
               </span>
             </div>
             <div class="ev-cap-bar">
@@ -253,27 +270,30 @@
               </div>
             </div>
             <div class="ev-cap-info">
-              {{ evenement.nbInscrits || 0 }} / {{ evenement.capaciteMax }} participants
+              {{ evenement.nbInscrits || 0 }} / {{ evenement.capaciteMax }} {{ 'ev.detail.participants' | t }}
             </div>
           </div>
         </div>
+
         <div class="ev-sponsors-card" *ngIf="sponsors.length > 0">
-          <h4 class="ev-sponsors-title">🤝 Sponsors</h4>
+          <h4 class="ev-sponsors-title">{{ 'sp.sponsors' | t }}</h4>
           <div class="ev-sponsor-item" *ngFor="let s of sponsors">
             <div class="ev-sponsor-niveau" [ngClass]="getNiveauClass(s.niveauSponsorat!)">
               {{ s.niveauSponsorat }}
             </div>
             <div class="ev-sponsor-info">
               <div class="ev-sponsor-name">{{ s.nomEntreprise }}</div>
-              <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="ev-sponsor-link">Visiter →</a>
+              <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="ev-sponsor-link">{{ 'sp.visiter' | t }}</a>
             </div>
           </div>
         </div>
+
         <!-- Countdown -->
         <div class="ev-countdown-card" *ngIf="countdown">
-          <div class="ev-countdown-label">⏱ Commence dans</div>
+          <div class="ev-countdown-label">{{ 'ev.detail.commence.dans' | t }}</div>
           <div class="ev-countdown-val">{{ countdown }}</div>
         </div>
+
         <!-- ─── Météo ─────────────────────────────────────────── -->
         <div class="ev-meteo-card" *ngIf="meteo || meteoLoading">
           <div class="ev-meteo-loading" *ngIf="meteoLoading">
@@ -281,7 +301,7 @@
           </div>
           <div *ngIf="meteo && !meteoLoading">
             <div class="ev-meteo-header">
-              <span class="ev-meteo-label">🌤 Météo le jour J</span>
+              <span class="ev-meteo-label">{{ 'ev.detail.meteo' | t }}</span>
             </div>
             <div class="ev-meteo-body">
               <div class="ev-meteo-main">
@@ -296,6 +316,7 @@
             </div>
           </div>
         </div>
+
         <!-- Bouton intéressé -->
         <button class="ev-btn-interesse-detail"
                 [class.active]="interesse"
@@ -306,24 +327,33 @@
                     C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
                     c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
-          {{ interesse ? 'Intéressé ✓' : 'Je suis intéressé' }}
+          {{ interesse ? ('ev.detail.interesse.ok' | t) : ('ev.detail.interesse' | t) }}
+        </button>
+
+        <!-- google calendar-->
+        <button class="ev-btn-gcal"
+                (click)="ajouterAuCalendar()"
+                *ngIf="(inscriptionReussie || participantInscrit) && !isAdmin">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg"
+              width="16" height="16" alt="Google Calendar">
+          {{ 'ev.detail.calendar' | t }}
         </button>
       </div>
     </div>
 
     <!-- Localisation -->
     <app-evenement-map [evenement]="evenement" *ngIf="evenement">
-
     </app-evenement-map>
+
     <!-- ─── Événements similaires ─────────────────────────── -->
     <div class="ev-similaires" *ngIf="evenementsSimilaires.length > 0">
-      <h2 class="ev-section-title">📌 Événements similaires</h2>
+      <h2 class="ev-section-title">{{ 'ev.detail.similaires.titre' | t }}</h2>
       <div class="ev-similaires-grid">
         <div class="ev-sim-card" *ngFor="let ev of evenementsSimilaires"
             (click)="router.navigate(['/evenements', ev.id])">
           <div class="ev-sim-image">
             <img [src]="ev.imageUrl || getImageDefaut(ev.type)" [alt]="ev.titre" loading="lazy">
-            <span class="pill" [ngClass]="getTypePill(ev.type)">{{ ev.type }}</span>
+            <span class="pill" [ngClass]="getTypePill(ev.type)">{{ getTypeLabel(ev.type) }}</span>
           </div>
           <div class="ev-sim-body">
             <h4 class="ev-sim-title">{{ ev.titre }}</h4>
@@ -332,23 +362,33 @@
               <span>📅 {{ ev.dateDebut | date:'dd/MM/yyyy' }}</span>
             </div>
             <span class="ev-sim-prix" [class.gratuit]="!ev.estPayant">
-              {{ ev.estPayant ? (ev.prix + ' TND') : 'Gratuit' }}
+              {{ ev.estPayant ? (ev.prix + ' TND') : ('ev.list.gratuit' | t) }}
             </span>
           </div>
         </div>
       </div>
     </div>
+
     <!-- ✅ Inscription gratuite — CITOYEN seulement -->
     <div class="ev-inscription-card"
         *ngIf="evenement.statut === 'PUBLIE' && !isAdmin && !evenement.estPayant">
       <div class="ev-inscription-header">
         <div>
-          <h3>📝 S'inscrire à cet événement</h3>
-          <p>Confirmez votre participation en un clic</p>
+          <h3>{{ 'ev.detail.inscrire' | t }}</h3>
+          <p>{{ 'ev.detail.confirmer.particip' | t }}</p>
         </div>
-        <span class="pill pill-teal">Inscription gratuite</span>
+        <span class="pill pill-teal">{{ 'ev.detail.inscription.gratuite' | t }}</span>
       </div>
-      <div class="ev-inscription-form">
+      <div class="ev-inscription-form" [formGroup]="inscriptionForm">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.detail.tel' | t }}</label>
+          <input type="tel" class="ev-input"
+                formControlName="telCitoyen"
+                placeholder="+216 XX XXX XXX">
+          <span style="font-size:11px; color:var(--ink3)">
+            {{ 'ev.detail.tel.hint' | t }}
+          </span>
+        </div>
         <button class="btn btn-primary"
                 [disabled]="inscriptionLoading"
                 (click)="inscrire()">
@@ -357,40 +397,50 @@
               stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          Confirmer mon inscription
+          {{ 'ev.detail.confirmer' | t }}
         </button>
         <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
         <div *ngIf="succes" class="ev-alert ev-alert-success">{{ succes }}</div>
       </div>
     </div>
+
     <!-- ✅ Inscription payante — CITOYEN seulement -->
     <div class="ev-inscription-card"
         *ngIf="evenement.statut === 'PUBLIE' && !isAdmin && evenement.estPayant">
       <div class="ev-inscription-header">
         <div>
-          <h3>💳 S'inscrire à cet événement</h3>
-          <p>Choisissez votre mode de paiement</p>
+          <h3>{{ 'ev.detail.inscrire.payant' | t }}</h3>
+          <p>{{ 'ev.detail.inscrire.sub2' | t }}</p>
         </div>
         <span class="pill pill-coral">{{ evenement.prix }} TND</span>
       </div>
-      <div class="ev-inscription-form" *ngIf="!afficherChoixPaiement">
+      <div class="ev-inscription-form" *ngIf="!afficherChoixPaiement" [formGroup]="inscriptionForm">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.detail.tel' | t }}</label>
+          <input type="tel" class="ev-input"
+                formControlName="telCitoyen"
+                placeholder="+216 XX XXX XXX">
+          <span style="font-size:11px; color:var(--ink3)">
+            {{ 'ev.detail.tel.hint' | t }}
+          </span>
+        </div>
         <button class="btn btn-primary"
                 [disabled]="inscriptionLoading"
                 (click)="inscrire()">
           <span *ngIf="inscriptionLoading" class="ev-btn-spinner"></span>
-          Choisir le mode de paiement →
+          {{ 'ev.detail.paiement.choisir.btn' | t }}
         </button>
         <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
       </div>
       <div class="ev-payment-choice" *ngIf="afficherChoixPaiement">
-        <h4 class="ev-payment-title">Comment souhaitez-vous payer ?</h4>
-        <p class="ev-payment-sub">Montant : <strong>{{ evenement.prix }} TND</strong></p>
+        <h4 class="ev-payment-title">{{ 'ev.detail.paiement.comment' | t }}</h4>
+        <p class="ev-payment-sub">{{ 'ev.detail.paiement.montant' | t }} <strong>{{ evenement.prix }} TND</strong></p>
         <div class="ev-payment-options">
           <div class="ev-payment-card ev-payment-online" (click)="payerEnLigne()">
             <div class="ev-payment-icon">💳</div>
             <div class="ev-payment-info">
-              <div class="ev-payment-name">Payer en ligne</div>
-              <div class="ev-payment-desc">Carte bancaire via Stripe — Sécurisé & Instantané</div>
+              <div class="ev-payment-name">{{ 'ev.detail.payer.ligne' | t }}</div>
+              <div class="ev-payment-desc">{{ 'ev.detail.stripe.desc' | t }}</div>
             </div>
             <div class="ev-payment-arrow">
               <span *ngIf="inscriptionLoading" class="ev-btn-spinner"></span>
@@ -400,16 +450,17 @@
           <div class="ev-payment-card ev-payment-especes" (click)="payerEspeces()">
             <div class="ev-payment-icon">💵</div>
             <div class="ev-payment-info">
-              <div class="ev-payment-name">Payer en espèces</div>
-              <div class="ev-payment-desc">Réservez maintenant, payez le jour J</div>
+              <div class="ev-payment-name">{{ 'ev.detail.payer.especes' | t }}</div>
+              <div class="ev-payment-desc">{{ 'ev.detail.especes.desc' | t }}</div>
             </div>
             <div class="ev-payment-arrow">→</div>
           </div>
         </div>
-        <button class="ev-payment-back" (click)="afficherChoixPaiement = false">← Retour</button>
+        <button class="ev-payment-back" (click)="afficherChoixPaiement = false">{{ 'ev.detail.retour.btn' | t }}</button>
         <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
       </div>
     </div>
+
     <!-- ✅ QR Code — CITOYEN seulement -->
     <app-evenement-qrcode
       *ngIf="inscriptionReussie && participantInscrit && evenement && !isAdmin"
@@ -421,8 +472,8 @@
     <div class="ev-participants-card" *ngIf="isAdmin">
       <div class="ev-participants-header">
         <div>
-          <h3>👥 Participants inscrits</h3>
-          <p>{{ participants.length }} participant(s) au total</p>
+          <h3>{{ 'ev.detail.participants.inscrits' | t }}</h3>
+          <p>{{ participants.length }} {{ 'ev.detail.participants.total' | t }}</p>
         </div>
         <div class="ev-participants-actions">
           <button class="btn btn-outline" (click)="modifierEvenement()">
@@ -431,7 +482,7 @@
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Modifier l'événement
+            {{ 'ev.detail.modifier.ev' | t }}
           </button>
           <button class="btn btn-primary"
                   (click)="router.navigate(['/admin/scan'])">
@@ -442,18 +493,14 @@
               <rect x="3" y="14" width="7" height="7"/>
               <path d="M14 14h3v3M17 20h3M20 17v3"/>
             </svg>
-            Scanner QR
+            {{ 'ev.detail.scanner.qr' | t }}
           </button>
         </div>
       </div>
 
       <!-- Alertes admin -->
-      <div *ngIf="succes" class="ev-alert ev-alert-success" style="margin: 16px 24px 0">
-        {{ succes }}
-      </div>
-      <div *ngIf="erreur" class="ev-alert ev-alert-danger" style="margin: 16px 24px 0">
-        {{ erreur }}
-      </div>
+      <div *ngIf="succes" class="ev-alert ev-alert-success" style="margin: 16px 24px 0">{{ succes }}</div>
+      <div *ngIf="erreur" class="ev-alert ev-alert-danger" style="margin: 16px 24px 0">{{ erreur }}</div>
 
       <div class="ev-participants-loading" *ngIf="participantsLoading">
         <div class="ev-spinner"></div>
@@ -463,11 +510,11 @@
         <table class="ev-ptable" *ngIf="participants.length > 0">
           <thead>
             <tr>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Inscrit le</th>
-              <th>Présence</th>
-              <th>Actions</th>
+              <th>{{ 'ev.detail.nom' | t }}</th>
+              <th>{{ 'ev.detail.email' | t }}</th>
+              <th>{{ 'ev.detail.inscrit.le' | t }}</th>
+              <th>{{ 'ev.detail.presence' | t }}</th>
+              <th>{{ 'ev.detail.actions' | t }}</th>
             </tr>
           </thead>
           <tbody>
@@ -480,8 +527,9 @@
                       [class.statut-confirme]="p.statutPresence === 'CONFIRME'"
                       [class.statut-attente]="p.statutPresence === 'EN_ATTENTE'"
                       [class.statut-absent]="p.statutPresence === 'ABSENT'">
-                  {{ p.statutPresence === 'CONFIRME' ? '✅ Présent' :
-                     p.statutPresence === 'ABSENT'   ? '❌ Absent'  : '⏳ En attente' }}
+                  {{ p.statutPresence === 'CONFIRME' ? ('ev.detail.present'   | t) :
+                     p.statutPresence === 'ABSENT'   ? ('ev.detail.absent'    | t) :
+                                                       ('ev.detail.en.attente'| t) }}
                 </span>
               </td>
               <td>
@@ -513,10 +561,11 @@
 
         <div class="ev-empty-participants" *ngIf="participants.length === 0">
           <div style="font-size: 32px; margin-bottom: 10px">👥</div>
-          <div>Aucun participant inscrit pour le moment</div>
+          <div>{{ 'ev.detail.aucun.participant' | t }}</div>
         </div>
       </div>
     </div>
+
     <!-- ─── Toast ────────────────────────────────────────── -->
     <div class="ev-toast" *ngIf="toast" [class.ev-toast--error]="toastType === 'error'">
       {{ toast }}

@@ -4,6 +4,7 @@ import { EvenementService } from '../../services/evenement.service';
 import { Evenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
 import { LangService } from '../../../../core/services/lang.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-admin-evenement-list',
@@ -30,7 +31,8 @@ export class AdminEvenementListComponent implements OnInit {
     public router: Router,
     private evenementService: EvenementService,
     public sound: SoundService,
-    public lang: LangService
+    public lang: LangService,
+    public i18n: I18nService
   ) {}
 
   ngOnInit(): void { this.charger(); }
@@ -43,7 +45,9 @@ export class AdminEvenementListComponent implements OnInit {
         this.appliquerFiltres();
         this.loading = false;
       },
-      error: () => { this.erreur = 'Erreur lors du chargement'; this.loading = false; }
+      error: () => { 
+        this.erreur = this.i18n.t('adm.ev.err.load');
+        this.loading = false; }
     });
   }
 
@@ -69,8 +73,8 @@ export class AdminEvenementListComponent implements OnInit {
     this.evenementService.publierEvenement(id).subscribe({
       next: () => { 
         this.sound.success();
-        this.succes = '✅ Événement publié !'; this.charger(); setTimeout(() => this.succes = '', 3000); },
-      error: () => this.erreur = 'Erreur lors de la publication'
+        this.succes = this.i18n.t('adm.ev.succes.publish'); this.charger(); setTimeout(() => this.succes = '', 3000); },
+      error: () => this.erreur = this.i18n.t('adm.ev.err.publish')
     });
   }
 
@@ -79,19 +83,19 @@ export class AdminEvenementListComponent implements OnInit {
     this.evenementService.annulerEvenement(id).subscribe({
       next: () => { 
         this.sound.success();
-        this.succes = '⚠️ Événement annulé'; this.charger(); setTimeout(() => this.succes = '', 3000); },
-      error: () => this.erreur = 'Erreur lors de l\'annulation'
+        this.succes = this.i18n.t('adm.ev.succes.cancel'); this.charger(); setTimeout(() => this.succes = '', 3000); },
+      error: () => this.erreur = this.i18n.t('adm.ev.err.cancel')
     });
   }
 
   supprimer(id: number): void {
-    if (!confirm('Supprimer cet événement définitivement ?')) return;
+    if (!confirm(this.i18n.t('adm.ev.confirm.delete'))) return;
     this.sound.click(); 
     this.evenementService.supprimerEvenement(id).subscribe({
       next: () => { 
         this.sound.success(); 
-        this.succes = '🗑️ Événement supprimé'; this.charger(); setTimeout(() => this.succes = '', 3000); },
-      error: () => this.erreur = 'Erreur lors de la suppression'
+        this.succes = this.i18n.t('adm.ev.succes.delete'); this.charger(); setTimeout(() => this.succes = '', 3000); },
+      error: () => this.erreur = this.i18n.t('adm.ev.err.delete')
     });
   }
 
@@ -186,6 +190,25 @@ export class AdminEvenementListComponent implements OnInit {
     };
     return map[statut] || '';
   }
+  getStatutLabel(statut: string): string {
+    const map: any = {
+      'PUBLIE':    this.i18n.t('adm.ev.statut.publie'),
+      'BROUILLON': this.i18n.t('adm.ev.statut.brouillon'),
+      'ANNULE':    this.i18n.t('adm.ev.statut.annule'),
+      'TERMINE':   this.i18n.t('adm.ev.statut.termine'),
+    };
+    return map[statut] || statut;
+  }
 
+  getTypeLabel(type: string): string {
+    const map: any = {
+      'BENEVOLE':  this.i18n.t('adm.ev.type.benevole'),
+      'EDUCATION': this.i18n.t('adm.ev.type.education'),
+      'RECYCLAGE': this.i18n.t('adm.ev.type.recyclage'),
+      'SEMINAIRE': this.i18n.t('adm.ev.type.seminaire'),
+      'PAYANT':    this.i18n.t('adm.ev.type.payant'),
+    };
+    return map[type] || type;
+  }
   clearMessages(): void { this.erreur = ''; this.succes = ''; }
 }

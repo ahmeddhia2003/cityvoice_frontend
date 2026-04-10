@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EvenementService } from '../../services/evenement.service';
 import { Participant } from '../../models/participant.model';
 import { SoundService } from '../../../../core/services/sound.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-payment-success',
@@ -19,7 +20,8 @@ export class PaymentSuccessComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private evenementService: EvenementService,
-    public sound: SoundService
+    public sound: SoundService,
+    public i18n: I18nService
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +49,7 @@ export class PaymentSuccessComponent implements OnInit {
           }
         }, 2000);
       },
-      error: () => { this.erreur = 'Erreur lors de la confirmation'; this.loading = false; }
+      error: () => { this.erreur = this.i18n.t('pay.succes.err'); this.loading = false; }
     });
   }
   retour(): void {

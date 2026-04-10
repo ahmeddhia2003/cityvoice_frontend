@@ -16,7 +16,7 @@ import { SharedEvenementModule } from '../evenement/shared-evenement.module';
 import { AdminScanComponent } from '../evenement/components/admin-scan/admin-scan.component';
 import { AdminSuggestionListComponent } from '../evenement/components/admin-suggestion-list/admin-suggestion-list.component';
 import { AdminSponsorListComponent } from '../evenement/components/admin-sponsor-list/admin-sponsor-list.component';
-
+import { SharedModule } from '../../shared/shared.module'; 
 @NgModule({
   declarations: [
     AdminLayoutComponent,
@@ -38,7 +38,8 @@ import { AdminSponsorListComponent } from '../evenement/components/admin-sponsor
     AdminRoutingModule,
     ReactiveFormsModule,
     RouterModule,
-    SharedEvenementModule
+    SharedEvenementModule,
+    SharedModule,
   ]
 })
 export class AdminModule { }

@@ -5,6 +5,7 @@ import { Sponsor } from '../../models/sponsor.model';
 import { Evenement } from '../../models/evenement.model';
 import { SoundService } from '../../../../core/services/sound.service';
 import { LangService } from '../../../../core/services/lang.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-admin-sponsor-list',
@@ -53,7 +54,8 @@ export class AdminSponsorListComponent implements OnInit {
     private evenementService: EvenementService,
     private fb: FormBuilder,
     public sound: SoundService,
-    public lang: LangService
+    public lang: LangService,
+    public i18n: I18nService
   ) {
     this.sponsorForm = this.fb.group({
       nomEntreprise: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -81,7 +83,7 @@ export class AdminSponsorListComponent implements OnInit {
         this.appliquerFiltres();
         this.loading = false;
       },
-      error: () => { this.erreur = 'Erreur chargement'; this.loading = false; }
+      error: () => { this.erreur = this.i18n.t('adm.sp.err.load'); this.loading = false; }
     });
   }
 
@@ -309,30 +311,32 @@ export class AdminSponsorListComponent implements OnInit {
     action.subscribe({
       next: () => {
         this.sound.success();
-        this.succes = this.modeEdition ? '✅ Sponsor modifié !' : '✅ Sponsor créé !';
+        this.succes = this.modeEdition
+        ? this.i18n.t('adm.sp.succes.modif')
+        : this.i18n.t('adm.sp.succes.cree');
         this.formLoading = false;
         this.fermerModal();
         this.charger();
         setTimeout(() => this.succes = '', 3000);
       },
       error: () => {
-        this.erreur = 'Erreur lors de la sauvegarde';
+        this.erreur = this.i18n.t('adm.sp.err.save'); 
         this.formLoading = false;
       }
     });
   }
 
   supprimer(id: number): void {
-    if (!confirm('Supprimer ce sponsor ?')) return;
+    if (!confirm(this.i18n.t('adm.sp.confirm.suppr'))) return;
     this.sound.click();
     this.evenementService.supprimerSponsor(id).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '🗑️ Sponsor supprimé';
+        this.succes = this.i18n.t('adm.sp.succes.suppr');
         this.charger();
         setTimeout(() => this.succes = '', 3000);
       },
-      error: () => this.erreur = 'Erreur lors de la suppression'
+      error: () => this.erreur = this.i18n.t('adm.sp.err.suppr')
     });
   }
 
@@ -366,14 +370,14 @@ export class AdminSponsorListComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.sound.success();
-        this.succes = '✅ Sponsor associé à l\'événement !';
+        this.succes = this.i18n.t('adm.sp.succes.assoc');
         this.associationLoading = false;
         this.fermerAssociation();
         this.charger();
         setTimeout(() => this.succes = '', 3000);
       },
       error: () => {
-        this.erreur = 'Erreur lors de l\'association';
+        this.erreur = this.i18n.t('adm.sp.err.assoc');
         this.associationLoading = false;
       }
     });
