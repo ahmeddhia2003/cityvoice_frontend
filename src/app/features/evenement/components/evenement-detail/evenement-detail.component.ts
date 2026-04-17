@@ -25,7 +25,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
   erreur = '';
   succes = '';
   inscriptionForm: FormGroup;
-
+  budgetSuggerePred: number = 5000;
   // QR Code
   participantInscrit: Participant | null = null;
   inscriptionReussie = false;
@@ -49,7 +49,7 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
   meteoLoading = false;
   //traduction 
   descriptionTraduite: string | null = null;
-  langueActive: 'fr' | 'ar' | 'tn' | 'en' = 'fr';
+  langueActive: 'fr' | 'ar' | 'en' = 'fr';
   traductionLoading = false;
 
   constructor(
@@ -569,11 +569,11 @@ getTypePill(type: string): string {
     if (!this.evenement?.description) return;
 
     this.traductionLoading = true;
-    this.langueActive = langue as 'ar' | 'tn' | 'en';
+    this.langueActive = langue as 'ar' | 'en';
 
+    // ✅ Mapping correct vers le backend
     const langueParam =
       langue === 'ar' ? 'arabe'   :
-      langue === 'tn' ? 'tunisien':
       langue === 'en' ? 'anglais' : 'arabe';
 
     this.evenementService.traduire(
@@ -641,6 +641,39 @@ getTypePill(type: string): string {
     'PAYANT':    this.i18n.t('adm.ev.type.payant'),
     };
     return map[type] || type;
+  }
+  getTypeLieuLabel(typeLieu: string): string {
+    const map: any = {
+      'HOTEL':        { fr: '🏨 Hôtel',              en: '🏨 Hotel' },
+      'SALLE':        { fr: '🏛️ Salle de conférence', en: '🏛️ Conference room' },
+      'PLEIN_AIR':    { fr: '🌳 Plein air',           en: '🌳 Outdoor' },
+      'UNIVERSITE':   { fr: '🎓 Université',          en: '🎓 University' },
+      'MUNICIPALITE': { fr: '🏛️ Municipalité',        en: '🏛️ Municipality' },
+    };
+    return map[typeLieu]?.[this.i18n.lang] || typeLieu;  
+  }
+
+  getZoneLabel(zone: string): string {
+    const map: any = {
+      'LAC':           { fr: '🏙️ Lac / Les Berges du Lac', en: '🏙️ Lac / Lake Shore' },
+      'MARSA':         { fr: '🌊 La Marsa / Gammarth',     en: '🌊 La Marsa / Gammarth' },
+      'CENTRE_VILLE':  { fr: '🏛️ Centre ville Tunis',      en: '🏛️ Tunis City Center' },
+      'BANLIEUE':      { fr: '🏘️ Banlieue',                en: '🏘️ Suburbs' },
+      'SFAX_CENTRE':   { fr: '🏙️ Sfax Centre',             en: '🏙️ Sfax Center' },
+      'SOUSSE_CENTRE': { fr: '🏖️ Sousse Centre',           en: '🏖️ Sousse Center' },
+      'AUTRE':         { fr: '📍 Autre',                   en: '📍 Other' },
+    };
+    return map[zone]?.[this.i18n.lang] || zone;  // ← this.i18n.lang
+  }
+  onBudgetPredit(budget: number): void {
+    this.budgetSuggerePred = budget;  // ✅ passe au composant sponsor
+  }
+  allerLiveBroadcast(): void {
+    this.router.navigate(['/evenements', this.evenement!.id, 'live', 'broadcast']);
+  }
+
+  allerLiveWatch(): void {
+    this.router.navigate(['/evenements', this.evenement!.id, 'live', 'watch']);
   }
   retour(): void {
     this.sound.nav();  

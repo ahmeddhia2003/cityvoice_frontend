@@ -34,6 +34,13 @@ export interface Evenement {
   createdAt?: string;
   complet?: boolean;
   placesRestantes?: number;
+  // Nouveaux champs ML
+  typeLieu?: string;
+  zone?: string;
+  mediaPrevu?: boolean;
+  streamingPrevu?: boolean;
+  budgetEvenement?: number;
+  budgetReel?: number;
 }
 
 export interface InscriptionRequest {

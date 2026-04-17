@@ -1,12 +1,22 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input,EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EvenementService } from '../../services/evenement.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 export interface BudgetPrediction {
   budget_recommande: number;
   fourchette_min: number;
   fourchette_max: number;
   explication: string;
+  decomposition: {
+    logistique: number;
+    marketing: number;
+    technique: number;
+  };
+  nb_sponsors_recommande: number;
+  recette_estimee: number;
+  budget_net: number;
+  facteurs: { [key: string]: any };
 }
 
 @Component({
@@ -20,6 +30,14 @@ export class BudgetPredictionComponent {
   @Input() capaciteMax!: number;
   @Input() lieu!: string;
   @Input() estPayant!: boolean;
+  @Input() typeLieu!: string;
+  @Input() zone!: string;
+  @Input() mediaPrevu!: boolean;
+  @Input() streamingPrevu!: boolean;
+  @Input() prix!: number;
+  @Input() dateDebut!: string;
+  @Input() dateFin!: string;
+  @Output() budgetPrédit = new EventEmitter<number>();
 
   form: FormGroup;
   prediction: BudgetPrediction | null = null;
@@ -28,13 +46,17 @@ export class BudgetPredictionComponent {
 
   constructor(
     private fb: FormBuilder,
-    private evenementService: EvenementService
+    private evenementService: EvenementService,
+    public i18n: I18nService
   ) {
-    this.form = this.fb.group({
-      nbSponsors: [3, [Validators.required, Validators.min(0), Validators.max(20)]]
-    });
+    this.form = this.fb.group({});
   }
-
+  get dureeHeures(): number {
+    if (!this.dateDebut || !this.dateFin) return 4;
+    const diff = new Date(this.dateFin).getTime() - 
+                new Date(this.dateDebut).getTime();
+    return Math.max(1, Math.round(diff / (1000 * 60 * 60)));
+  }
   predire(): void {
     if (this.form.invalid) return;
     this.loading = true;
@@ -42,15 +64,21 @@ export class BudgetPredictionComponent {
     this.prediction = null;
 
     const payload = {
-      typeEvenement: this.typeEvenement,
-      capaciteMax:   this.capaciteMax,
-      lieu:          this.lieu,
-      nbSponsors:    this.form.value.nbSponsors,
-      estPayant:     this.estPayant ? 1 : 0
+      typeEvenement:  this.typeEvenement,
+      capaciteMax:    this.capaciteMax,
+      typeLieu:       this.typeLieu       || 'SALLE',
+      zone:           this.zone           || 'CENTRE_VILLE',
+      mediaPrevu:     this.mediaPrevu     ? 1 : 0,
+      streamingPrevu: this.streamingPrevu ? 1 : 0,
+      estPayant:      this.estPayant      ? 1 : 0,
+      prixBillet:     this.prix           || 0,
+      dureeHeures:    this.dureeHeures,
+      dateDebut:      this.dateDebut      || '',
+      //langue: this.i18n.lang || 'fr'
     };
 
     this.evenementService.predictBudget(payload).subscribe({
-      next: (res) => { this.prediction = res; this.loading = false; },
+      next: (res) => { this.prediction = res; this.loading = false; this.budgetPrédit.emit(res.budget_recommande);},
       error: () => { this.erreur = '❌ Service ML indisponible'; this.loading = false; }
     });
   }

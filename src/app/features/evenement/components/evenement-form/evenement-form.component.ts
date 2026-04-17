@@ -59,7 +59,12 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
       organisateurId: [1, Validators.required],
       imageUrl:       ['', [Validators.pattern('https?://.+')]],
       latitude:       [null, [Validators.min(-90),  Validators.max(90)]],
-      longitude:      [null, [Validators.min(-180), Validators.max(180)]]
+      longitude:      [null, [Validators.min(-180), Validators.max(180)]],
+      // Nouveaux champs
+      typeLieu:       [''],
+      zone:           [''],
+      mediaPrevu:     [false],
+      streamingPrevu: [false],
     }, { validators: this.dateFinValidator });
     // ➕ Son toggle quand l'utilisateur active/désactive "estPayant"
     this.form.get('estPayant')?.valueChanges.subscribe(val => {
@@ -127,7 +132,11 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
           imageUrl:       ev.imageUrl || '',
           latitude:       ev.latitude || null,
           longitude:      ev.longitude || null,
-          organisateurId: ev.organisateurId || 1
+          organisateurId: ev.organisateurId || 1,
+          typeLieu:       ev.typeLieu       || '',
+          zone:           ev.zone           || '',
+          mediaPrevu:     ev.mediaPrevu     || false,
+          streamingPrevu: ev.streamingPrevu || false,
         });
         this.loading = false;
         if (ev.latitude && ev.longitude) {
@@ -235,7 +244,13 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
             type:        result.type        || '',
             prix:        result.prix        || null,
             estPayant:   result.estPayant   || false,
-            dateDebut:   result.dateDebut   ? result.dateDebut.substring(0, 16) : ''
+            dateDebut:   result.dateDebut   ? result.dateDebut.substring(0, 16) : '',
+            dateFin:        result.dateFin       ? result.dateFin.substring(0, 16) : '',
+            typeLieu:       result.typeLieu      || '',
+            zone:           result.zone          || '',
+            mediaPrevu:     result.mediaPrevu    || false,
+            streamingPrevu: result.streamingPrevu || false,
+            capaciteMax: result.capaciteMax || null,
           });
         },
         error: () => {
@@ -247,6 +262,7 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
     reader.readAsDataURL(file);
   }
   soumettre(): void {
+    console.log('📤 Form value:', this.form.value);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       // ← Ajouter ce log
@@ -263,9 +279,15 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
     this.sound.click();  
     this.loading = true;
     this.erreur = '';
-
+    // Nettoyer les chaînes vides → null
+    const payload = {
+      ...this.form.value,
+      typeLieu: this.form.value.typeLieu || null,
+      zone:     this.form.value.zone     || null,
+    };
+    console.log('📦 Payload envoyé:', payload); 
     if (this.isEditMode) {
-      this.evenementService.modifierEvenement(this.editId!, this.form.value).subscribe({
+      this.evenementService.modifierEvenement(this.editId!, payload).subscribe({
         next: () => {
           this.sound.success(); 
           this.succes = this.i18n.t('ev.form.succes.modif');
@@ -278,7 +300,7 @@ export class EvenementFormComponent implements OnInit, AfterViewInit, OnDestroy 
         }
       });
     } else {
-      this.evenementService.creerEvenement(this.form.value).subscribe({
+      this.evenementService.creerEvenement(payload).subscribe({
         next: () => {
           this.sound.success();  
           this.succes = this.i18n.t('ev.form.succes.creer');

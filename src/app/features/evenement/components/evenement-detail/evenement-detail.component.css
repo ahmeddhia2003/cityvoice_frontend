@@ -615,3 +615,20 @@
 .ev-detail-sidebar::-webkit-scrollbar-thumb:hover {
   background: var(--ink3); /* ← un peu plus foncée au hover */
 }
+.btn-live {
+  background: linear-gradient(135deg, #E8532A, #c9381a);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulse-live 2s infinite;
+}
+.btn-live:hover {
+  background: linear-gradient(135deg, #c9381a, #a82e14);
+  transform: scale(1.02);
+}
+@keyframes pulse-live {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,83,42,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(232,83,42,0); }
+}

@@ -11,6 +11,7 @@ import { EvenementDetailComponent } from '../evenement/components/evenement-deta
 import { AdminScanComponent } from '../evenement/components/admin-scan/admin-scan.component';
 import { AdminSuggestionListComponent } from '../evenement/components/admin-suggestion-list/admin-suggestion-list.component';
 import { AdminSponsorListComponent } from '../evenement/components/admin-sponsor-list/admin-sponsor-list.component';
+import { RapportSponsorComponent } from '../evenement/components/rapport-sponsor/rapport-sponsor.component';
 
 const routes: Routes = [
   {
@@ -31,7 +32,7 @@ const routes: Routes = [
       { path: 'scan', component: AdminScanComponent },
       { path: 'suggestions', component: AdminSuggestionListComponent },
       { path: 'sponsors', component: AdminSponsorListComponent },
-
+      { path: 'sponsors/rapport', component: RapportSponsorComponent },
     ]
   }
 ];

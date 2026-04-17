@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EvenementService } from '../../services/evenement.service';
+import { I18nService } from '../../../../core/services/i18n.service';
 
 export interface SponsorPrediction {
   niveau_recommande: string;
@@ -9,6 +10,7 @@ export interface SponsorPrediction {
   probabilites_par_niveau: { [key: string]: number };
   explication: string;
   email_demarche: string;
+  facteurs_cles: { [key: string]: string };
 }
 
 @Component({
@@ -16,13 +18,25 @@ export interface SponsorPrediction {
   templateUrl: './sponsor-prediction.component.html',
   styleUrls: ['./sponsor-prediction.component.css']
 })
-export class SponsorPredictionComponent implements OnInit {
+export class SponsorPredictionComponent implements OnInit, OnChanges{
 
   @Input() evenementId!: number;
   @Input() typeEvenement!: string;
   @Input() capaciteMax!: number;
   @Input() lieu!: string;
-
+  @Input() typeLieu!: string;
+  @Input() zone!: string;
+  @Input() mediaPrevu!: boolean;
+  @Input() streamingPrevu!: boolean;
+  @Input() dateDebut!: string;
+  @Input() dateFin!: string;
+  @Input() budgetSuggere: number = 5000;
+  get dureeHeures(): number {
+    if (!this.dateDebut || !this.dateFin) return 4;
+    const diff = new Date(this.dateFin).getTime() - 
+                new Date(this.dateDebut).getTime();
+    return Math.max(1, Math.round(diff / (1000 * 60 * 60)));
+  }
   form: FormGroup;
   prediction: SponsorPrediction | null = null;
   loading = false;
@@ -42,7 +56,8 @@ export class SponsorPredictionComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private evenementService: EvenementService
+    private evenementService: EvenementService,
+    public i18n: I18nService
   ) {
     this.form = this.fb.group({
       budgetEvenement: [5000, [Validators.required, Validators.min(100)]]
@@ -50,7 +65,11 @@ export class SponsorPredictionComponent implements OnInit {
   }
 
   ngOnInit(): void {}
-
+  ngOnChanges(): void {
+    if (this.budgetSuggere) {
+      this.form.patchValue({ budgetEvenement: this.budgetSuggere });
+    }
+  }
   predire(): void {
     if (this.form.invalid) return;
     this.loading = true;
@@ -61,7 +80,14 @@ export class SponsorPredictionComponent implements OnInit {
       typeEvenement:   this.typeEvenement,
       capaciteMax:     this.capaciteMax,
       lieu:            this.lieu,
-      budgetEvenement: this.form.value.budgetEvenement
+      budgetEvenement: this.form.value.budgetEvenement,
+      typeLieu:       this.typeLieu,
+      zone:           this.zone,
+      mediaPrevu:     this.mediaPrevu,
+      streamingPrevu: this.streamingPrevu,
+      dateDebut:      this.dateDebut,
+      dureeHeures:    this.dureeHeures,
+      //langue: this.i18n.lang || 'fr'
     };
 
     this.evenementService.predictSponsor(payload).subscribe({

@@ -366,3 +366,18 @@
   color: var(--ink-2); cursor: pointer; transition: all .18s;
 }
 .filter-reset:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+.sp-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sp-meta-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  color: #4a4a6a;
+  font-weight: 500;
+}

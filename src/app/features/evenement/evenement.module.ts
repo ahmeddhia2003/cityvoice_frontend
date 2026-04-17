@@ -15,6 +15,8 @@ import { MesSuggestionsComponent } from './components/mes-suggestions/mes-sugges
 import { PaymentSuccessComponent } from './components/payment-success/payment-success.component';
 import { PaymentCancelComponent }  from './components/payment-cancel/payment-cancel.component';
 import { SharedModule } from '../../shared/shared.module';
+import { LiveBroadcastComponent } from './components/live-broadcast/live-broadcast.component';
+import { LiveViewerComponent }    from './components/live-viewer/live-viewer.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +30,8 @@ import { SharedModule } from '../../shared/shared.module';
     MesSuggestionsComponent,
     PaymentSuccessComponent,
     PaymentCancelComponent,
-    
+    LiveBroadcastComponent,  
+    LiveViewerComponent, 
   ],
   imports: [
     CommonModule,

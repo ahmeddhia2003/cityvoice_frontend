@@ -232,3 +232,44 @@
   margin: 0;
   background: white;
 }
+.sp-facteurs {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+}
+.sp-facteurs-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a4a6a;
+  margin-bottom: 12px;
+}
+.sp-facteurs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.sp-facteur-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.sp-facteur-label {
+  font-size: 12px;
+  color: #8888A8;
+}
+.sp-facteur-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8888A8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+}
+.sp-facteur-value.fort {
+  color: #0D9B76;
+  background: #E6F7F2;
+}

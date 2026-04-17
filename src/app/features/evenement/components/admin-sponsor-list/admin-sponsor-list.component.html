@@ -168,6 +168,34 @@
             📅 {{ s.evenementIds?.length || 0 }} événement(s)
           </span>
         </div>
+        <div class="sp-card-meta" *ngIf="s.secteurActivite || s.tailleEntreprise">
+          <span *ngIf="s.secteurActivite" class="sp-meta-tag">
+            {{ s.secteurActivite === 'TELECOM'        ? ('📡 ' + ('sp.secteur.telecom' | t)) :
+              s.secteurActivite === 'BANQUE'         ? ('🏦 ' + ('sp.secteur.banque' | t)) :
+              s.secteurActivite === 'TECH'           ? ('💻 ' + ('sp.secteur.tech' | t)) :
+              s.secteurActivite === 'GRANDE_SURFACE' ? ('🛒 ' + ('sp.secteur.surface' | t)) :
+              s.secteurActivite === 'SANTE'          ? ('🏥 ' + ('sp.secteur.sante' | t)) :
+              s.secteurActivite === 'EDUCATION'      ? ('🎓 ' + ('sp.secteur.education' | t)) :
+              s.secteurActivite === 'ENERGIE'        ? ('⚡ ' + ('sp.secteur.energie' | t)) :
+              ('📦 ' + ('sp.secteur.autre' | t)) }}
+          </span>
+          <span *ngIf="s.tailleEntreprise" class="sp-meta-tag">
+            {{ s.tailleEntreprise === 'PME'               ? ('🏢 ' + ('sp.taille.pme' | t)) :
+              s.tailleEntreprise === 'GRANDE_ENTREPRISE'  ? ('🏛️ ' + ('sp.taille.grande' | t)) :
+              ('🌍 ' + ('sp.taille.multi' | t)) }}
+          </span>
+          <span *ngIf="s.zoneGeographique" class="sp-meta-tag">
+            {{ s.zoneGeographique === 'TUNIS'         ? '🏙️ Tunis' :
+              s.zoneGeographique === 'SFAX'          ? '🏙️ Sfax' :
+              s.zoneGeographique === 'SOUSSE'        ? '🏖️ Sousse' :
+              s.zoneGeographique === 'NATIONAL'      ? ('🇹🇳 ' + ('sp.zone.national' | t)) :
+              ('🌍 ' + ('sp.zone.international' | t)) }}
+          </span>
+          <span *ngIf="s.actifSponsoring !== undefined" class="sp-meta-tag"
+                [style.color]="s.actifSponsoring ? '#0D9B76' : '#E8532A'">
+            {{ s.actifSponsoring ? ('✅ ' + ('sp.actif.oui' | t)) : ('❌ ' + ('sp.actif.non' | t)) }}
+          </span>
+        </div>
         <div class="sp-montant" *ngIf="s.montantSponsorat">
           💰 {{ s.montantSponsorat | number:'1.0-0' }} TND
         </div>
@@ -329,7 +357,80 @@
             {{ 'adm.sp.err.url' | t }}
           </span>
         </div>
+        <!-- Secteur d'activité -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'sp.secteur' | t }} *</label>
+          <select class="ev-select-input" formControlName="secteurActivite"
+                  [class.ev-input-error]="sponsorForm.get('secteurActivite')?.invalid
+                    && sponsorForm.get('secteurActivite')?.touched">
+            <option value="">-- {{ 'sp.secteur' | t }} --</option>
+            <option value="TELECOM">📡 Télécom</option>
+            <option value="BANQUE">🏦 Banque</option>
+            <option value="TECH">💻 Tech</option>
+            <option value="GRANDE_SURFACE">🛒 Grande surface</option>
+            <option value="SANTE">🏥 Santé</option>
+            <option value="EDUCATION">🎓 Éducation</option>
+            <option value="ENERGIE">⚡ Énergie</option>
+            <option value="AUTRE">📦 Autre</option>
+          </select>
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('secteurActivite')?.errors?.['required']
+                  && sponsorForm.get('secteurActivite')?.touched">
+            {{ 'sp.err.secteur' | t }}
+          </span>
+        </div>
 
+        <!-- Taille + Zone -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'sp.taille' | t }} *</label>
+            <select class="ev-select-input" formControlName="tailleEntreprise"
+                    [class.ev-input-error]="sponsorForm.get('tailleEntreprise')?.invalid
+                      && sponsorForm.get('tailleEntreprise')?.touched">
+              <option value="">-- {{ 'sp.taille' | t }} --</option>
+              <option value="PME">🏢 PME</option>
+              <option value="GRANDE_ENTREPRISE">🏛️ Grande entreprise</option>
+              <option value="MULTINATIONALE">🌍 Multinationale</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="sponsorForm.get('tailleEntreprise')?.errors?.['required']
+                    && sponsorForm.get('tailleEntreprise')?.touched">
+              {{ 'sp.err.taille' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'sp.zone.geo' | t }} *</label>
+            <select class="ev-select-input" formControlName="zoneGeographique"
+                    [class.ev-input-error]="sponsorForm.get('zoneGeographique')?.invalid
+                      && sponsorForm.get('zoneGeographique')?.touched">
+              <option value="">-- {{ 'sp.zone.geo' | t }} --</option>
+              <option value="TUNIS">🏙️ Tunis</option>
+              <option value="SFAX">🏙️ Sfax</option>
+              <option value="SOUSSE">🏖️ Sousse</option>
+              <option value="NATIONAL">🇹🇳 National</option>
+              <option value="INTERNATIONAL">🌍 International</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="sponsorForm.get('zoneGeographique')?.errors?.['required']
+                    && sponsorForm.get('zoneGeographique')?.touched">
+              {{ 'sp.err.zone' | t }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Actif sponsoring -->
+        <div class="ev-form-group ev-form-group-check">
+          <label class="ev-label">{{ 'sp.actif' | t }}</label>
+          <label class="ev-toggle">
+            <input type="checkbox" formControlName="actifSponsoring">
+            <span class="ev-toggle-track"></span>
+            <span class="ev-toggle-label">
+              {{ sponsorForm.get('actifSponsoring')?.value
+                 ? ('sp.actif.oui' | t)
+                 : ('sp.actif.non' | t) }}
+            </span>
+          </label>
+        </div>
         <div class="ms-modal-footer">
           <button type="button" class="btn btn-outline" (click)="fermerModal()">
             {{ 'adm.sp.modal.annuler' | t }}

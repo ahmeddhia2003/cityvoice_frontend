@@ -176,7 +176,67 @@
             </span>
           </div>
         </div>
+        <!-- ─── Type Lieu + Zone ──────────────────── -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.type.lieu' | t }}</label>
+            <select class="ev-select-input" formControlName="typeLieu">
+              <option value="">-- {{ 'ev.form.type.lieu' | t }} --</option>
+              <option value="SALLE">🏛️ Salle de conférence</option>
+              <option value="PLEIN_AIR">🌳 Plein air</option>
+              <option value="HOTEL">🏨 Hôtel</option>
+              <option value="UNIVERSITE">🎓 Université</option>
+              <option value="MUNICIPALITE">🏛️ Municipalité</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('typeLieu')?.touched && form.get('typeLieu')?.invalid">
+              {{ 'ev.form.err.type.lieu' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.zone' | t }}</label>
+            <select class="ev-select-input" formControlName="zone">
+              <option value="">-- {{ 'ev.form.zone' | t }} --</option>
+              <option value="LAC">🏙️ Lac / Les Berges du Lac</option>
+              <option value="MARSA">🌊 La Marsa / Gammarth</option>
+              <option value="CENTRE_VILLE">🏛️ Centre ville Tunis</option>
+              <option value="BANLIEUE">🏘️ Banlieue</option>
+              <option value="SFAX_CENTRE">🏙️ Sfax Centre</option>
+              <option value="SOUSSE_CENTRE">🏖️ Sousse Centre</option>
+              <option value="AUTRE">📍 Autre</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('zone')?.touched && form.get('zone')?.invalid">
+              {{ 'ev.form.err.zone' | t }}
+            </span>
+          </div>
+        </div>
 
+        <!-- ─── Budget ────────────────────────────── -->
+        <div class="ev-form-row">
+          <!-- Toggles médias -->
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.media.prevu' | t }}</label>
+            <label class="ev-toggle">
+              <input type="checkbox" formControlName="mediaPrevu">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('mediaPrevu')?.value
+                   ? ('ev.form.media.oui' | t)
+                   : ('ev.form.media.non' | t) }}
+              </span>
+            </label>
+            <label class="ev-toggle" style="margin-top:8px">
+              <input type="checkbox" formControlName="streamingPrevu">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('streamingPrevu')?.value
+                   ? ('ev.form.streaming.oui' | t)
+                   : ('ev.form.streaming.prevu' | t) }}
+              </span>
+            </label>
+          </div>
+        </div>
         <!-- Map -->
         <div class="ev-form-group">
           <label class="ev-label">{{ 'ev.form.map.label' | t }}</label>

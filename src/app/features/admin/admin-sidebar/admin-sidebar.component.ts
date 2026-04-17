@@ -46,7 +46,8 @@ export class AdminSidebarComponent implements OnInit {
           children: [
             { label: 'Scanner QR', route: '/admin/scan', icon: 'qr' },
             { label: 'Suggestions',  route: '/admin/suggestions', icon: 'suggestions' },
-            { label: 'Sponsors', route: '/admin/sponsors', icon: 'handshake' },
+            { label: 'Sponsors', route: '/admin/sponsors', icon: 'handshake'},
+            { label: 'Rapports hebdomadaires',  route: '/admin/sponsors/rapport',  icon: 'bar-chart'   },
           ]
         },
         { label: 'Projets',         route: '/admin/projets',            icon: 'monitor'   },

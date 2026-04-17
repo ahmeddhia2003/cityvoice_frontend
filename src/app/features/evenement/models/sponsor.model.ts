@@ -6,4 +6,8 @@ export interface Sponsor {
   niveauSponsorat?: string;
   montantSponsorat?: number;
   evenementIds?: number[];
+  secteurActivite?: string;
+  tailleEntreprise?: string;
+  zoneGeographique?: string;
+  actifSponsoring?: boolean;
 }

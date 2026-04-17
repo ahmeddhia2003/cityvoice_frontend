@@ -61,6 +61,10 @@ export class AdminSponsorListComponent implements OnInit {
       nomEntreprise: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       logoUrl:       ['', [Validators.pattern('https?://.+')]],
       siteWeb:       ['', [Validators.pattern('https?://.+')]],
+      secteurActivite:  ['', Validators.required],
+      tailleEntreprise: ['', Validators.required],
+      zoneGeographique: ['', Validators.required],
+      actifSponsoring:  [true]
     });
 
     this.associationForm = this.fb.group({
@@ -285,6 +289,10 @@ export class AdminSponsorListComponent implements OnInit {
       nomEntreprise: s.nomEntreprise,
       logoUrl:       s.logoUrl || '',
       siteWeb:       s.siteWeb || '',
+      secteurActivite:  s.secteurActivite  || '',
+      tailleEntreprise: s.tailleEntreprise || '',
+      zoneGeographique: s.zoneGeographique || '',
+      actifSponsoring:  s.actifSponsoring  ?? true
     });
     this.modalOuvert = true;
   }
@@ -303,10 +311,15 @@ export class AdminSponsorListComponent implements OnInit {
     }
     this.sound.click();
     this.formLoading = true;
-
+    const payload = {
+    ...this.sponsorForm.value,
+    secteurActivite:  this.sponsorForm.value.secteurActivite  || null,
+    tailleEntreprise: this.sponsorForm.value.tailleEntreprise || null,
+    zoneGeographique: this.sponsorForm.value.zoneGeographique || null,
+    };
     const action = this.modeEdition && this.sponsorEnEdition?.id
-      ? this.evenementService.modifierSponsor(this.sponsorEnEdition.id, this.sponsorForm.value)
-      : this.evenementService.creerSponsor(this.sponsorForm.value);
+      ? this.evenementService.modifierSponsor(this.sponsorEnEdition.id, payload)
+      : this.evenementService.creerSponsor(payload);
 
     action.subscribe({
       next: () => {

@@ -79,7 +79,6 @@
                 <option value="fr">{{ 'ev.detail.lang.fr' | t }}</option>
                 <option value="en">{{ 'ev.detail.lang.en' | t }}</option>
                 <option value="ar">{{ 'ev.detail.lang.ar' | t }}</option>
-                <option value="tn">{{ 'ev.detail.lang.tn' | t }}</option>
               </select>
               <svg class="ev-select-arrow" width="14" height="14"
                   fill="none" stroke="currentColor"
@@ -98,18 +97,16 @@
           <!-- Description -->
           <div *ngIf="!traductionLoading"
               class="ev-desc-wrapper"
-              [class.ev-desc-rtl]="langueActive === 'ar'"
-              [class.ev-desc-tn]="langueActive === 'tn'">
+              [class.ev-desc-rtl]="langueActive === 'ar'">
 
             <span class="ev-lang-badge" *ngIf="langueActive !== 'fr'">
               {{ langueActive === 'ar' ? ('ev.detail.lang.ar' | t) :
-                 langueActive === 'tn' ? ('ev.detail.lang.tn' | t) :
                  langueActive === 'en' ? ('ev.detail.lang.en' | t) : '' }}
               <button class="ev-lang-reset" (click)="traduire('fr')">✕</button>
             </span>
 
             <p class="ev-detail-desc"
-              [dir]="langueActive === 'ar' || langueActive === 'tn' ? 'rtl' : 'ltr'">
+              [dir]="langueActive === 'ar' ? 'rtl' : 'ltr'">
               {{ getDescription() }}
             </p>
           </div>
@@ -156,6 +153,7 @@
                 <div class="ev-meta-card-value">{{ evenement.dateFin | date:'EEEE dd MMMM yyyy, HH:mm' }}</div>
               </div>
             </div>
+            
             <div class="ev-meta-card">
               <div class="ev-meta-card-icon">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -168,6 +166,45 @@
                 <div class="ev-meta-card-value">
                   {{ evenement.nbInscrits || 0 }} {{ 'ev.detail.inscrits' | t }}
                   <span *ngIf="evenement.capaciteMax"> / {{ evenement.capaciteMax }} {{ 'ev.detail.places' | t }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Type de lieu — REMPLACE l'existant -->
+            <div class="ev-meta-card" *ngIf="evenement.typeLieu">
+              <div class="ev-meta-card-icon">🏛️</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.form.type.lieu' | t }}</div>
+                <div class="ev-meta-card-value">
+                  {{ getTypeLieuLabel(evenement.typeLieu) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Zone géographique — REMPLACE l'existant -->
+            <div class="ev-meta-card" *ngIf="evenement.zone">
+              <div class="ev-meta-card-icon">🗺️</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.form.zone' | t }}</div>
+                <div class="ev-meta-card-value">
+                  {{ getZoneLabel(evenement.zone) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Médias & Streaming — REMPLACE l'existant -->
+            <div class="ev-meta-card"
+                *ngIf="evenement.mediaPrevu !== undefined || evenement.streamingPrevu !== undefined">
+              <div class="ev-meta-card-icon">📺</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.diffusion' | t }}</div>
+                <div class="ev-meta-card-value" style="display:flex; flex-direction:column; gap:4px">
+                  <span style="color:#1a1a2e">
+                    📰 {{ evenement.mediaPrevu ? ('ev.form.media.oui' | t) : ('ev.form.media.non' | t) }}
+                  </span>
+                  <span style="color:#1a1a2e">
+                    {{ evenement.streamingPrevu ? '🔴' : '📡' }}
+                    {{ evenement.streamingPrevu ? ('ev.form.streaming.oui' | t) : ('ev.form.streaming.non' | t) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -206,13 +243,33 @@
             </svg>
             {{ 'ev.detail.annuler.ev' | t }}
           </button>
+          <button class="btn btn-live"
+                  *ngIf="evenement.statut === 'PUBLIE'"
+                  (click)="allerLiveBroadcast()">
+            🔴 Démarrer Live
+          </button>
+        </div>
+        <div class="ev-detail-actions" 
+            *ngIf="!isAdmin && evenement.statut === 'PUBLIE'">
+          <button class="btn btn-primary"
+                  (click)="allerLiveWatch()">
+            📺 Regarder le Live
+          </button>
         </div>
         <div *ngIf="isAdmin && evenement" style="margin-top: 16px;">
           <app-budget-prediction
             [typeEvenement]="evenement.type"
             [capaciteMax]="evenement.capaciteMax || 100"
             [lieu]="evenement.lieu"
-            [estPayant]="evenement.estPayant || false">
+            [typeLieu]="evenement.typeLieu || 'SALLE'"
+            [zone]="evenement.zone || 'CENTRE_VILLE'"
+            [mediaPrevu]="evenement.mediaPrevu || false"
+            [streamingPrevu]="evenement.streamingPrevu || false"
+            [estPayant]="evenement.estPayant || false"
+            [prix]="evenement.prix || 0"
+            [dateDebut]="evenement.dateDebut"
+            [dateFin]="evenement.dateFin || evenement.dateDebut"
+            (budgetPrédit)="onBudgetPredit($event)">
           </app-budget-prediction>
         </div>
         <div *ngIf="isAdmin && evenement" style="margin-top: 24px;">
@@ -220,7 +277,13 @@
             [typeEvenement]="evenement.type"
             [capaciteMax]="evenement.capaciteMax || 100"
             [lieu]="evenement.lieu"
-            [evenementId]="evenement.id!">
+            [typeLieu]="evenement.typeLieu || 'SALLE'"
+            [zone]="evenement.zone || 'CENTRE_VILLE'"
+            [mediaPrevu]="evenement.mediaPrevu || false"
+            [streamingPrevu]="evenement.streamingPrevu || false"
+            [dateDebut]="evenement.dateDebut"
+            [dateFin]="evenement.dateFin || evenement.dateDebut"
+            [budgetSuggere]="budgetSuggerePred">
           </app-sponsor-prediction>
         </div>
         <!-- Partage réseaux sociaux -->

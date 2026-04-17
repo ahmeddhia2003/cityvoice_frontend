@@ -181,4 +181,7 @@ export class EvenementService {
     predictBudget(payload: any): Observable<any> {
       return this.http.post(`${this.apiUrl}/budget/predict`, payload);
     }
+    getStats(): Observable<any> {
+      return this.http.get(`${this.apiUrl}/evenements/stats`);
+    }
 }

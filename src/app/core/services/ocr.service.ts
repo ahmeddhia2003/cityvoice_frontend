@@ -7,9 +7,15 @@ export interface OcrResult {
   description: string;
   lieu: string;
   dateDebut: string;
+  dateFin?: string;
   type: string;
+  typeLieu?: string;     
+  zone?: string;   
   prix: number;
   estPayant: boolean;
+  mediaPrevu?: boolean;  
+  streamingPrevu?: boolean; 
+  capaciteMax?: number;
   rawText: string;
 }
 
