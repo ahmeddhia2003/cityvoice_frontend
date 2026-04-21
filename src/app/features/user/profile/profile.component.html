@@ -2,20 +2,31 @@
 
 <div class="profile-shell">
 
+  <!-- ============================================================ -->
+  <!-- 1. ÉTAT DE CHARGEMENT -->
+  <!-- ============================================================ -->
+
   <div class="profile-loading" *ngIf="loading">
     <div class="pl-spinner"></div>
     <span class="pl-text">Chargement du profil…</span>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- 2. CONTENU PRINCIPAL (AFFICHÉ UNIQUEMENT SI USER CHARGÉ) -->
+  <!-- ============================================================ -->
+
   <ng-container *ngIf="!loading && user">
 
-    <!-- ══ HERO ══════════════════════════════════════════ -->
+    <!-- ========================================================== -->
+    <!-- 2.1 SECTION HERO - EN-TÊTE DU PROFIL -->
+    <!-- ========================================================== -->
+
     <div class="profile-hero">
       <div class="hero-bg"></div>
 
       <div class="hero-content">
 
-        <!-- ── Colonne gauche : identité ───────────────── -->
+        <!-- 2.1.1 Colonne gauche : identité -->
         <div class="hero-left">
 
           <!-- Avatar -->
@@ -93,7 +104,7 @@
           </div>
         </div>
 
-        <!-- ── Colonne droite : stats ───────────────────── -->
+        <!-- 2.1.2 Colonne droite : stats -->
         <div class="hero-right">
 
           <!-- Stats citoyens -->
@@ -141,7 +152,7 @@
 
       </div>
 
-      <!-- ── Bande profil completion + trust ─────────────── -->
+      <!-- 2.1.3 Bande profil completion + trust -->
       <div class="hero-bottom" *ngIf="isCitoyen()">
         <div class="hero-bottom-inner">
 
@@ -224,7 +235,10 @@
 
     </div>
 
-    <!-- ══ AI SUGGESTION ═════════════════════════════════ -->
+    <!-- ========================================================== -->
+    <!-- 2.2 SECTION AI SUGGESTION - CONSEIL PERSONNALISÉ -->
+    <!-- ========================================================== -->
+
     <div class="ai-banner" *ngIf="isCitoyen()"
          [class.ai-banner--open]="showAiSuggestion">
 
@@ -279,10 +293,13 @@
 
     </div>
 
-    <!-- ══ BODY ══════════════════════════════════════════ -->
+    <!-- ========================================================== -->
+    <!-- 2.3 SECTION BODY - CONTENU PRINCIPAL AVEC TABS -->
+    <!-- ========================================================== -->
+
     <div class="profile-body">
 
-      <!-- Tabs -->
+      <!-- 2.3.1 Navigation par onglets -->
       <div class="profile-tabs">
         <button class="ptab" [class.active]="activeTab==='info'" (click)="setTab('info')">
           <svg width="15" height="15" fill="none" stroke="currentColor"
@@ -308,10 +325,11 @@
         </button>
       </div>
 
-      <!-- ── Tab Infos ──────────────────────────────────── -->
+      <!-- 2.3.2 TAB 1 : MON PROFIL (INFORMATIONS PERSONNELLES) -->
       <div class="tab-panel" *ngIf="activeTab==='info'">
         <form [formGroup]="infoForm" (ngSubmit)="saveInfo()">
 
+          <!-- Section Identité -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(12,31,63,.06);color:#0C1F3F">
@@ -327,7 +345,6 @@
               </div>
             </div>
             <div class="form-grid">
-
               <div class="field-group">
                 <label class="field-label">Nom complet</label>
                 <div class="field-wrap">
@@ -367,10 +384,10 @@
                          formControlName="telephone" placeholder="+216 XX XXX XXX">
                 </div>
               </div>
-
             </div>
           </div>
 
+          <!-- Section Localisation -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(13,155,118,.08);color:#0D9B76">
@@ -386,7 +403,6 @@
               </div>
             </div>
             <div class="form-grid">
-
               <div class="field-group">
                 <label class="field-label">Gouvernorat</label>
                 <div class="field-wrap">
@@ -427,10 +443,10 @@
                          formControlName="codePostal" placeholder="Ex: 1002" maxlength="4">
                 </div>
               </div>
-
             </div>
           </div>
 
+          <!-- Section Photo de profil -->
           <div class="form-section">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(232,83,42,.08);color:#E8532A">
@@ -463,20 +479,12 @@
                 <div class="pz-info-title">
                   <ng-container *ngIf="photoChecking">Vérification en cours…</ng-container>
                   <ng-container *ngIf="!photoChecking && photoError">Photo refusée</ng-container>
-                  <ng-container *ngIf="!photoChecking && !photoError && photoPreview">Photo active</ng-container>
-                  <ng-container *ngIf="!photoChecking && !photoError && !photoPreview">Aucune photo</ng-container>
+                  <ng-container *ngIf="!photoChecking && photoOk && photoPreview">Photo validée ✓</ng-container>
+                  <ng-container *ngIf="!photoChecking && !photoOk && !photoError && photoPreview">Photo de profil</ng-container>
+                  <ng-container *ngIf="!photoChecking && !photoPreview && !photoError">Aucune photo</ng-container>
                 </div>
-                <div class="pz-info-sub" *ngIf="!photoError">
+                <div class="pz-info-sub" *ngIf="!photoError && !photoOk">
                   Visible par les autres utilisateurs
-                </div>
-                <div class="pz-error" *ngIf="photoError">
-                  <svg width="14" height="14" fill="none" stroke="currentColor"
-                       stroke-width="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="15" y1="9" x2="9" y2="15"/>
-                    <line x1="9" y1="9" x2="15" y2="15"/>
-                  </svg>
-                  {{ photoError }}
                 </div>
                 <div class="pz-btns">
                   <label class="pz-upload-btn" [class.disabled]="photoChecking">
@@ -497,9 +505,40 @@
                 </div>
               </div>
             </div>
+
+            <!-- Feedbacks photo -->
+            <div class="pz-feedback" *ngIf="photoChecking">
+              <div class="pz-fb-checking">
+                <span class="pz-fb-dot"></span>
+                Analyse de la photo en cours…
+              </div>
+            </div>
+
+            <div class="pz-feedback" *ngIf="!photoChecking && photoError">
+              <div class="pz-fb-error">
+                <svg width="13" height="13" fill="none" stroke="currentColor"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {{ photoError }}
+              </div>
+            </div>
+
+            <div class="pz-feedback"
+                 *ngIf="!photoChecking && photoOk && !photoError && photoPreview">
+              <div class="pz-fb-ok">
+                <svg width="13" height="13" fill="none" stroke="currentColor"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Photo validée par le modèle IA ✓
+              </div>
+            </div>
           </div>
 
-          <!-- Juste avant form-actions, dans tab info, seulement pour agents -->
+          <!-- Section Disponibilité (uniquement pour les agents) -->
           <div class="form-section" *ngIf="!isCitoyen()">
             <div class="fs-header">
               <div class="fs-icon" style="background:rgba(59,130,246,.08);color:#3B82F6">
@@ -540,6 +579,7 @@
             </div>
           </div>
 
+          <!-- Actions du formulaire -->
           <div class="form-actions">
             <button type="submit" class="save-btn" [disabled]="savingInfo">
               <span class="save-spinner" *ngIf="savingInfo"></span>
@@ -554,7 +594,7 @@
         </form>
       </div>
 
-      <!-- ── Tab Sécurité ──────────────────────────────── -->
+      <!-- 2.3.3 TAB 2 : SÉCURITÉ (CHANGEMENT DE MOT DE PASSE) -->
       <div class="tab-panel" *ngIf="activeTab==='security'">
         <form [formGroup]="pwdForm" (ngSubmit)="changePwd()">
           <div class="form-section">
@@ -639,7 +679,7 @@
         </form>
       </div>
 
-      <!-- ── Tab Activité ──────────────────────────────── -->
+      <!-- 2.3.4 TAB 3 : ACTIVITÉ -->
       <div class="tab-panel" *ngIf="activeTab==='activity' && isCitoyen()">
         <div class="empty-activity">
           <div class="ea-icon">📍</div>
@@ -651,12 +691,18 @@
     </div>
 
   </ng-container>
-  <!-- ══ CIVIC CARD MODAL ══════════════════════════════════ -->
+
+  <!-- ============================================================ -->
+  <!-- 3. MODAL CARTE DE CITOYEN (CIVIC CARD) -->
+  <!-- ============================================================ -->
+
+  <!-- Overlay -->
   <div class="cc-overlay" *ngIf="showCivicCard" (click)="closeCivicCard()"></div>
 
+  <!-- Modal -->
   <div class="cc-modal" *ngIf="showCivicCard">
 
-    <!-- Close -->
+    <!-- Bouton fermeture -->
     <button class="cc-close" (click)="closeCivicCard()">
       <svg width="16" height="16" fill="none" stroke="currentColor"
            stroke-width="2.5" viewBox="0 0 24 24">
@@ -665,7 +711,7 @@
       </svg>
     </button>
 
-    <!-- Header -->
+    <!-- En-tête du modal -->
     <div class="cc-modal-header">
       <div class="cc-modal-icon">🪪</div>
       <div>
@@ -674,21 +720,21 @@
       </div>
     </div>
 
-    <!-- Loading -->
+    <!-- État de chargement -->
     <div class="cc-modal-loading" *ngIf="civicCardLoading">
       <div class="cc-spinner"></div>
       <span>Génération de la carte…</span>
     </div>
 
-    <!-- Card -->
+    <!-- Contenu de la carte -->
     <ng-container *ngIf="!civicCardLoading && user">
       <div class="cc-card-stage">
         <div class="civic-card">
 
-          <!-- ── Holographic overlay ────────────────────── -->
+          <!-- Effet holographique -->
           <div class="card-holo"></div>
 
-          <!-- ── Background pattern ─────────────────────── -->
+          <!-- Fond avec motifs -->
           <div class="card-bg">
             <div class="card-orb card-orb-1"></div>
             <div class="card-orb card-orb-2"></div>
@@ -696,7 +742,7 @@
             <div class="card-lines"></div>
           </div>
 
-          <!-- ── Top bar ────────────────────────────────── -->
+          <!-- Barre supérieure -->
           <div class="card-top">
             <div class="card-logo">
               <div class="card-logo-icon">
@@ -713,7 +759,7 @@
             </div>
           </div>
 
-          <!-- ── Identity section ───────────────────────── -->
+          <!-- Section identité -->
           <div class="card-identity">
             <!-- Photo -->
             <div class="card-photo-wrap">
@@ -726,7 +772,7 @@
               <div class="card-level-pip">{{ cardTrustIcon }}</div>
             </div>
 
-            <!-- Info -->
+            <!-- Informations -->
             <div class="card-id-info">
               <div class="card-fullname">{{ user.nom }}</div>
               <div class="card-role-row">
@@ -745,7 +791,7 @@
             </div>
           </div>
 
-          <!-- ── Stats bar ──────────────────────────────── -->
+          <!-- Barre de métriques -->
           <div class="card-metrics">
             <div class="card-metric">
               <div class="cm-value">{{ user.points }}</div>
@@ -768,7 +814,7 @@
             </div>
           </div>
 
-          <!-- ── Badges showcase ────────────────────────── -->
+          <!-- Vitrine des badges -->
           <div class="card-showcase" *ngIf="civicCardBadges.length > 0">
             <div class="card-showcase-label">Badges obtenus</div>
             <div class="card-showcase-row">
@@ -779,7 +825,7 @@
             </div>
           </div>
 
-          <!-- ── Bottom bar ─────────────────────────────── -->
+          <!-- Barre inférieure -->
           <div class="card-bottom">
             <div class="card-serial">
               <span class="card-serial-label">N°</span>
@@ -793,13 +839,12 @@
               Vérifié
             </div>
             <div class="card-qr">
-              <!-- Real QR Code -->
               <img [src]="qrCodeUrl" alt="QR Profile"
                    style="width: 100%; height: 100%; object-fit: contain;">
             </div>
           </div>
 
-          <!-- ── Accent strip ───────────────────────────── -->
+          <!-- Bande d'accentuation colorée -->
           <div class="card-accent">
             <div class="ca-seg" style="background:#E8532A"></div>
             <div class="ca-seg" style="background:#C9973E"></div>
@@ -810,11 +855,11 @@
 
         </div>
 
-        <!-- Card shadow/reflection -->
+        <!-- Ombre/reflet de la carte -->
         <div class="cc-card-shadow"></div>
       </div>
 
-      <!-- Actions -->
+      <!-- Actions du modal -->
       <div class="cc-modal-actions">
         <button class="cc-btn cc-btn--primary" (click)="downloadCard()">
           <svg width="15" height="15" fill="none" stroke="currentColor"
@@ -840,7 +885,10 @@
   </div>
 </div>
 
-<!-- Toast -->
+<!-- ============================================================ -->
+<!-- 4. TOAST DE NOTIFICATION -->
+<!-- ============================================================ -->
+
 <div class="profile-toast" *ngIf="toast" [ngClass]="toastType">
   <div class="toast-dot"></div>
   {{ toastMsg }}

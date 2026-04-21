@@ -1,5 +1,347 @@
 <div class="users-page">
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 : ANALYTICS DASHBOARD                            -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="analytics-section">
+
+    <!-- Collapsible header -->
+    <div class="analytics-toggle" (click)="toggleAnalytics()">
+      <div class="analytics-toggle-left">
+        <svg width="16" height="16" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Vue d'ensemble</span>
+        <span class="analytics-live-dot"></span>
+      </div>
+      <svg class="analytics-chevron"
+           [class.rotated]="!analyticsExpanded"
+           width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    <div class="analytics-body" [class.collapsed]="!analyticsExpanded">
+
+      <!-- Loading -->
+      <div class="analytics-loading" *ngIf="analyticsLoading">
+        <div class="dash-spinner"></div>
+        <span>Chargement…</span>
+      </div>
+
+      <ng-container *ngIf="!analyticsLoading && analytics">
+
+        <!-- KPIs Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(12,31,63,.06);color:#0C1F3F">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val">{{ analytics.kpis.totalUsers }}</div>
+              <div class="kpi-label">Total utilisateurs</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(13,155,118,.1);color:#0D9B76">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#0D9B76">{{ analytics.kpis.totalCitoyens }}</div>
+              <div class="kpi-label">Citoyens</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(59,130,246,.1);color:#3B82F6">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#3B82F6">{{ analytics.kpis.totalAgents }}</div>
+              <div class="kpi-label">Agents</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(139,92,246,.1);color:#8B5CF6">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#8B5CF6">{{ analytics.kpis.newThisMonth }}</div>
+              <div class="kpi-label">Nouveaux ce mois</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(201,151,62,.1);color:#C9973E">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#C9973E">{{ analytics.kpis.avgPoints }}</div>
+              <div class="kpi-label">Points moy / citoyen</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(13,155,118,.1);color:#0D9B76">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#0D9B76">{{ analytics.kpis.verifiedRate }}%</div>
+              <div class="kpi-label">Emails vérifiés</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(232,83,42,.1);color:#E8532A">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#E8532A">{{ analytics.kpis.totalBanned }}</div>
+              <div class="kpi-label">Suspendus</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(59,130,246,.1);color:#3B82F6">
+              <svg width="18" height="18" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-val" style="color:#3B82F6">{{ analytics.kpis.newThisWeek }}</div>
+              <div class="kpi-label">Nouveaux cette semaine</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="charts-row">
+          <div class="chart-card chart-card--wide">
+            <div class="chart-title">Inscriptions — 7 derniers jours</div>
+            <div class="chart-body"><canvas id="chartInscriptions"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Répartition par rôle</div>
+            <div class="chart-body chart-body--doughnut"><canvas id="chartRoles"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="charts-row charts-row--equal">
+          <div class="chart-card">
+            <div class="chart-title">Top gouvernorats</div>
+            <div class="chart-body chart-body--tall"><canvas id="chartGouvernorats"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Niveaux de confiance</div>
+            <div class="chart-body"><canvas id="chartTrustLevels"></canvas></div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 : AI INSIGHTS                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="insights-section">
+
+    <div class="ins-toggle" (click)="insightsExpanded = !insightsExpanded">
+      <div class="ins-toggle-left">
+        <div class="ins-ai-dot"></div>
+        Intelligence analytique IA
+      </div>
+      <button class="ins-gen-btn"
+              (click)="$event.stopPropagation(); generateInsights()"
+              [disabled]="insightsLoading">
+        <span *ngIf="insightsLoading" class="btn-mini-spinner"
+              style="border-color:rgba(255,255,255,.3);border-top-color:white;">
+        </span>
+        <svg *ngIf="!insightsLoading" width="13" height="13" fill="none"
+             stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        {{ insightsLoading ? 'Génération…' : insightsGenerated ? 'Actualiser' : 'Générer les insights' }}
+      </button>
+    </div>
+
+    <div class="ins-body" *ngIf="insightsExpanded !== false">
+
+      <!-- Loading -->
+      <div class="ins-loading" *ngIf="insightsLoading">
+        <div class="ins-dots">
+          <div class="ins-dot" style="animation:dotPulse 1.4s ease-in-out infinite;"></div>
+          <div class="ins-dot" style="animation:dotPulse 1.4s ease-in-out .2s infinite;"></div>
+          <div class="ins-dot" style="animation:dotPulse 1.4s ease-in-out .4s infinite;"></div>
+        </div>
+        <span>L'IA analyse les données de la plateforme…</span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="ins-empty" *ngIf="!insightsLoading && !insights">
+        <svg width="32" height="32" fill="none" stroke="currentColor"
+             stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.25;margin-bottom:8px;">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <p>Cliquez sur <strong>Générer les insights</strong> pour obtenir une analyse IA
+          de l'état de la plateforme.</p>
+      </div>
+
+      <!-- Content -->
+      <ng-container *ngIf="!insightsLoading && insights">
+
+        <!-- Narrative -->
+        <div class="ins-narrative">
+          <div class="ins-narrative-header">
+            <div class="ins-narrative-icon">
+              <svg width="13" height="13" fill="none" stroke="white"
+                   stroke-width="2.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="ins-narrative-title">Synthèse IA — CityVoice</div>
+          </div>
+          <div class="ins-narrative-body">{{ insights.narrative }}</div>
+        </div>
+
+        <!-- Alerts grid -->
+        <div class="ins-grid" *ngIf="insights.alerts?.length > 0">
+          <div class="ins-alert"
+               *ngFor="let a of insights.alerts.slice(0,4)"
+               [style.background]="alertBg(a.type)"
+               [style.border-left-color]="alertColor(a.type)"
+               style="border-radius: 0 12px 12px 0; padding:14px 16px; margin-bottom:0;">
+            <div class="ins-alert-header">
+              <div class="ins-alert-icon"
+                   [style.background]="alertColor(a.type) + '18'">
+                <svg width="12" height="12" fill="none"
+                     [attr.stroke]="alertColor(a.type)"
+                     stroke-width="2.5" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="ins-alert-title"
+                   [style.color]="alertColor(a.type)">
+                {{ a.title }}
+              </div>
+            </div>
+            <div class="ins-alert-body" style="color:#374151;">{{ a.message }}</div>
+            <div class="ins-alert-footer"
+                 [style.color]="alertColor(a.type)">
+              {{ a.action }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Opportunities -->
+        <div class="ins-opps-card" *ngIf="insights.opportunities?.length > 0">
+          <div class="ins-opps-header">
+            <span>Opportunités détectées</span>
+            <span style="color:#8B5CF6;">{{ insights.opportunities.length }} actions IA</span>
+          </div>
+          <div class="ins-opp-row"
+               *ngFor="let o of insights.opportunities.slice(0,4)">
+            <div class="ins-opp-num">{{ o.priority }}</div>
+            <div class="ins-opp-body">
+              <div class="ins-opp-title">{{ o.title }}</div>
+              <div class="ins-opp-sub">{{ o.description }}</div>
+            </div>
+            <div class="ins-opp-impact"
+                 [style.background]="impactColor(o.impact) + '18'"
+                 [style.color]="impactColor(o.impact)">
+              {{ o.impact }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Priority actions -->
+        <div class="ins-actions-card" *ngIf="insights.priorityActions?.length > 0">
+          <div style="padding:10px 14px;border-bottom:1px solid rgba(12,31,63,.05);
+                    font-size:10px;font-weight:700;color:#9CA3AF;
+                    letter-spacing:.08em;text-transform:uppercase;">
+            Actions prioritaires
+          </div>
+          <div class="ins-action-row"
+               *ngFor="let a of insights.priorityActions.slice(0,4)">
+            <div class="ins-action-prio"
+                 [style.background]="prioColor(a.priority) + '18'"
+                 [style.color]="prioColor(a.priority)">
+              {{ a.priority }}
+            </div>
+            <div class="ins-action-text">{{ a.action }}</div>
+            <div class="ins-action-tag"
+                 [style.background]="urgencyColor(a.urgency) + '18'"
+                 [style.color]="urgencyColor(a.urgency)">
+              {{ a.urgency }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="ins-footer">
+          <span>Généré {{ insights.generatedAt }} · llama-3.1-8b-instant</span>
+          <button class="ins-refresh-btn" (click)="generateInsights()">
+            <svg width="11" height="11" fill="none" stroke="currentColor"
+                 stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M23 4v6h-6"/>
+              <path d="M1 20v-6h6"/>
+              <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+            </svg>
+            Actualiser
+          </button>
+        </div>
+
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 : HEADER & FILTERS                               -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+
   <!-- Header -->
   <div class="page-header">
     <div>
@@ -35,6 +377,10 @@
       <span class="rf-count">{{ countByRole(r) }}</span>
     </button>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4 : USERS TABLE                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
 
   <!-- Loading -->
   <div class="loading-state" *ngIf="loading">
@@ -98,21 +444,21 @@
 
         <!-- Rôle -->
         <td>
-          <span class="role-badge"
-                [style.background]="roleBg(u.role)"
-                [style.color]="roleColor(u.role)">
-            {{ roleLabel(u.role) }}
-          </span>
+            <span class="role-badge"
+                  [style.background]="roleBg(u.role)"
+                  [style.color]="roleColor(u.role)">
+              {{ roleLabel(u.role) }}
+            </span>
         </td>
 
         <!-- Statut -->
         <td>
-          <span class="statut-pill"
-                [style.background]="getStatutBg(u.statut)"
-                [style.color]="getStatutColor(u.statut)">
-            <span class="statut-pill-dot"></span>
-            {{ getStatutLabel(u.statut) }}
-          </span>
+            <span class="statut-pill"
+                  [style.background]="getStatutBg(u.statut)"
+                  [style.color]="getStatutColor(u.statut)">
+              <span class="statut-pill-dot"></span>
+              {{ getStatutLabel(u.statut) }}
+            </span>
         </td>
 
         <!-- Points / disponibilité -->
@@ -126,8 +472,8 @@
                *ngIf="u.role !== 'CITOYEN' && u.agentStatus">
             <span>{{ getAgentStatusInfo(u.agentStatus).dot }}</span>
             <span [style.color]="getAgentStatusInfo(u.agentStatus).color">
-              {{ getAgentStatusInfo(u.agentStatus).label }}
-            </span>
+                {{ getAgentStatusInfo(u.agentStatus).label }}
+              </span>
           </div>
 
           <span class="no-data"
@@ -199,282 +545,815 @@
   </div>
 </div>
 
-<!-- ══ MODAL DÉTAIL ══════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SECTION 5 : USER DETAIL MODAL                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <div class="detail-overlay" *ngIf="showDetail" (click)="closeDetail()">
   <div class="detail-panel" (click)="$event.stopPropagation()">
-    <button class="detail-close" (click)="closeDetail()">
-      <svg width="16" height="16" fill="none" stroke="currentColor"
-           stroke-width="2.5" viewBox="0 0 24 24">
-        <line x1="18" y1="6" x2="6" y2="18"/>
-        <line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
 
     <ng-container *ngIf="selectedUser">
 
-      <!-- ══ HEADER ═══════════════════════════════════════ -->
+      <!-- ══ 5.1 : HERO SECTION ════════════════════════════════════ -->
       <div class="dp-hero">
-        <div class="dp-hero-top">
-          <div class="dp-av"
-               *ngIf="!selectedUser.photo"
-               [style.background]="roleBg(selectedUser.role)"
-               [style.color]="roleColor(selectedUser.role)">
+        <button class="detail-close" (click)="closeDetail()">
+          <svg width="12" height="12" fill="none" stroke="currentColor"
+               stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <div class="dp-av-wrap">
+          <div class="dp-av" *ngIf="!selectedUser.photo">
             {{ initials(selectedUser.nom) }}
           </div>
+          <img class="dp-av-img" *ngIf="selectedUser.photo"
+               [src]="selectedUser.photo" [alt]="selectedUser.nom">
 
-          <img class="dp-av-img"
-               *ngIf="selectedUser.photo"
-               [src]="selectedUser.photo"
-               [alt]="selectedUser.nom">
+          <div class="dp-av-status"
+               [class.dp-av-status--online]="selectedUser.isOnline && !selectedUser.banned"
+               [class.dp-av-status--offline]="!selectedUser.isOnline && !selectedUser.banned"
+               [class.dp-av-status--banned]="selectedUser.banned"
+               [title]="getOnlineStatusTitle(selectedUser)">
+          </div>
+        </div>
+        <div class="dp-name">{{ selectedUser.nom }}</div>
 
-          <div class="dp-hero-info">
-            <div class="dp-name">
-              {{ selectedUser.nom }}
-              <span class="banned-tag" *ngIf="selectedUser.banned">Banni</span>
-            </div>
-
-            <div class="dp-badges">
-          <span class="role-badge"
+        <div class="dp-tags">
+          <span class="dp-tag"
                 [style.background]="roleBg(selectedUser.role)"
                 [style.color]="roleColor(selectedUser.role)">
             {{ roleLabel(selectedUser.role) }}
           </span>
-
-              <span class="statut-pill"
-                    [style.background]="getStatutBg(selectedUser.statut)"
-                    [style.color]="getStatutColor(selectedUser.statut)">
-            <span class="statut-pill-dot"></span>
-                {{ getStatutLabel(selectedUser.statut) }}
-          </span>
-            </div>
-
-            <div class="dp-subline">
-              #{{ selectedUser.id | slice:0:8 }} · {{ formatDate(selectedUser.dateInscription) }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ IDENTITÉ ══════════════════════════════════════ -->
-      <div class="dp-card">
-        <div class="dp-card-title">Identité</div>
-
-        <div class="dp-grid">
-          <div class="dp-item">
-            <div class="dp-item-label">Email</div>
-            <div class="dp-item-value">{{ selectedUser.email }}</div>
-          </div>
-
-          <div class="dp-item" *ngIf="selectedUser.telephone">
-            <div class="dp-item-label">Téléphone</div>
-            <div class="dp-item-value">{{ selectedUser.telephone }}</div>
-          </div>
-
-          <div class="dp-item">
-            <div class="dp-item-label">Identifiant</div>
-            <div class="dp-item-value dp-mono">{{ selectedUser.id }}</div>
-          </div>
-
-          <div class="dp-item">
-            <div class="dp-item-label">Inscription</div>
-            <div class="dp-item-value">{{ formatDate(selectedUser.dateInscription) }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ STATUT & SCORE ═════════════════════════════════ -->
-      <div class="dp-card">
-        <div class="dp-card-title">Statut & score</div>
-
-        <div class="dp-score-stack">
-
-          <div class="dp-score-row">
-            <div class="dp-score-label">Statut</div>
-            <div class="dp-score-value">
-          <span class="statut-pill"
+          <span class="dp-tag"
                 [style.background]="getStatutBg(selectedUser.statut)"
                 [style.color]="getStatutColor(selectedUser.statut)">
-            <span class="statut-pill-dot"></span>
-            {{ getStatutLabel(selectedUser.statut) }}
+            ● {{ getStatutLabel(selectedUser.statut) }}
           </span>
-            </div>
-          </div>
+          <span class="dp-tag" *ngIf="selectedUser.banned"
+                style="background:rgba(232,83,42,.2);color:#FCA5A5;">
+            Suspendu
+          </span>
+          <span class="dp-tag" *ngIf="selectedUser.trustLevel === 'AMBASSADEUR'"
+                style="background:rgba(139,92,246,.2);color:#7C3AED;">
+            👑 Ambassadeur
+          </span>
+        </div>
 
-          <div class="dp-score-row" *ngIf="selectedUser.role === 'CITOYEN'">
-            <div class="dp-score-label">Points</div>
-            <div class="dp-score-value dp-score-value--accent">
-              ⭐ {{ selectedUser.points | number }}
-            </div>
-          </div>
-
-          <div class="dp-score-row"
-               *ngIf="selectedUser.role === 'CITOYEN' && selectedUser.civicIndex >= 0">
-            <div class="dp-score-label">Indice civique</div>
-            <div class="dp-score-value"
-                 [style.color]="getCivicIndexColor(selectedUser.civicIndex)"
-                 style="font-weight:700">
-              {{ selectedUser.civicIndex }}/100 — {{ getCivicIndexLabel(selectedUser.civicIndex) }}
-            </div>
-          </div>
-
-          <div class="dp-score-row"
-               *ngIf="selectedUser.role !== 'CITOYEN' && selectedUser.agentStatus">
-            <div class="dp-score-label">Disponibilité</div>
-            <div class="dp-score-value"
-                 [style.color]="getAgentStatusInfo(selectedUser.agentStatus).color"
-                 style="font-weight:700">
-              {{ getAgentStatusInfo(selectedUser.agentStatus).dot }}
-              {{ getAgentStatusInfo(selectedUser.agentStatus).label }}
-            </div>
-          </div>
-
+        <div class="dp-meta">
+          <svg width="11" height="11" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Membre depuis {{ formatDate(selectedUser.dateInscription) }}
+          <span style="opacity:.3">·</span>
+          #{{ selectedUser.id | slice:0:8 }}
         </div>
       </div>
 
-      <!-- ══ LOCALISATION ════════════════════════════════════ -->
-      <div class="dp-card" *ngIf="selectedUser.gouvernorat || selectedUser.ville || selectedUser.codePostal">
-        <div class="dp-card-title">Localisation</div>
-
-        <div class="dp-grid">
-          <div class="dp-item" *ngIf="selectedUser.gouvernorat">
-            <div class="dp-item-label">Gouvernorat</div>
-            <div class="dp-item-value">{{ selectedUser.gouvernorat }}</div>
-          </div>
-
-          <div class="dp-item" *ngIf="selectedUser.ville">
-            <div class="dp-item-label">Ville</div>
-            <div class="dp-item-value">{{ selectedUser.ville }}</div>
-          </div>
-
-          <div class="dp-item" *ngIf="selectedUser.codePostal">
-            <div class="dp-item-label">Code postal</div>
-            <div class="dp-item-value">{{ selectedUser.codePostal }}</div>
-          </div>
-        </div>
+      <!-- ══ 5.2 : TABS ══════════════════════════════════════════ -->
+      <div class="dp-tabs">
+        <div class="dp-tab" [class.active]="detailTab==='profil'"
+             (click)="detailTab='profil'">Profil</div>
+        <div class="dp-tab" [class.active]="detailTab==='scores'"
+             (click)="detailTab='scores'">Scores</div>
+        <div class="dp-tab" [class.active]="detailTab==='actions'"
+             (click)="detailTab='actions'">Actions</div>
       </div>
 
-      <!-- ══ SÉCURITÉ ════════════════════════════════════════ -->
-      <div class="dp-card">
-        <div class="dp-card-title">Sécurité</div>
+      <!-- ══ 5.3 : TAB PROFIL ════════════════════════════════════ -->
+      <div class="dp-body" *ngIf="detailTab==='profil'">
 
-        <div class="dp-score-stack">
-          <div class="dp-score-row">
-            <div class="dp-score-label">Compte banni</div>
-            <div class="dp-score-value"
-                 [style.color]="selectedUser.banned ? '#E8532A' : '#0D9B76'"
-                 style="font-weight:700">
-              {{ selectedUser.banned ? 'Oui' : 'Non' }}
-            </div>
-          </div>
+        <!-- Identity section -->
+        <div class="dp-section-title">Identité</div>
 
-          <div class="dp-score-row" *ngIf="selectedUser.banned && selectedUser.banReason">
-            <div class="dp-score-label">Motif</div>
-            <div class="dp-score-value">{{ selectedUser.banReason }}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ ACTIONS SENSIBLES ═══════════════════════════════ -->
-      <div class="dp-card dp-card--danger">
-        <div class="dp-card-title">Actions sensibles</div>
-
-        <div class="detail-actions">
-
-          <!-- Ban -->
-          <ng-container *ngIf="!selectedUser.banned">
-
-            <div class="ban-form" *ngIf="banConfirm === selectedUser.id">
-              <div class="ban-form-title">
-                <svg width="14" height="14" fill="none" stroke="currentColor"
-                     stroke-width="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                </svg>
-                Motif du bannissement
-              </div>
-
-              <input class="ban-input"
-                     type="text"
-                     [(ngModel)]="banReason"
-                     placeholder="Ex: Comportement abusif…">
-
-              <div class="ban-form-actions">
-                <button class="ban-confirm-btn"
-                        [disabled]="banLoading"
-                        (click)="doBan()">
-                  <span *ngIf="banLoading" class="btn-mini-spinner"></span>
-                  {{ banLoading ? '…' : 'Confirmer le ban' }}
-                </button>
-                <button class="ban-cancel-btn" (click)="cancelBan()">Annuler</button>
-              </div>
-            </div>
-
-            <button class="action-ban-btn"
-                    *ngIf="banConfirm !== selectedUser.id"
-                    (click)="confirmBan(selectedUser.id)">
-              <svg width="14" height="14" fill="none" stroke="currentColor"
-                   stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-              </svg>
-              Bannir l'utilisateur
-            </button>
-          </ng-container>
-
-          <!-- Unban -->
-          <div class="banned-notice" *ngIf="selectedUser.banned">
-            <div class="bn-header">
-              <svg width="14" height="14" fill="none" stroke="currentColor"
-                   stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-              </svg>
-              Compte suspendu
-            </div>
-
-            <div class="bn-reason" *ngIf="selectedUser.banReason">
-              {{ selectedUser.banReason }}
-            </div>
-
-            <button class="unban-btn"
-                    *ngIf="unbanConfirm !== selectedUser.id"
-                    (click)="confirmUnban(selectedUser.id)">
-              Débannir l'utilisateur
-            </button>
-
-            <div class="unban-confirm" *ngIf="unbanConfirm === selectedUser.id">
-              <span>Confirmer le déban ?</span>
-              <button class="confirm-yes" (click)="doUnban()">Oui</button>
-              <button class="confirm-no" (click)="unbanConfirm = null">Non</button>
-            </div>
-          </div>
-
-          <!-- Delete -->
-          <div class="delete-confirm-wrap" *ngIf="deleteConfirm === selectedUser.id">
-            <p>Supprimer définitivement ce compte ?</p>
-            <div style="display:flex;gap:8px">
-              <button class="confirm-yes"
-                      [disabled]="deleteLoading"
-                      (click)="doDelete()">
-                <span *ngIf="deleteLoading" class="btn-mini-spinner"></span>
-                Supprimer
-              </button>
-              <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
-            </div>
-          </div>
-
-          <button class="action-delete-btn"
-                  *ngIf="deleteConfirm !== selectedUser.id"
-                  (click)="confirmDelete(selectedUser.id)">
+        <div class="dp-row">
+          <div class="dp-row-icon" style="background:rgba(12,31,63,.05);color:#9CA3AF;">
             <svg width="14" height="14" fill="none" stroke="currentColor"
                  stroke-width="2" viewBox="0 0 24 24">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
             </svg>
-            Supprimer le compte
-          </button>
-
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">Email</div>
+            <div class="dp-row-value">{{ selectedUser.email }}</div>
+          </div>
+          <div class="dp-row-right">
+            <svg *ngIf="selectedUser.emailVerified" width="13" height="13"
+                 fill="none" stroke="#0D9B76" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <svg *ngIf="!selectedUser.emailVerified" width="13" height="13"
+                 fill="none" stroke="#F97316" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+            </svg>
+          </div>
         </div>
+
+        <div class="dp-row" *ngIf="selectedUser.telephone">
+          <div class="dp-row-icon" style="background:rgba(12,31,63,.05);color:#9CA3AF;">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2A19.79 19.79 0 013.07 8.81 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9a16 16 0 006 6z"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">Téléphone</div>
+            <div class="dp-row-value">{{ selectedUser.telephone }}</div>
+          </div>
+        </div>
+
+        <div class="dp-row" *ngIf="selectedUser.gouvernorat">
+          <div class="dp-row-icon" style="background:rgba(12,31,63,.05);color:#9CA3AF;">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">Localisation</div>
+            <div class="dp-row-value">
+              {{ selectedUser.ville ? selectedUser.ville + ', ' : '' }}{{ selectedUser.gouvernorat }}
+            </div>
+          </div>
+          <div class="dp-row-right">{{ selectedUser.codePostal }}</div>
+        </div>
+
+        <div class="dp-row">
+          <div class="dp-row-icon" style="background:rgba(12,31,63,.05);color:#9CA3AF;">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">Identifiant</div>
+            <div class="dp-row-value dp-row-mono">{{ selectedUser.id }}</div>
+          </div>
+        </div>
+
+        <!-- Agent status -->
+        <ng-container *ngIf="selectedUser.role !== 'CITOYEN'">
+          <div class="dp-section-title">Disponibilité</div>
+          <div class="dp-row">
+            <div class="dp-row-icon"
+                 [style.background]="getAgentStatusInfo(selectedUser.agentStatus).color + '18'">
+              <span style="font-size:14px">{{ getAgentStatusInfo(selectedUser.agentStatus).dot }}</span>
+            </div>
+            <div class="dp-row-body">
+              <div class="dp-row-label">Statut terrain</div>
+              <div class="dp-row-value"
+                   [style.color]="getAgentStatusInfo(selectedUser.agentStatus).color">
+                {{ getAgentStatusInfo(selectedUser.agentStatus).label }}
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+
+      <!-- ══ 5.4 : TAB SCORES ════════════════════════════════════ -->
+      <div class="dp-body" *ngIf="detailTab==='scores'">
+
+        <!-- 5.4.1 : Composite score -->
+        <div class="composite-card" *ngIf="selectedUser.role === 'CITOYEN'">
+          <div class="composite-bg"></div>
+          <div class="composite-header">
+            <span class="composite-title">Score global</span>
+            <span class="composite-score">
+              {{ computeGlobalScore(selectedUser) }}
+            </span>
+          </div>
+          <div class="composite-metrics">
+            <div class="cm-cell">
+              <div class="cm-cell-val"
+                   [style.color]="getCivicIndexColor(selectedUser.civicIndex)">
+                {{ selectedUser.civicIndex >= 0 ? selectedUser.civicIndex : '—' }}
+              </div>
+              <div class="cm-cell-label">Indice civique</div>
+            </div>
+            <div class="cm-cell">
+              <div class="cm-cell-val" style="color:#C9973E">
+                {{ selectedUser.points | number }}
+              </div>
+              <div class="cm-cell-label">Points total</div>
+            </div>
+            <div class="cm-cell"
+                 *ngIf="getTrustInfo(selectedUser.points, selectedUser.trustLevel) as trust">
+              <div class="cm-cell-val">{{ trust.icon }}</div>
+              <div class="cm-cell-label">{{ trust.label }}</div>
+            </div>
+          </div>
+          <div class="composite-bar-row">
+            <div class="composite-bar">
+              <div class="composite-bar-fill"
+                   [style.width.%]="computeGlobalScore(selectedUser)">
+              </div>
+            </div>
+            <span class="composite-bar-label">
+              {{ computeGlobalScore(selectedUser) }} / 100
+            </span>
+          </div>
+        </div>
+
+        <!-- 5.4.2 : Trust progression -->
+        <div class="sec-label">Progression</div>
+
+        <div class="trust-card"
+             *ngIf="selectedUser.role === 'CITOYEN' &&
+              getTrustInfo(selectedUser.points, selectedUser.trustLevel) as trust">
+          <div class="trust-icon" [style.background]="trust.color + '18'">
+            <span style="font-size:22px">{{ trust.icon }}</span>
+          </div>
+          <div class="trust-info">
+            <div class="trust-title" [style.color]="trust.color">
+              {{ trust.label }}
+            </div>
+            <div class="trust-sub" *ngIf="trust.nextLabel">
+              {{ trust.maxPts - selectedUser.points + 1 }} pts → {{ trust.nextLabel }}
+            </div>
+            <div class="trust-sub" *ngIf="!trust.nextLabel">Niveau maximum 🎉</div>
+            <div class="trust-bar">
+              <div class="trust-bar-fill"
+                   [style.width.%]="trust.progress"
+                   [style.background]="trust.color">
+              </div>
+            </div>
+          </div>
+          <div class="trust-right">
+            <div class="trust-pts" [style.color]="trust.color">
+              {{ selectedUser.points | number }}
+            </div>
+            <div class="trust-pts-label">points</div>
+          </div>
+        </div>
+
+        <div class="trust-card" *ngIf="selectedUser.role !== 'CITOYEN'">
+          <div class="trust-icon"
+               [style.background]="getAgentStatusInfo(selectedUser.agentStatus).color + '18'">
+            <span style="font-size:18px">
+              {{ getAgentStatusInfo(selectedUser.agentStatus).dot }}
+            </span>
+          </div>
+          <div class="trust-info">
+            <div class="trust-title"
+                 [style.color]="getAgentStatusInfo(selectedUser.agentStatus).color">
+              {{ getAgentStatusInfo(selectedUser.agentStatus).label }}
+            </div>
+            <div class="trust-sub">Statut de disponibilité terrain</div>
+          </div>
+        </div>
+
+        <!-- 5.4.3 : Behavior AI -->
+        <div class="sec-label">Analyse comportementale IA</div>
+
+        <div class="dp-row" *ngIf="behaviorLoading">
+          <div class="dp-row-icon" style="background:rgba(139,92,246,.1);">
+            <svg width="14" height="14" fill="none" stroke="#8B5CF6"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">IA</div>
+            <div class="dp-row-value" style="color:#8B5CF6;font-size:12px;">
+              Analyse en cours…
+            </div>
+          </div>
+        </div>
+
+        <div class="behavior-card" *ngIf="!behaviorLoading && behaviorAnalysis">
+          <div class="behavior-header">
+            <div class="behavior-header-icon">
+              <svg width="12" height="12" fill="none" stroke="white"
+                   stroke-width="2.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="behavior-header-title">{{ behaviorAnalysis.persona }}</div>
+            <span class="eng-badge"
+                  [style.background]="engagementColor(behaviorAnalysis.engagement) + '18'"
+                  [style.color]="engagementColor(behaviorAnalysis.engagement)">
+              {{ behaviorAnalysis.engagement }}
+            </span>
+          </div>
+
+          <div class="behavior-body">
+            <div class="behavior-row">
+              <div class="behavior-col"
+                   *ngIf="behaviorAnalysis.points_forts?.length > 0">
+                <div class="behavior-col-label">Points forts</div>
+                <div class="behavior-item"
+                     *ngFor="let p of behaviorAnalysis.points_forts.slice(0,3)">
+                  <div class="behavior-dot" style="background:#0D9B76"></div>
+                  <span style="font-size:11.5px;color:#374151">{{ p }}</span>
+                </div>
+              </div>
+              <div class="behavior-col"
+                   *ngIf="behaviorAnalysis.points_attention?.length > 0">
+                <div class="behavior-col-label">Attention</div>
+                <div class="behavior-item"
+                     *ngFor="let p of behaviorAnalysis.points_attention.slice(0,3)">
+                  <div class="behavior-dot" style="background:#C9973E"></div>
+                  <span style="font-size:11.5px;color:#374151">{{ p }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="behavior-reco" *ngIf="behaviorAnalysis.recommandation">
+              {{ behaviorAnalysis.recommandation }}
+            </div>
+          </div>
+        </div>
+
+        <div class="dp-row"
+             *ngIf="!behaviorLoading && !behaviorAnalysis">
+          <div class="dp-row-body">
+            <div class="dp-row-value" style="color:#9CA3AF;font-size:12px;">
+              Analyse IA non disponible
+            </div>
+          </div>
+        </div>
+
+        <!-- 5.4.4 : Churn Prediction -->
+        <ng-container *ngIf="selectedUser.role === 'CITOYEN'">
+          <div class="sec-label">Prédiction de départ</div>
+
+          <div class="dp-row" *ngIf="churnLoading">
+            <div class="dp-row-icon" style="background:rgba(232,83,42,.08);color:#E8532A;">
+              <svg width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="dp-row-body">
+              <div class="dp-row-label">ML</div>
+              <div class="dp-row-value" style="color:#E8532A;font-size:12px;">
+                Calcul en cours…
+              </div>
+            </div>
+          </div>
+
+          <div class="churn-compact" *ngIf="!churnLoading && churnPrediction">
+
+            <div class="churn-compact-top">
+              <div class="churn-ring-wrap">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="20" fill="none"
+                          stroke="rgba(12,31,63,.07)" stroke-width="4"/>
+                  <circle cx="26" cy="26" r="20" fill="none"
+                          [attr.stroke]="getRiskColor(churnPrediction.riskLevel)"
+                          stroke-width="4"
+                          [attr.stroke-dasharray]="125.6"
+                          [attr.stroke-dashoffset]="125.6 - (125.6 * churnPrediction.churnProbability)"
+                          stroke-linecap="round"
+                          style="transform:rotate(-90deg);transform-origin:50% 50%;
+                           transition:stroke-dashoffset .8s cubic-bezier(.34,1.56,.64,1)"/>
+                </svg>
+                <div class="churn-ring-label"
+                     [style.color]="getRiskColor(churnPrediction.riskLevel)">
+                  {{ (churnPrediction.churnProbability * 100).toFixed(0) }}%
+                </div>
+              </div>
+
+              <div class="churn-compact-info">
+                <div class="churn-compact-title">
+                  {{ getRiskLabel(churnPrediction.riskLevel) }}
+                </div>
+                <div class="churn-compact-sub">
+                  <span *ngIf="churnPrediction.daysUntilChurn">
+                    ~{{ churnPrediction.daysUntilChurn }}j estimés ·
+                  </span>
+                  Confiance {{ (churnPrediction.modelConfidence * 100).toFixed(0) }}%
+                </div>
+              </div>
+
+              <div class="churn-compact-pill"
+                   [style.background]="getRiskBg(churnPrediction.riskLevel)"
+                   [style.color]="getRiskPillColor(churnPrediction.riskLevel)">
+                {{ churnPrediction.riskLevel }}
+              </div>
+            </div>
+
+            <div class="churn-factors-mini"
+                 *ngIf="churnPrediction.riskFactors?.length > 0">
+              <div style="font-size:9.5px;font-weight:700;color:#9CA3AF;
+                    letter-spacing:.07em;text-transform:uppercase;
+                    padding:8px 0 4px;">
+                Facteurs
+              </div>
+              <div class="churn-factor-mini"
+                   *ngFor="let f of churnPrediction.riskFactors.slice(0,4);
+                     let i = index">
+                <div class="churn-factor-mini-dot"
+                     [style.background]="factorSeverityColor(i, churnPrediction.riskFactors.length)">
+                </div>
+                {{ f }}
+                <span class="churn-factor-mini-impact"
+                      [style.background]="factorSeverityColor(i, churnPrediction.riskFactors.length) + '15'"
+                      [style.color]="factorSeverityColor(i, churnPrediction.riskFactors.length)">
+                  +{{ factorImpact(i, churnPrediction.churnProbability) }}%
+                </span>
+              </div>
+            </div>
+
+            <div class="churn-actions-mini"
+                 *ngIf="churnPrediction.retentionActions?.length > 0">
+              <div style="font-size:9.5px;font-weight:700;color:#9CA3AF;
+                    letter-spacing:.07em;text-transform:uppercase;
+                    padding:4px 0;">
+                Actions
+              </div>
+              <div class="churn-action-mini"
+                   *ngFor="let a of churnPrediction.retentionActions.slice(0,3)">
+                <svg width="12" height="12" fill="none"
+                     [attr.stroke]="actionPrioColor(a.priority)"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                {{ a.action }}
+                <span class="cam-prio"
+                      [style.color]="actionPrioColor(a.priority)">
+                  {{ a.priority }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="dp-row" *ngIf="!churnLoading && !churnPrediction">
+            <div class="dp-row-body">
+              <div class="dp-row-value" style="color:#9CA3AF;font-size:12px;">
+                Prédiction non disponible
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 5.4.5 : Segmentation -->
+        <div class="sec-label">Segment comportemental</div>
+
+        <div class="dp-row" *ngIf="segmentationLoading">
+          <div class="dp-row-icon" style="background:rgba(59,130,246,.1);color:#3B82F6;">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">ML</div>
+            <div class="dp-row-value" style="color:#3B82F6;font-size:12px;">
+              Segmentation en cours…
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!segmentationLoading && segmentation && !segmentation.error">
+          <div class="seg-hero" style="background:#0C1F3F;">
+            <div class="seg-hero-bg"></div>
+            <div class="seg-hero-top">
+              <div class="seg-emoji-wrap"
+                   [style.background]="segmentBg(segmentation.segment)">
+                {{ segmentation.emoji }}
+              </div>
+              <div>
+                <div class="seg-name" style="color:#F7F4EF;">
+                  {{ segmentation.segment }}
+                </div>
+                <div class="seg-desc" style="color:rgba(255,255,255,.4);">
+                  {{ segmentation.description }}
+                </div>
+              </div>
+            </div>
+
+            <div class="seg-metrics" *ngIf="segmentation.metrics">
+              <div class="seg-metric"
+                   style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);">
+                <div class="seg-metric-val" style="color:#4ADE80;">
+                  {{ segmentation.metrics.engagementScore | number:'1.0-0' }}
+                </div>
+                <div class="seg-metric-lbl" style="color:rgba(255,255,255,.3);">Engagement</div>
+                <div class="seg-metric-bar" style="background:rgba(255,255,255,.1);">
+                  <div class="seg-metric-fill"
+                       [style.width.%]="segmentation.metrics.engagementScore"
+                       style="background:#0D9B76;">
+                  </div>
+                </div>
+              </div>
+              <div class="seg-metric"
+                   style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);">
+                <div class="seg-metric-val" style="color:#93C5FD;">
+                  {{ segmentation.metrics.loyaltyScore | number:'1.0-0' }}
+                </div>
+                <div class="seg-metric-lbl" style="color:rgba(255,255,255,.3);">Fidélité</div>
+                <div class="seg-metric-bar" style="background:rgba(255,255,255,.1);">
+                  <div class="seg-metric-fill"
+                       [style.width.%]="segmentation.metrics.loyaltyScore"
+                       style="background:#3B82F6;">
+                  </div>
+                </div>
+              </div>
+              <div class="seg-metric"
+                   style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.06);">
+                <div class="seg-metric-val" style="color:#FCD34D;">
+                  {{ segmentation.metrics.growthPotential | number:'1.0-0' }}
+                </div>
+                <div class="seg-metric-lbl" style="color:rgba(255,255,255,.3);">Potentiel</div>
+                <div class="seg-metric-bar" style="background:rgba(255,255,255,.1);">
+                  <div class="seg-metric-fill"
+                       [style.width.%]="segmentation.metrics.growthPotential"
+                       style="background:#C9973E;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seg-peer-card" *ngIf="segmentation.peerComparison">
+            <div class="seg-peer-ring">
+              <svg width="52" height="52" viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="20" fill="none"
+                        stroke="rgba(12,31,63,.07)" stroke-width="4"/>
+                <circle cx="26" cy="26" r="20" fill="none"
+                        [attr.stroke]="segmentColor(segmentation.segment)"
+                        stroke-width="4"
+                        stroke-dasharray="125.6"
+                        [attr.stroke-dashoffset]="segmentRingOffset(segmentation.peerComparison.percentile)"
+                        stroke-linecap="round"
+                        style="transform:rotate(-90deg);transform-origin:50% 50%"/>
+              </svg>
+              <div class="seg-peer-ring-label"
+                   [style.color]="segmentColor(segmentation.segment)">
+                {{ segmentation.peerComparison.percentile }}
+              </div>
+            </div>
+            <div class="seg-peer-info">
+              <div class="seg-peer-title">
+                {{ segmentation.peerComparison.comparison | titlecase }}
+              </div>
+              <div class="seg-peer-sub">
+                Percentile {{ segmentation.peerComparison.percentile }} ·
+                Moy. plateforme: {{ segmentation.peerComparison.averagePoints }} pts
+              </div>
+            </div>
+          </div>
+
+          <div class="seg-recs-card"
+               *ngIf="segmentation.recommendations?.length > 0">
+            <div class="seg-recs-header">
+              Actions recommandées — {{ segmentation.segment }}
+            </div>
+            <div class="seg-rec-row"
+                 *ngFor="let r of segmentation.recommendations; let i = index">
+              <div class="seg-rec-dot"
+                   [style.background]="i === 0 ? '#0D9B76' : i === 1 ? '#3B82F6' : '#C9973E'">
+              </div>
+              <div class="seg-rec-text">{{ r }}</div>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="dp-row" *ngIf="!segmentationLoading && (!segmentation || segmentation.error)">
+          <div class="dp-row-body">
+            <div class="dp-row-value" style="color:#9CA3AF;font-size:12px;">
+              Segmentation non disponible
+            </div>
+          </div>
+        </div>
+
+        <!-- 5.4.6 : Anomaly Detection -->
+        <div class="sec-label">Détection d'anomalies</div>
+
+        <div class="dp-row" *ngIf="anomalyLoading">
+          <div class="dp-row-icon" style="background:rgba(232,83,42,.08);color:#E8532A;">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="dp-row-body">
+            <div class="dp-row-label">ML</div>
+            <div class="dp-row-value" style="color:#E8532A;font-size:12px;">
+              Analyse des anomalies…
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!anomalyLoading && anomaly && !anomaly.error">
+          <div class="anom-hero"
+               [style.background]="anomalyLevelBg(anomaly.riskLevel)"
+               [style.border]="'1px solid ' + anomalyLevelBorder(anomaly.riskLevel)"
+               style="border-radius:14px;">
+            <div class="anom-score-wrap">
+              <svg width="54" height="54" viewBox="0 0 54 54">
+                <circle cx="27" cy="27" r="21" fill="none"
+                        [attr.stroke]="anomalyLevelColor(anomaly.riskLevel) + '22'"
+                        stroke-width="4"/>
+                <circle cx="27" cy="27" r="21" fill="none"
+                        [attr.stroke]="anomalyLevelColor(anomaly.riskLevel)"
+                        stroke-width="4"
+                        stroke-dasharray="131.9"
+                        [attr.stroke-dashoffset]="anomalyRingOffset(anomaly.riskScore)"
+                        stroke-linecap="round"
+                        style="transform:rotate(-90deg);transform-origin:50% 50%;
+                       transition:stroke-dashoffset .8s cubic-bezier(.34,1.56,.64,1)"/>
+              </svg>
+              <div class="anom-score-label"
+                   [style.color]="anomalyLevelColor(anomaly.riskLevel)">
+                {{ anomaly.riskScore | number:'1.2-2' }}
+              </div>
+            </div>
+            <div class="anom-info">
+              <div class="anom-title"
+                   [style.color]="anomaly.isSuspicious ? '#C93E1A' : '#0a8264'">
+                {{ anomaly.anomalyCount > 0 ? anomaly.anomalyCount + ' anomalie(s) détectée(s)' : 'Aucune anomalie détectée' }}
+              </div>
+              <div class="anom-sub">
+                Niveau {{ anomaly.riskLevel }} · Score {{ anomaly.riskScore | number:'1.2-2' }}
+              </div>
+              <div class="anom-reco"
+                   [style.color]="anomalyLevelColor(anomaly.riskLevel)">
+                {{ anomaly.recommendation }}
+              </div>
+            </div>
+          </div>
+
+          <div class="anom-list-card"
+               *ngIf="anomaly.anomalies?.length > 0">
+            <div class="anom-list-header">
+              <span>Anomalies détectées</span>
+              <span [style.color]="anomalyLevelColor(anomaly.riskLevel)">
+                {{ anomaly.anomalyCount }}
+                {{ anomaly.riskLevel === 'HIGH' ? 'HIGH' : anomaly.riskLevel }}
+              </span>
+            </div>
+            <div class="anom-item"
+                 *ngFor="let a of anomaly.anomalies">
+              <div class="anom-item-sev"
+                   [style.background]="anomalySevColor(a.severity)">
+              </div>
+              <div class="anom-item-body">
+                <div class="anom-item-type"
+                     [style.color]="anomalySevColor(a.severity)">
+                  {{ formatAnomalyType(a.type) }}
+                </div>
+                <div class="anom-item-desc">{{ a.description }}</div>
+              </div>
+              <span class="anom-sev-pill"
+                    [style.background]="anomalySevColor(a.severity) + '18'"
+                    [style.color]="anomalySevColor(a.severity)">
+                {{ a.severity }}
+              </span>
+            </div>
+          </div>
+
+          <div class="anom-clean" *ngIf="anomaly.anomalyCount === 0">
+            <div class="anom-clean-icon">
+              <svg width="18" height="18" fill="none" stroke="#0D9B76"
+                   stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div>
+              <div class="anom-clean-text">Compte en règle</div>
+              <div class="anom-clean-sub">Aucune activité suspecte détectée</div>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="dp-row"
+             *ngIf="!anomalyLoading && (!anomaly || anomaly.error)">
+          <div class="dp-row-body">
+            <div class="dp-row-value" style="color:#9CA3AF;font-size:12px;">
+              Détection d'anomalies non disponible
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══ 5.5 : TAB ACTIONS ═══════════════════════════════════ -->
+      <div class="dp-body" *ngIf="detailTab==='actions'">
+
+        <!-- Ban section -->
+        <ng-container *ngIf="!selectedUser.banned">
+          <div class="dp-section-title">Motif de suspension</div>
+
+          <div class="ban-reasons">
+            <button class="ban-reason-btn"
+                    *ngFor="let r of banReasons"
+                    [class.selected]="banReason === r"
+                    (click)="selectBanReason(r)">
+              {{ r }}
+            </button>
+          </div>
+
+          <input *ngIf="banReason === 'Motif personnalisé…'"
+                 class="ban-custom-input"
+                 type="text"
+                 [(ngModel)]="customBanReason"
+                 placeholder="Décrivez le motif…">
+
+          <div class="dp-confirm-box" *ngIf="banConfirm === selectedUser.id">
+            <p>Confirmer la suspension de {{ selectedUser.nom }} ?</p>
+            <div class="dp-confirm-actions">
+              <button class="confirm-yes" [disabled]="banLoading" (click)="doBan()">
+                <span *ngIf="banLoading" class="btn-mini-spinner"></span>
+                Confirmer
+              </button>
+              <button class="confirm-no" (click)="cancelBan()">Annuler</button>
+            </div>
+          </div>
+
+          <button class="dp-action-btn dp-action-btn--ban"
+                  *ngIf="banConfirm !== selectedUser.id"
+                  [disabled]="!banReason"
+                  (click)="confirmBan(selectedUser.id)">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Suspendre le compte
+          </button>
+        </ng-container>
+
+        <!-- Unban section -->
+        <ng-container *ngIf="selectedUser.banned">
+          <div class="dp-section-title">Compte suspendu</div>
+
+          <div class="dp-row" style="border-color:rgba(232,83,42,.2);background:rgba(232,83,42,.04);">
+            <div class="dp-row-body">
+              <div class="dp-row-label">Motif</div>
+              <div class="dp-row-value" style="color:#E8532A">
+                {{ selectedUser.banReason || 'Aucun motif renseigné' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="dp-confirm-box" *ngIf="unbanConfirm === selectedUser.id"
+               style="margin-top:8px">
+            <p>Confirmer le déban de {{ selectedUser.nom }} ?</p>
+            <div class="dp-confirm-actions">
+              <button class="confirm-yes" style="background:#0D9B76" (click)="doUnban()">
+                Confirmer
+              </button>
+              <button class="confirm-no" (click)="unbanConfirm = null">Annuler</button>
+            </div>
+          </div>
+
+          <button class="dp-action-btn dp-action-btn--unban"
+                  *ngIf="unbanConfirm !== selectedUser.id"
+                  (click)="confirmUnban(selectedUser.id)"
+                  style="margin-top:10px">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Débannir l'utilisateur
+          </button>
+        </ng-container>
+
+        <!-- Delete section -->
+        <div class="dp-section-title" style="margin-top:20px">Zone de danger</div>
+
+        <div class="dp-confirm-box" *ngIf="deleteConfirm === selectedUser.id">
+          <p>Supprimer définitivement le compte de {{ selectedUser.nom }} ?</p>
+          <div class="dp-confirm-actions">
+            <button class="confirm-yes" [disabled]="deleteLoading" (click)="doDelete()">
+              <span *ngIf="deleteLoading" class="btn-mini-spinner"></span>
+              Supprimer
+            </button>
+            <button class="confirm-no" (click)="cancelDelete()">Annuler</button>
+          </div>
+        </div>
+
+        <button class="dp-action-btn dp-action-btn--delete"
+                *ngIf="deleteConfirm !== selectedUser.id"
+                (click)="confirmDelete(selectedUser.id)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          </svg>
+          Supprimer le compte
+        </button>
+
       </div>
 
     </ng-container>

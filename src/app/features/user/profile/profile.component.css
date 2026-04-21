@@ -1822,3 +1822,26 @@
     font-size: 16px;
   }
 }
+/* ── Photo feedbacks ─────────────────────────────────────── */
+.pz-feedback { margin-top: 8px; }
+
+.pz-fb-checking {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #9CA3AF;
+}
+.pz-fb-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #9CA3AF;
+  animation: pulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.pz-fb-ok {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #0D9B76; font-weight: 600;
+}
+
+.pz-fb-error {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #E8532A; font-weight: 600;
+}

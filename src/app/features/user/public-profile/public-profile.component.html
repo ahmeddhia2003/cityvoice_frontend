@@ -8,7 +8,7 @@
 
   <ng-container *ngIf="!loading && user">
 
-    <!-- Hero -->
+    <!-- ══ HERO ══════════════════════════════════════════ -->
     <div class="pp-hero">
       <div class="pp-hero-bg"></div>
       <div class="pp-hero-content">
@@ -22,74 +22,121 @@
         </button>
 
         <div class="pp-identity">
-          <div class="pp-avatar">
-            <img *ngIf="user.photo" [src]="user.photo" [alt]="user.nom">
-            <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
+          <div class="pp-avatar-wrap">
+            <div class="pp-avatar">
+              <img *ngIf="user.photo" [src]="user.photo" [alt]="user.nom">
+              <span *ngIf="!user.photo">{{ initials(user.nom) }}</span>
+            </div>
+            <!-- Trust icon pip -->
+            <div class="pp-trust-pip">{{ getTrustIcon(user.points) }}</div>
           </div>
+
           <div class="pp-info">
             <h1 class="pp-name">{{ user.nom }}</h1>
-            <div class="pp-meta">
+
+            <div class="pp-tags">
               <span class="pp-role"
                     [style.background]="roleBg(user.role)"
                     [style.color]="roleColor(user.role)">
                 {{ roleLabel(user.role) }}
               </span>
-              <span class="pp-location" *ngIf="user.ville">
-                📍 {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              <span class="pp-trust-tag"
+                    *ngIf="user.role === 'CITOYEN'">
+                {{ getTrustIcon(user.points) }} {{ getTrustLabel(user.points) }}
               </span>
             </div>
-            <div class="pp-since">
-              Membre depuis {{ formatDate(user.dateInscription) }}
+
+            <div class="pp-meta-list">
+              <span class="pp-meta-item" *ngIf="user.ville || user.gouvernorat">
+                <svg width="12" height="12" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ user.ville }}{{ user.gouvernorat ? ', ' + user.gouvernorat : '' }}
+              </span>
+              <span class="pp-meta-item">
+                <svg width="12" height="12" fill="none" stroke="currentColor"
+                     stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Membre depuis {{ formatDate(user.dateInscription) }}
+              </span>
+              <span class="pp-meta-item" *ngIf="user.loginStreak > 1">
+                🔥 {{ user.loginStreak }} jours consécutifs
+              </span>
             </div>
+
           </div>
         </div>
-
-        <!-- Stats -->
-        <div class="pp-stats">
-          <div class="pp-stat pp-card">
-            <div class="pp-stat-num" style="color:#C9973E">
-              ⭐ {{ user.points }}
-            </div>
-            <div class="pp-stat-label">Points</div>
-          </div>
-          <div class="pp-stat pp-card" *ngIf="rank > 0">
-            <div class="pp-stat-num" style="color:#E8532A">
-              #{{ rank }}
-            </div>
-            <div class="pp-stat-label">Classement</div>
-          </div>
-          <div class="pp-stat pp-card" *ngIf="user.loginStreak > 1">
-            <div class="pp-stat-num" style="color:#F97316">
-              🔥 {{ user.loginStreak }}
-            </div>
-            <div class="pp-stat-label">Jours consécutifs</div>
-          </div>
-        </div>
-
 
         <!-- Bio IA -->
         <div class="pp-bio-wrap" *ngIf="bioLoading || aiBio">
-
           <div class="pp-bio-loading" *ngIf="bioLoading">
             <div class="pp-bio-dots">
               <span></span><span></span><span></span>
             </div>
             <span>Génération de la biographie…</span>
           </div>
-
           <div class="pp-bio" *ngIf="!bioLoading && aiBio">
             <div class="pp-bio-icon">✨</div>
             <p class="pp-bio-text">{{ aiBio }}</p>
           </div>
-
         </div>
+
       </div>
     </div>
 
-    <!-- Badges -->
+    <!-- ══ STATS BAR ══════════════════════════════════════ -->
+    <div class="pp-stats-bar" *ngIf="user.role === 'CITOYEN'">
+      <div class="pp-stats-inner">
+
+        <div class="psb-item">
+          <div class="psb-val" style="color:#C9973E">{{ user.points | number }}</div>
+          <div class="psb-label">Points</div>
+        </div>
+
+        <div class="psb-sep"></div>
+
+        <div class="psb-item" *ngIf="rank > 0">
+          <div class="psb-val" style="color:#E8532A">#{{ rank }}</div>
+          <div class="psb-label">Classement</div>
+        </div>
+
+        <div class="psb-sep" *ngIf="rank > 0"></div>
+
+        <div class="psb-item">
+          <div class="psb-val" style="color:#8B5CF6">{{ badges.length }}</div>
+          <div class="psb-label">Badges</div>
+        </div>
+
+        <!-- Indice civique -->
+        <ng-container *ngIf="user.civicIndex >= 0">
+          <div class="psb-sep"></div>
+          <div class="psb-item">
+            <div class="psb-val"
+                 [style.color]="getCivicIndexColor(user.civicIndex)">
+              {{ user.civicIndex }}<span style="font-size:12px;opacity:.6">/100</span>
+            </div>
+            <div class="psb-label">Indice civique</div>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+    <!-- ══ BODY ══════════════════════════════════════════ -->
     <div class="pp-body">
+
+      <!-- Badges -->
       <div class="pp-section pp-card" *ngIf="badges.length > 0">
-        <div class="pp-section-title">Badges obtenus</div>
+        <div class="pp-section-header">
+          <div class="pp-section-title">Badges obtenus</div>
+          <div class="pp-section-count">{{ badges.length }}</div>
+        </div>
         <div class="pp-badges-grid">
           <div class="pp-badge-item" *ngFor="let ub of badges"
                [title]="ub.badge.name">
@@ -99,12 +146,73 @@
         </div>
       </div>
 
+      <!-- Infos publiques -->
+      <div class="pp-section pp-card">
+        <div class="pp-section-header">
+          <div class="pp-section-title">Informations</div>
+        </div>
+        <div class="pp-info-grid">
+
+          <div class="pp-info-item">
+            <div class="pp-info-label">Rôle</div>
+            <div class="pp-info-value">
+              <span class="pp-role-inline"
+                    [style.background]="roleBg(user.role)"
+                    [style.color]="roleColor(user.role)">
+                {{ roleLabel(user.role) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="pp-info-item" *ngIf="user.role === 'CITOYEN'">
+            <div class="pp-info-label">Niveau de confiance</div>
+            <div class="pp-info-value">
+              {{ getTrustIcon(user.points) }} {{ getTrustLabel(user.points) }}
+            </div>
+          </div>
+
+          <div class="pp-info-item" *ngIf="user.civicIndex >= 0">
+            <div class="pp-info-label">Indice civique</div>
+            <div class="pp-info-value"
+                 [style.color]="getCivicIndexColor(user.civicIndex)"
+                 style="font-weight:700">
+              {{ user.civicIndex }}/100 — {{ getCivicIndexLabel(user.civicIndex) }}
+            </div>
+          </div>
+
+          <div class="pp-info-item" *ngIf="user.gouvernorat">
+            <div class="pp-info-label">Gouvernorat</div>
+            <div class="pp-info-value">{{ user.gouvernorat }}</div>
+          </div>
+
+          <div class="pp-info-item" *ngIf="user.ville">
+            <div class="pp-info-label">Ville</div>
+            <div class="pp-info-value">{{ user.ville }}</div>
+          </div>
+
+          <div class="pp-info-item">
+            <div class="pp-info-label">Membre depuis</div>
+            <div class="pp-info-value">{{ formatDate(user.dateInscription) }}</div>
+          </div>
+
+          <div class="pp-info-item" *ngIf="user.loginStreak > 0">
+            <div class="pp-info-label">Streak actuel</div>
+            <div class="pp-info-value" style="color:#F97316">
+              🔥 {{ user.loginStreak }} jours consécutifs
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Empty badges -->
       <div class="pp-section pp-card" *ngIf="badges.length === 0">
         <div class="pp-empty">
           <span style="font-size:32px">🏅</span>
           <p>Aucun badge encore obtenu</p>
         </div>
       </div>
+
     </div>
 
   </ng-container>

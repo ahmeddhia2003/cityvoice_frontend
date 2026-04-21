@@ -30,6 +30,10 @@ export interface UserDto {
   statut: string;       // ACTIF | NOUVEAU | INCOMPLET | EN_ATTENTE_VERIFICATION | SUSPENDU
   civicIndex:       number;   // 0-100, -1 si non citoyen
   agentStatus:      string;   // DISPONIBLE | OCCUPE | EN_INTERVENTION | HORS_LIGNE
+
+  // ── Online tracking ────────────────────────────────────
+  lastSeenAt: string | null;
+  isOnline: boolean;
 }
 
 export interface PageResponse<T> {
@@ -75,6 +79,22 @@ export interface TrustInfo {
   progress:    number;
 }
 
+// churn
+export interface ChurnPrediction {
+  userId:              string;
+  churnProbability:    number;
+  riskLevel:           'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  daysUntilChurn:      number | null;
+  riskFactors:         string[];
+  retentionActions:    RetentionAction[];
+  modelConfidence:     number;
+}
+
+export interface RetentionAction {
+  action:         string;
+  priority:       string;
+  expectedImpact: string;
+}
 
 // ============================================================
 // SERVICE
@@ -84,21 +104,21 @@ export interface TrustInfo {
 export class UserService {
 
   // ============================================================
-  // CONSTANTS
+  // 1. PROPRIÉTÉS PRIVÉES
   // ============================================================
 
   private readonly URL = `${environment.apiUrl}/api/users`;
 
 
   // ============================================================
-  // CONSTRUCTOR
+  // 2. CONSTRUCTEUR
   // ============================================================
 
   constructor(private http: HttpClient) {}
 
 
   // ============================================================
-  // BASIC CRUD
+  // 3. MÉTHODES PUBLIQUES - CRUD DE BASE
   // ============================================================
 
   getAll(): Observable<UserDto[]> {
@@ -109,17 +129,17 @@ export class UserService {
     return this.http.get<UserDto>(`${this.URL}/${id}`);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.URL}/${id}`);
-  }
-
   update(id: string, data: Partial<UserDto> & { photo?: string }): Observable<UserDto> {
     return this.http.put<UserDto>(`${this.URL}/${id}`, data);
   }
 
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.URL}/${id}`);
+  }
+
 
   // ============================================================
-  // ROLE MANAGEMENT
+  // 4. MÉTHODES PUBLIQUES - GESTION DES RÔLES & PERMISSIONS
   // ============================================================
 
   getByRole(role: string): Observable<UserDto[]> {
@@ -129,11 +149,6 @@ export class UserService {
   updateRole(id: string, role: string): Observable<UserDto> {
     return this.http.patch<UserDto>(`${this.URL}/${id}/role`, { role });
   }
-
-
-  // ============================================================
-  // BAN / UNBAN
-  // ============================================================
 
   ban(id: string, reason: string): Observable<any> {
     return this.http.patch(`${this.URL}/${id}/ban`, { reason });
@@ -145,7 +160,7 @@ export class UserService {
 
 
   // ============================================================
-  // PAGINATION & SEARCH
+  // 5. MÉTHODES PUBLIQUES - PAGINATION & RECHERCHE
   // ============================================================
 
   getPaginated(page: number, size: number, search?: string, role?: string)
@@ -160,7 +175,7 @@ export class UserService {
 
 
   // ============================================================
-  // PUBLIC PROFILE
+  // 6. MÉTHODES PUBLIQUES - PROFIL PUBLIC & BIOGRAPHIE
   // ============================================================
 
   getPublicProfile(userId: string): Observable<any> {
@@ -179,7 +194,7 @@ export class UserService {
 
 
   // ============================================================
-  // POINTS & LEADERBOARD
+  // 7. MÉTHODES PUBLIQUES - POINTS & LEADERBOARD
   // ============================================================
 
   getPoints(userId: string): Observable<PointTransactionDto[]> {
@@ -189,11 +204,10 @@ export class UserService {
   addPoints(userId: string, points: number, reason: string): Observable<any> {
     return this.http.post(
       `${this.URL}/${userId}/points`,
-      null,                                    // ← body vide
-      { params: { points: points.toString(), reason } }  // ← params URL
+      null,
+      { params: { points: points.toString(), reason } }
     );
   }
-
 
   getLeaderboard(limit = 10): Observable<UserDto[]> {
     return this.http.get<UserDto[]>(`${this.URL}/leaderboard?limit=${limit}`);
@@ -201,7 +215,7 @@ export class UserService {
 
 
   // ============================================================
-  // BADGES
+  // 8. MÉTHODES PUBLIQUES - BADGES & RÉCOMPENSES
   // ============================================================
 
   getAllBadges(): Observable<BadgeDto[]> {
@@ -212,11 +226,47 @@ export class UserService {
     return this.http.get<UserBadgeDto[]>(`${this.URL}/${userId}/badges`);
   }
 
+
   // ============================================================
-  // STATUT AGENT
+  // 9. MÉTHODES PUBLIQUES - STATUT & ANALYSE COMPORTEMENT
   // ============================================================
 
   updateAgentStatus(userId: string, status: string): Observable<any> {
     return this.http.patch(`${this.URL}/${userId}/agent-status`, { status });
+  }
+
+  getBehaviorAnalysis(userId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/admin/users/${userId}/behavior-analysis`
+    );
+  }
+
+
+  // ============================================================
+  // 10. MÉTHODES PUBLIQUES - PRÉDICTION & ANALYSE ML (CHURN)
+  // ============================================================
+
+  getChurnPrediction(userId: string): Observable<ChurnPrediction> {
+    return this.http.get<ChurnPrediction>(
+      `${environment.apiUrl}/api/admin/users/${userId}/churn`
+    );
+  }
+
+  getHighRiskUsers(): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/api/admin/churn/high-risk`
+    );
+  }
+
+  getUserSegment(userId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/admin/users/${userId}/segment`);
+  }
+
+  getUserAnomaly(userId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/admin/users/${userId}/anomaly`);
+  }
+
+  getCompleteMLAnalysis(userId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/admin/users/${userId}/ml-analysis`);
   }
 }

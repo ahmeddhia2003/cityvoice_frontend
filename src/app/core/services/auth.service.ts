@@ -24,7 +24,6 @@ export interface RegisterRequest {
   photo?: string;
 }
 
-
 // ============================================================
 // SERVICE
 // ============================================================
@@ -33,16 +32,15 @@ export interface RegisterRequest {
 export class AuthService {
 
   // ============================================================
-  // CONSTANTS
+  // 1. PROPRIÉTÉS PRIVÉES - CONSTANTES
   // ============================================================
 
   private readonly AUTH_URL  = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'cv_token';
   private readonly USER_KEY  = 'cv_user';
 
-
   // ============================================================
-  // STATE SUBJECTS
+  // 2. PROPRIÉTÉS PRIVÉES - ÉTATS (SUBJECTS)
   // ============================================================
 
   // Auth state for navbar refresh
@@ -58,9 +56,8 @@ export class AuthService {
   }>();
   authLoading$ = this.authLoadingSubject.asObservable();
 
-
   // ============================================================
-  // CONSTRUCTOR
+  // 3. CONSTRUCTEUR
   // ============================================================
 
   constructor(
@@ -68,9 +65,8 @@ export class AuthService {
     private router: Router
   ) {}
 
-
   // ============================================================
-  // PRIVATE METHODS
+  // 4. MÉTHODES PRIVÉES - HELPERS INTERNES
   // ============================================================
 
   private setLoading(
@@ -82,9 +78,8 @@ export class AuthService {
     this.authLoadingSubject.next({ loading, message, toastMsg, toastType });
   }
 
-
   // ============================================================
-  // AUTHENTICATION CORE
+  // 5. MÉTHODES PUBLIQUES - AUTHENTIFICATION CORE
   // ============================================================
 
   /**
@@ -146,7 +141,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // NAME CHECKER
+  // 6. MÉTHODES PUBLIQUES - VALIDATION & MODÉRATION
   // ============================================================
 
   screenName(name: string): Observable<{ appropriate: boolean; reason?: string }> {
@@ -170,7 +165,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // PASSWORD MANAGEMENT
+  // 7. MÉTHODES PUBLIQUES - GESTION DES MOTS DE PASSE
   // ============================================================
 
   forgotPassword(email: string): Observable<any> {
@@ -181,9 +176,8 @@ export class AuthService {
     return this.http.post(`${this.AUTH_URL}/reset-password`, { token, password });
   }
 
-
   // ============================================================
-  // EMAIL VERIFICATION
+  // 8. MÉTHODES PUBLIQUES - VÉRIFICATION EMAIL
   // ============================================================
 
   verifyEmail(token: string): Observable<any> {
@@ -194,9 +188,8 @@ export class AuthService {
     return this.http.post(`${this.AUTH_URL}/resend-verification`, { email });
   }
 
-
   // ============================================================
-  // USER PROFILE
+  // 9. MÉTHODES PUBLIQUES - GESTION DU PROFIL
   // ============================================================
 
   updatePhoto(userId: string, base64Photo: string): Observable<any> {
@@ -206,9 +199,8 @@ export class AuthService {
     );
   }
 
-
   // ============================================================
-  // AUTH STATE HELPERS
+  // 10. MÉTHODES PUBLIQUES - ÉTAT D'AUTHENTIFICATION (GETTERS)
   // ============================================================
 
   refreshAuthState(): void {
@@ -242,9 +234,8 @@ export class AuthService {
     }, 1200);
   }
 
-
   // ============================================================
-  // ROLE CHECKERS
+  // 11. MÉTHODES PUBLIQUES - VÉRIFICATIONS DE RÔLES
   // ============================================================
 
   isAdmin(): boolean {

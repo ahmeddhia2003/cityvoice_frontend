@@ -213,17 +213,16 @@ export class NotificationService implements OnDestroy {
 
   static iconType(type: string): 'resolved' | 'progress' | 'badge' | 'info' {
     const map: Record<string, 'resolved' | 'progress' | 'badge' | 'info'> = {
-      SIGNALEMENT_RESOLU: 'resolved',
-      CONTRAT_ACCEPTE: 'resolved',
-      SIGNALEMENT_EN_COURS: 'progress',
-      CONTRAT_GENERE: 'progress',
-      CONTRAT_REFUSE: 'progress',
-      SIGNALEMENT_CREE: 'info',
-      SIGNALEMENT_REJETE: 'badge',
-      COMMENTAIRE: 'info',
-      INFO: 'info',
+      SIGNALEMENT_RESOLU:    'resolved',
+      CONTRAT_ACCEPTE:       'resolved',
+      SIGNALEMENT_EN_COURS:  'progress',
+      CONTRAT_GENERE:        'progress',
+      CONTRAT_REFUSE:        'progress',
+      SIGNALEMENT_CREE:      'info',
+      SIGNALEMENT_REJETE:    'badge',
+      COMMENTAIRE:           'info',
+      INFO:                  'info',
     };
-
     return map[type] ?? 'info';
   }
 
