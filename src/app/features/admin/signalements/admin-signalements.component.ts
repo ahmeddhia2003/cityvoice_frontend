@@ -1,8 +1,11 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, AfterViewChecked, ChangeDetectorRef, NgZone } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { timeout } from 'rxjs/operators';
 import { SignalementService, SignalementResponse } from '../../../core/services/signalement.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SoundService } from '../../../core/services/sound.service';
 import { ContratTravailService, ContratTravailResponse } from '../../../core/services/contrat-travail.service';
+import { environment } from '../../../../environments/environment';
 
 declare const gsap: any;
 declare const L: any;
@@ -17,7 +20,7 @@ type ViewMode    = 'table' | 'map';
   templateUrl: './admin-signalements.component.html',
   styleUrls: ['./admin-signalements.component.css'],
 })
-export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class AdminSignalementsComponent implements OnInit, AfterViewInit, OnDestroy, AfterViewChecked {
 
   signalements: SignalementResponse[] = [];
   filtered:     SignalementResponse[] = [];
@@ -57,6 +60,22 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
   /* ── Drawer détail ────────────────────────────────── */
   detailItem: SignalementResponse | null = null;
 
+  /* ── Blob URLs pour l'audio vocal ─────────────────── */
+  voiceBlobUrls: Record<string, string> = {};  // clé: "sessionId-step"
+
+  /* ── Édition localisation (modal carte) ──────────────── */
+  editingLocation  = false;   // gardé pour compatibilité
+  showLocMap       = false;
+  locEditLat:  number | null = null;
+  locEditLon:  number | null = null;
+  locEditAdresse   = '';
+  locSaving        = false;
+  locMapGeocoding  = false;
+  private locMapSig:    any = null;   // signalement en cours d'édition
+  private locMapInst:   any = null;   // instance Leaflet du modal
+  private locMapMarker: any = null;   // marker draggable
+  private geocodeTimer: any = null;
+
   /* ── Contrats (cache par signalement ID) ─────────── */
   contratMap: Record<number, ContratTravailResponse> = {};
 
@@ -65,6 +84,17 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
   statutComment = '';
   statutPending = false;
   nouveauStatutChoix = '';
+
+  /* ── Équipes (pour assignation manuelle sans IA) ─── */
+  equipesList: { id: string; label: string }[] = [
+    { id: 'voirie',        label: 'Équipe Voirie' },
+    { id: 'eclairage',     label: 'Équipe Éclairage' },
+    { id: 'plomberie',     label: 'Équipe Plomberie' },
+    { id: 'proprete',      label: 'Équipe Propreté' },
+    { id: 'assainissement',label: 'Équipe Assainissement' },
+    { id: 'espaces_verts', label: 'Équipe Espaces Verts' },
+  ];
+  equipeChoix = '';
 
   /* ── Suppression ──────────────────────────────────── */
   deleteTarget:  SignalementResponse | null = null;
@@ -83,6 +113,9 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
   toast: { msg: string; type: 'success' | 'error' } | null = null;
   private toastTimer: any;
 
+  /* ── Rapport PDF ─────────────────────────────────── */
+  rapportLoading = false;
+
   /* ── Leaflet map ──────────────────────────────────── */
   private leafletMap:     any = null;
   private mapMarkers:     any[] = [];
@@ -93,12 +126,32 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
     private authService:   AuthService,
     public  sound:         SoundService,
     private contratService: ContratTravailService,
-    private cdr: ChangeDetectorRef,
+    private cdr:     ChangeDetectorRef,
+    private ngZone:  NgZone,
+    private http:    HttpClient,
   ) {}
 
   ngOnInit(): void { this.load(); }
 
+  ngAfterViewInit(): void {
+    // Déplacer le modal statut dans <body> pour échapper au containing block
+    // du grid layout admin (overflow:hidden sur .admin-content brise position:fixed)
+    ['statut-modal-overlay', 'statut-modal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentNode !== document.body) {
+        document.body.appendChild(el);
+      }
+    });
+  }
+
   ngOnDestroy(): void {
+    // Nettoyer les éléments déplacés dans <body>
+    ['statut-modal-overlay', 'statut-modal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentNode === document.body) {
+        document.body.removeChild(el);
+      }
+    });
     this.destroyMap();
     clearTimeout(this.toastTimer);
   }
@@ -422,15 +475,264 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
   }
   closeDetail(): void { this.detailItem = null; }
 
+  /** Ouvre le modal carte pour corriger la localisation */
+  openLocMap(sig: SignalementResponse): void {
+    this.locMapSig      = sig;
+    this.locEditLat     = sig.latitude  ?? 36.8065;
+    this.locEditLon     = sig.longitude ?? 10.1815;
+    this.locEditAdresse = sig.adresse   || '';
+    this.showLocMap     = true;
+
+    // Initialiser Leaflet après le rendu du DOM
+    setTimeout(() => {
+      this.initLocMap();
+      this.animateLocMapOpen();
+    }, 60);
+  }
+
+  /** Ferme le modal carte avec animation */
+  closeLocMap(): void {
+    if (typeof gsap !== 'undefined') {
+      gsap.to('#locmap-modal', {
+        y: 40, opacity: 0, scale: .97, duration: .28, ease: 'power2.in',
+        onComplete: () => { this.destroyLocMap(); this.showLocMap = false; }
+      });
+      gsap.to('#locmap-overlay', { opacity: 0, duration: .28, ease: 'power2.in' });
+    } else {
+      this.destroyLocMap();
+      this.showLocMap = false;
+    }
+  }
+
+  /** Clic sur l'overlay → ferme si on clique en dehors du modal */
+  onLocMapOverlayClick(e: MouseEvent): void {
+    const modal = document.getElementById('locmap-modal');
+    if (modal && !modal.contains(e.target as Node)) this.closeLocMap();
+  }
+
+  /** Initialise la carte Leaflet dans le modal */
+  private initLocMap(): void {
+    const el = document.getElementById('loc-correction-map');
+    if (!el || typeof L === 'undefined') return;
+
+    // Détruire une instance précédente si elle existe
+    this.destroyLocMap();
+
+    const lat = this.locEditLat ?? 36.8065;
+    const lon = this.locEditLon ?? 10.1815;
+
+    this.locMapInst = L.map('loc-correction-map', {
+      center: [lat, lon],
+      zoom: 17,
+      zoomControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© CARTO', maxZoom: 19,
+    }).addTo(this.locMapInst);
+
+    // Marker draggable avec icône personnalisée
+    const icon = L.divIcon({
+      html: `<div class="locmap-pin-icon">
+               <div class="locmap-pin-icon__dot"></div>
+               <div class="locmap-pin-icon__shadow"></div>
+             </div>`,
+      iconSize:   [28, 38],
+      iconAnchor: [14, 38],
+      className:  '',
+    });
+
+    this.locMapMarker = L.marker([lat, lon], { icon, draggable: true }).addTo(this.locMapInst);
+
+    // Évènements drag
+    this.locMapMarker.on('dragstart', () => {
+      const el2 = document.querySelector('.locmap-pin-icon');
+      if (el2 && typeof gsap !== 'undefined') {
+        gsap.to(el2, { scale: 1.25, duration: .15, ease: 'power2.out' });
+      }
+    });
+
+    this.locMapMarker.on('drag', (e: any) => {
+      const { lat: la, lng: lo } = e.latlng;
+      this.ngZone.run(() => { this.locEditLat = +la.toFixed(6); this.locEditLon = +lo.toFixed(6); this.cdr.detectChanges(); });
+    });
+
+    this.locMapMarker.on('dragend', (e: any) => {
+      const { lat: la, lng: lo } = e.target.getLatLng();
+      this.ngZone.run(() => {
+        this.locEditLat = +la.toFixed(6);
+        this.locEditLon = +lo.toFixed(6);
+        this.cdr.detectChanges();
+      });
+      const pinEl = document.querySelector('.locmap-pin-icon');
+      if (pinEl && typeof gsap !== 'undefined') {
+        gsap.to(pinEl, { scale: 1, duration: .2, ease: 'back.out(2)' });
+        // Bounce du pin
+        gsap.fromTo(pinEl, { y: -12 }, { y: 0, duration: .4, ease: 'bounce.out' });
+      }
+      this.scheduleReverseGeocode(la, lo);
+    });
+
+    // Clic sur la carte → déplace le marker
+    this.locMapInst.on('click', (e: any) => {
+      const { lat: la, lng: lo } = e.latlng;
+      this.locMapMarker.setLatLng([la, lo]);
+      this.ngZone.run(() => {
+        this.locEditLat = +la.toFixed(6);
+        this.locEditLon = +lo.toFixed(6);
+        this.cdr.detectChanges();
+      });
+      const pinEl = document.querySelector('.locmap-pin-icon');
+      if (pinEl && typeof gsap !== 'undefined') {
+        gsap.fromTo(pinEl, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: .35, ease: 'back.out(2)' });
+      }
+      this.scheduleReverseGeocode(la, lo);
+    });
+
+    setTimeout(() => { try { this.locMapInst.invalidateSize(); } catch(_){} }, 120);
+  }
+
+  /** Reverse geocode avec debounce 600ms */
+  private scheduleReverseGeocode(lat: number, lon: number): void {
+    clearTimeout(this.geocodeTimer);
+    this.locMapGeocoding = true;
+    this.cdr.detectChanges();
+    this.geocodeTimer = setTimeout(() => {
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`)
+        .then(r => r.json())
+        .then(data => {
+          this.ngZone.run(() => {
+            const d = data.address || {};
+            const parts = [d.road || d.pedestrian, d.suburb || d.neighbourhood, d.city || d.town || d.village]
+              .filter(Boolean);
+            this.locEditAdresse = parts.length ? parts.join(', ') : (data.display_name?.split(',').slice(0, 3).join(', ') || '');
+            this.locMapGeocoding = false;
+            this.cdr.detectChanges();
+            // Animate info panel
+            if (typeof gsap !== 'undefined') {
+              gsap.fromTo('#locmap-info', { y: 6, opacity: 0 }, { y: 0, opacity: 1, duration: .3, ease: 'power2.out' });
+            }
+          });
+        })
+        .catch(() => { this.ngZone.run(() => { this.locMapGeocoding = false; this.cdr.detectChanges(); }); });
+    }, 600);
+  }
+
+  /** Détruit l'instance Leaflet du modal */
+  private destroyLocMap(): void {
+    clearTimeout(this.geocodeTimer);
+    if (this.locMapInst) {
+      try { this.locMapInst.remove(); } catch (_) {}
+      this.locMapInst   = null;
+      this.locMapMarker = null;
+    }
+  }
+
+  /** Animations GSAP à l'ouverture du modal */
+  private animateLocMapOpen(): void {
+    if (typeof gsap === 'undefined') return;
+    const tl = gsap.timeline();
+    tl.fromTo('#locmap-overlay',
+      { opacity: 0 }, { opacity: 1, duration: .25, ease: 'power2.out' }
+    )
+    .fromTo('#locmap-modal',
+      { y: 60, opacity: 0, scale: .96 },
+      { y: 0, opacity: 1, scale: 1, duration: .42, ease: 'power3.out' }, '-=.1'
+    )
+    .fromTo('#locmap-header',
+      { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: .3, ease: 'power2.out' }, '-=.1'
+    )
+    .fromTo('#locmap-hint',
+      { y: 10, opacity: 0 }, { y: 0, opacity: 1, duration: .3, ease: 'power2.out' }, '-=.05'
+    )
+    .fromTo('#locmap-footer',
+      { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: .3, ease: 'power2.out' }, '-=.1'
+    );
+
+    // Pin drop avec bounce après que la carte soit visible
+    setTimeout(() => {
+      const pinEl = document.querySelector('.locmap-pin-icon');
+      if (pinEl && typeof gsap !== 'undefined') {
+        gsap.fromTo(pinEl, { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: .5, ease: 'bounce.out' });
+      }
+    }, 300);
+  }
+
+  /** Confirme et enregistre la localisation corrigée */
+  confirmLocMap(): void {
+    if (!this.locMapSig?.id || this.locEditLat == null || this.locEditLon == null) return;
+    this.locSaving = true;
+    this.cdr.detectChanges();
+
+    const token = localStorage.getItem('cv_token');
+    const headers: any = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    this.http.patch<any>(
+      `${environment.apiUrl}/api/v1/signalements/${this.locMapSig.id}/localisation`,
+      { latitude: this.locEditLat, longitude: this.locEditLon, adresse: this.locEditAdresse },
+      { headers }
+    ).subscribe({
+      next: (updated) => {
+        // Animation de confirmation
+        if (typeof gsap !== 'undefined') {
+          const pinEl = document.querySelector('.locmap-pin-icon');
+          if (pinEl) gsap.to(pinEl, { scale: 1.4, duration: .15, yoyo: true, repeat: 1, ease: 'power2.out' });
+        }
+        // Mettre à jour en mémoire
+        const sig = this.locMapSig;
+        sig.latitude  = updated.latitude;
+        sig.longitude = updated.longitude;
+        sig.adresse   = updated.adresse;
+        if (this.detailItem?.id === sig.id) {
+          this.detailItem = { ...this.detailItem, ...updated };
+        }
+        this.locSaving = false;
+        this.showToast('Localisation mise à jour ✓', 'success');
+        setTimeout(() => this.closeLocMap(), 300);
+      },
+      error: () => {
+        this.locSaving = false;
+        this.showToast('Erreur lors de l\'enregistrement', 'error');
+      }
+    });
+  }
+
+  /** URL de l'audio vocal (blob URL chargé avec le JWT, ou URL directe en fallback) */
+  voiceAudioUrl(sig: SignalementResponse, step: 'description' | 'location'): string {
+    const key = `${sig.voiceSessionId}-${step}`;
+
+    // Retourner le blob URL si déjà chargé
+    if (this.voiceBlobUrls[key]) return this.voiceBlobUrls[key];
+
+    // Charger en arrière-plan avec le JWT
+    const directUrl = `${environment.apiUrl}/api/v1/hybrid-voice/audio/${sig.voiceSessionId}/${step}`;
+    const token = localStorage.getItem('cv_token');
+    const headers: Record<string, string> = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+    this.http.get(directUrl, { headers: headers as any, responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.voiceBlobUrls[key] = URL.createObjectURL(blob);
+      },
+      error: () => {
+        // Fallback: URL directe (fonctionne si la route est ouverte dans le filtre JWT)
+        this.voiceBlobUrls[key] = directUrl;
+      }
+    });
+
+    return directUrl; // URL directe en attendant le blob
+  }
+
   /* ══════════════════════════════════════════════════
      CHANGEMENT STATUT
   ══════════════════════════════════════════════════ */
   openEditStatut(s: SignalementResponse, event: Event): void {
     event.stopPropagation();
     this.sound.nav();
-    this.editingStatut     = s;
-    this.nouveauStatutChoix = s.statut;
-    this.statutComment     = '';
+    this.editingStatut      = s;
+    // Pour les signalements IA, seul REJETE est disponible → présélectionner REJETE
+    this.nouveauStatutChoix = s.equipeIALabel ? 'REJETE' : s.statut;
+    this.statutComment      = '';
+    this.equipeChoix        = '';
     setTimeout(() => {
       const modal = document.getElementById('statut-modal');
       if (modal && typeof gsap !== 'undefined') {
@@ -441,14 +743,25 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
       }
     }, 10);
   }
-  closeEditStatut(): void { this.editingStatut = null; this.statutComment = ''; }
+  closeEditStatut(): void {
+    this.editingStatut = null;
+    this.statutComment = '';
+    this.equipeChoix   = '';
+  }
 
   confirmStatut(): void {
     if (!this.editingStatut || this.statutPending) return;
     this.statutPending = true;
     const userId = this.authService.getCurrentUser()?.userId ?? '0';
+
+    // Résoudre le label de l'équipe choisie si présente
+    const equipeLabel = this.equipeChoix
+      ? (this.equipesList.find(e => e.id === this.equipeChoix)?.label ?? '')
+      : '';
+
     this.sigService.changerStatut(
-      this.editingStatut.id, this.nouveauStatutChoix, this.statutComment, userId
+      this.editingStatut.id, this.nouveauStatutChoix, this.statutComment,
+      userId, this.equipeChoix, equipeLabel
     ).subscribe({
       next: (updated) => {
         const idx = this.signalements.findIndex(s => s.id === updated.id);
@@ -808,4 +1121,63 @@ export class AdminSignalementsComponent implements OnInit, OnDestroy, AfterViewC
   }
 
   trackById(_: number, s: any): any { return s.id; }
+
+  /* ══════════════════════════════════════════════════
+     RAPPORT PDF MENSUEL
+  ══════════════════════════════════════════════════ */
+  telechargerRapport(): void {
+    if (this.rapportLoading) return;
+    this.rapportLoading = true;
+
+    // Répartition par type depuis les signalements chargés
+    const typeBreakdown: Record<string, number> = {};
+    this.signalements.forEach(s => {
+      typeBreakdown[s.type] = (typeBreakdown[s.type] ?? 0) + 1;
+    });
+
+    const now = new Date();
+    const moisFr = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const periode = `${moisFr[now.getMonth()]} ${now.getFullYear()}`;
+
+    const payload = {
+      total:     this.totalCount,
+      resolus:   this.resoluCount,
+      enCours:   this.enCoursCount,
+      enAttente: this.enAttenteCount,
+      rejetes:   this.rejeteCount,
+      typeBreakdown,
+      periode,
+      ville: 'Tunis',
+    };
+
+    this.http.post(`${environment.aiUrl}/api/v1/rapport-mensuel`, payload, {
+      responseType: 'blob',
+    }).pipe(
+      timeout(30_000)  // 30 secondes max
+    ).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rapport-madina-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.rapportLoading = false;
+        this.showToast('Rapport PDF téléchargé avec succès ✅', 'success');
+      },
+      error: (err) => {
+        console.error('[Rapport PDF] Erreur:', err);
+        this.rapportLoading = false;
+        const msg = err?.name === 'TimeoutError'
+          ? 'Le service IA ne répond pas (timeout 30s)'
+          : err?.status === 0
+            ? 'Service IA non démarré (port 8091)'
+            : `Erreur génération PDF (${err?.status ?? 'réseau'})`;
+        this.showToast(msg, 'error');
+      },
+    });
+  }
 }

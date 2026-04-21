@@ -1,36 +1,41 @@
 <!-- Loader initial -->
 <app-loader *ngIf="showLoader" (loadingComplete)="onLoadingComplete()"></app-loader>
 
-<!-- Shell principal -->
-<div [style.opacity]="showLoader ? '0' : '1'"
-     [style.transition]="'opacity 0.3s ease'">
+<!-- Navbar -->
+<app-navbar *ngIf="!isAdminRoute"></app-navbar>
 
-  <ng-container *ngIf="!isAdminRoute">
-    <app-navbar></app-navbar>
+<!-- Contenu principal -->
+<main class="content" *ngIf="!showLoader">
+  <router-outlet></router-outlet>
+</main>
+
+  <!-- ══ GLOBAL BANNERS (weather + holidays) — visible on all citizen pages ══ -->
+  <ng-container *ngIf="!isAdminRoute && !isAuthRoute">
+    <app-weather-alert-banner
+      (heightChange)="weatherBannerHeight = $event">
+    </app-weather-alert-banner>
+    <app-festive-banner
+      [weatherBannerHeight]="weatherBannerHeight"
+      (heightChange)="festiveBannerHeight = $event">
+    </app-festive-banner>
   </ng-container>
-
-  <main>
-    <router-outlet></router-outlet>
-  </main>
 
   <ng-container *ngIf="!isAdminRoute">
     <app-footer></app-footer>
     <app-onboarding></app-onboarding>
+    <app-chatbot></app-chatbot>
   </ng-container>
 
-</div>
-
-<!-- ══ Auth Loading Screen ════════════════════════════════ -->
+<!-- Auth Loading Screen -->
 <div class="auth-loader" *ngIf="showAuthLoader">
   <div class="al-content">
-
     <div class="al-logo">
       <div class="al-logo-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" fill="white"/>
         </svg>
       </div>
-      <span class="al-logo-text">CityVoice</span>
+      <span class="al-logo-text">Madina</span> <!-- ← était "CityVoice" -->
     </div>
 
     <div class="al-spinner">
@@ -38,14 +43,14 @@
       <div class="al-ring al-ring--2"></div>
     </div>
 
-    <p class="al-msg" *ngIf="authLoaderMsg">{{ authLoaderMsg }}</p>
-
+    <p class="al-msg" *ngIf="authLoaderMsg">
+      {{ authLoaderMsg }}
+    </p>
   </div>
 
-  <!-- Toast intégré dans le loader ─────────────────────── -->
+  <!-- Toast -->
   <div class="al-toast" *ngIf="showLoaderToast" [ngClass]="loaderToastType">
     <div class="al-toast-dot"></div>
     {{ loaderToastMsg }}
   </div>
-
 </div>

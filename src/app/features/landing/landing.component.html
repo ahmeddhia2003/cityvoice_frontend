@@ -1,12 +1,14 @@
 <div class="scroll-progress" #progEl></div>
 
-<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<!-- ══ HERO ═══════════════════════════════════════════════════ -->
 <section class="hero">
+
+  <!-- LEFT — texte + CTA -->
   <div class="hero-left">
-    <span class="hero-eyebrow">
+    <div class="hero-eyebrow">
       <span class="eyebrow-dot"></span>
       {{ lang.t.hero_badge }}
-    </span>
+    </div>
 
     <h1 class="hero-title">
       <span class="hero-title-line"><span class="hero-title-word">{{ lang.t.hero_title1 }}</span></span>
@@ -19,11 +21,11 @@
     <p class="hero-desc">{{ lang.t.hero_desc }}</p>
 
     <div class="hero-buttons">
-      <a routerLink="/signaler" class="btn btn-primary btn-pulse" (click)="sound.click()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
+      <a routerLink="/signaler" class="btn btn-primary" (click)="sound.click()">
         {{ lang.t.hero_btn1 }}
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </svg>
       </a>
       <a href="#map-section" class="btn btn-ghost" (click)="sound.nav()">{{ lang.t.hero_btn2 }}</a>
     </div>
@@ -35,48 +37,57 @@
     </div>
   </div>
 
-  <!-- ── LIVE DASHBOARD PANEL ─────────────────────────────── -->
+  <!-- RIGHT — live dashboard panel -->
   <div class="hero-right">
     <div class="live-panel">
 
-      <!-- Panel header -->
       <div class="live-header">
         <div class="live-header-left">
-          <div class="live-dot"></div>
-          <span class="live-title">{{ lang.t.live_title }}</span>
+          <span class="live-dot"></span>
+          <div>
+            <div class="live-title">{{ lang.t.live_title }}</div>
+            <div class="live-subtitle">TEMPS RÉEL</div>
+          </div>
         </div>
-        <span class="live-subtitle">{{ lang.t.live_subtitle }}</span>
       </div>
 
-      <!-- Stats row -->
       <div class="live-stats">
         <div class="live-stat-card live-stat-resolved">
+          <div class="live-stat-label">Résolus</div>
           <div class="live-stat-num">{{ liveResolved }}</div>
-          <div class="live-stat-label">{{ lang.t.live_resolved }}</div>
-          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="liveResolved * 20"></div></div>
+          <div class="live-stat-bar">
+            <div class="live-stat-fill"
+                 [style.width]="(liveResolved / ((liveResolved + liveProgress + livePending) || 1) * 100) + '%'">
+            </div>
+          </div>
         </div>
         <div class="live-stat-card live-stat-progress">
+          <div class="live-stat-label">En cours</div>
           <div class="live-stat-num">{{ liveProgress }}</div>
-          <div class="live-stat-label">{{ lang.t.live_inprogress }}</div>
-          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="liveProgress * 20"></div></div>
+          <div class="live-stat-bar">
+            <div class="live-stat-fill"
+                 [style.width]="(liveProgress / ((liveResolved + liveProgress + livePending) || 1) * 100) + '%'">
+            </div>
+          </div>
         </div>
         <div class="live-stat-card live-stat-pending">
+          <div class="live-stat-label">En attente</div>
           <div class="live-stat-num">{{ livePending }}</div>
-          <div class="live-stat-label">{{ lang.t.live_pending }}</div>
-          <div class="live-stat-bar"><div class="live-stat-fill" [style.width.%]="livePending * 20"></div></div>
+          <div class="live-stat-bar">
+            <div class="live-stat-fill"
+                 [style.width]="(livePending / ((liveResolved + liveProgress + livePending) || 1) * 100) + '%'">
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Divider with label -->
-      <div class="live-divider">
-        <span>{{ lang.t.live_feed_title }}</span>
-      </div>
+      <div class="live-divider"><span>Activité récente</span></div>
 
-      <!-- Live feed -->
       <div class="live-feed">
-        <div class="live-item" *ngFor="let item of liveFeed; trackBy: trackItem"
+        <div class="live-item"
+             *ngFor="let item of liveFeed; trackBy: trackItem"
              [class.live-item--new]="item.isNew">
-          <div class="live-item-emoji">{{ item.emoji }}</div>
+          <span class="live-item-emoji">{{ item.emoji }}</span>
           <div class="live-item-body">
             <p class="live-item-type">{{ item.type }}</p>
             <p class="live-item-addr">{{ item.address }}</p>
@@ -93,25 +104,24 @@
         </div>
       </div>
 
-      <!-- CTA bar -->
       <div class="live-footer">
-        <a routerLink="/signaler" class="live-cta-btn" (click)="sound.click()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-          </svg>
-          {{ lang.t.hero_btn1 }}
-        </a>
-        <span class="live-footer-note">{{ lang.t.live_today }} · {{ liveFeed.length }} signalements</span>
+        <a routerLink="/signaler" class="live-cta-btn" (click)="sound.click()">Signaler →</a>
+        <span class="live-footer-note">Mise à jour en direct</span>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- MARQUEE -->
+<!-- ══ MARQUEE ════════════════════════════════════════════════ -->
 <div class="marquee-strip">
   <div class="marquee-track">
-    <span class="marquee-item" *ngFor="let item of marqueeItems">{{ item }} <span class="marquee-sep">·</span></span>
-    <span class="marquee-item" *ngFor="let item of marqueeItems">{{ item }} <span class="marquee-sep">·</span></span>
+    <ng-container *ngFor="let item of marqueeItems">
+      <span class="marquee-item">{{ item }}</span><span class="marquee-sep">·</span>
+    </ng-container>
+    <ng-container *ngFor="let item of marqueeItems">
+      <span class="marquee-item">{{ item }}</span><span class="marquee-sep">·</span>
+    </ng-container>
   </div>
 </div>
 
@@ -156,6 +166,81 @@
   </div>
 </section>
 
+<!-- ══ FEATURES ════════════════════════════════════════════════ -->
+<section class="section section-cream features-section" id="features">
+  <div class="container">
+    <div class="pill pill-teal reveal-heading" style="margin-bottom:16px">Pourquoi Madina ?</div>
+    <h2 class="heading-display reveal-heading" style="margin-bottom:12px">
+      Technologie au service<br><em style="color:var(--ink3)">de votre ville</em>
+    </h2>
+    <p class="section-sub reveal-heading">Chaque fonctionnalité est conçue pour rendre votre ville plus réactive, plus transparente et plus intelligente.</p>
+
+    <div class="features-grid">
+
+      <div class="feature-card reveal-card">
+        <div class="feature-icon-wrap" style="--fi-c:#E8532A">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <rect x="4" y="4" width="16" height="16" rx="2"/>
+            <rect x="9" y="9" width="6" height="6"/>
+            <line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/>
+            <line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/>
+            <line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/>
+            <line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">IA de classification</h3>
+        <p class="feature-desc">Madina AI analyse chaque signalement en temps réel : type de problème, priorité, équipe idéale et délai estimé. Zéro intervention manuelle.</p>
+        <div class="feature-tag">
+          <span class="ft-dot" style="background:#E8532A"></span> Précision 94%
+        </div>
+      </div>
+
+      <div class="feature-card reveal-card feature-card--featured">
+        <div class="feature-badge-top">⭐ Fonctionnalité phare</div>
+        <div class="feature-icon-wrap" style="--fi-c:#0D9B76">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Notifications temps réel</h3>
+        <p class="feature-desc">Le citoyen est informé à chaque étape : réception, analyse IA, équipe assignée, résolution. Via le web et les notifications push.</p>
+        <div class="feature-tag">
+          <span class="ft-dot" style="background:#0D9B76"></span> Mis à jour en direct
+        </div>
+      </div>
+
+      <div class="feature-card reveal-card">
+        <div class="feature-icon-wrap" style="--fi-c:#C9973E">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Tableau de bord admin</h3>
+        <p class="feature-desc">Les municipalités accèdent à des statistiques en temps réel, des cartes de chaleur, la gestion des équipes et l'export de rapports PDF mensuels.</p>
+        <div class="feature-tag">
+          <span class="ft-dot" style="background:#C9973E"></span> Dashboard complet
+        </div>
+      </div>
+
+      <div class="feature-card reveal-card">
+        <div class="feature-icon-wrap" style="--fi-c:#3B82F6">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Engagement citoyen</h3>
+        <p class="feature-desc">Votes communautaires, badges, points, classement et historique personnel. Chaque action citoyenne est reconnue et valorisée.</p>
+        <div class="feature-tag">
+          <span class="ft-dot" style="background:#3B82F6"></span> Gamification intégrée
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- MAP -->
 <section class="section section-cream" id="map-section">
   <div class="container">
@@ -173,53 +258,109 @@
     </div>
     <div class="map-shell">
       <div class="map-el" #mapEl></div>
-      <div class="map-legend-card">
-        <div class="mlc-title">Légende</div>
-        <div class="mlc-row"><span class="mlc-dot" style="background:#E8532A"></span>{{ lang.t.map_pending }}</div>
-        <div class="mlc-row"><span class="mlc-dot" style="background:#3B82F6"></span>{{ lang.t.map_progress }}</div>
-        <div class="mlc-row"><span class="mlc-dot" style="background:#0D9B76"></span>{{ lang.t.map_resolved }}</div>
+
+      <!-- Heatmap density legend (bottom-left) -->
+      <div class="heat-legend-card">
+        <div class="hlc-title">🔥 Densité des signalements</div>
+        <div class="hlc-gradient-bar">
+          <div class="hlc-bar"></div>
+          <div class="hlc-labels">
+            <span>Faible</span>
+            <span>Moyen</span>
+            <span>Élevé</span>
+            <span>Critique</span>
+          </div>
+        </div>
+        <div class="hlc-divider"></div>
+        <div class="hlc-markers-title">Marqueurs</div>
+        <div class="hlc-row"><span class="hlc-dot" style="background:#E8532A"></span>En attente</div>
+        <div class="hlc-row"><span class="hlc-dot" style="background:#3B82F6"></span>En cours</div>
+        <div class="hlc-row"><span class="hlc-dot" style="background:#0D9B76"></span>Résolu</div>
+        <div class="hlc-row hlc-hotspot-row">
+          <span class="hlc-hotspot-ring"></span>Zone critique
+        </div>
+      </div>
+
+      <!-- Live counter badge -->
+      <div class="heat-counter-badge" *ngIf="heatPoints.length > 0">
+        <div class="hcb-num">{{ heatPoints.length }}</div>
+        <div class="hcb-label">signalements<br>cartographiés</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
+<!-- ══ TESTIMONIALS ══════════════════════════════════════════ -->
 <section class="section section-white" id="testimonials">
   <div class="container">
-    <div class="pill pill-navy reveal-heading" style="margin-bottom:16px">{{ lang.t.testi_pill }}</div>
-    <h2 class="heading-display reveal-heading">{{ lang.t.testi_title }}<em>{{ lang.t.testi_dim }}</em><br>de Madina.</h2>
+    <div class="pill pill-coral reveal-heading" style="margin-bottom:16px">{{ lang.t.testi_pill }}</div>
+    <h2 class="heading-display reveal-heading">
+      {{ lang.t.testi_title }}<em style="color:var(--ink3)"> {{ lang.t.testi_dim }}</em>
+    </h2>
     <div class="testi-grid">
-      <div class="testi-card" *ngFor="let t of testimonials" [class]="'accent-'+t.accent">
+      <div class="testi-card reveal-card" *ngFor="let t of testimonials" [class]="'accent-' + t.accent">
         <div class="testi-quote">"</div>
         <p class="testi-text">{{ getTestiText(t) }}</p>
         <div class="testi-author">
-          <div class="testi-av" [class]="'av-'+t.accent">{{ t.av }}</div>
-          <div><div class="testi-name">{{ t.name }}</div><div class="testi-loc">{{ t.loc }}</div></div>
+          <div class="testi-av" [class]="'av-' + t.accent">{{ t.av }}</div>
+          <div>
+            <div class="testi-name">{{ t.name }}</div>
+            <div class="testi-loc">{{ t.loc }}</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-counters">
-      <div class="cta-cnt" *ngFor="let s of ctaStats; let i=index">
-        <div class="cta-cnt-num">{{ ctaCurrents[i]|number }}<span *ngIf="s.suffix">{{ s.suffix }}</span></div>
-        <div class="cta-cnt-label">{{ [lang.t.cta_stat1,lang.t.cta_stat2,lang.t.cta_stat3][i] }}</div>
+<!-- ══ FAQ ════════════════════════════════════════════════════ -->
+<section class="section section-cream faq-section" id="faq">
+  <div class="container faq-container">
+    <div class="faq-left">
+      <div class="pill pill-navy reveal-heading" style="margin-bottom:16px">FAQ</div>
+      <h2 class="heading-display reveal-heading">Questions<br><em>fréquentes</em></h2>
+      <p class="section-sub reveal-heading" style="margin-top:12px">Tout ce que vous devez savoir sur Madina CityVoice.</p>
+      <a routerLink="/auth/signup" class="btn btn-primary" style="margin-top:24px;display:inline-flex" (click)="sound.click()">Commencer gratuitement →</a>
+    </div>
+    <div class="faq-right">
+      <div class="faq-item" *ngFor="let q of faqItems; let i = index"
+           [class.faq-open]="faqOpenIndex === i">
+        <button class="faq-question" (click)="toggleFaq(i)">
+          <span>{{ q.q }}</span>
+          <svg class="faq-chevron" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="faq-answer">
+          <p>{{ q.a }}</p>
+        </div>
       </div>
     </div>
-    <span class="pill pill-coral" style="margin-bottom:24px">{{ lang.t.cta_pill }}</span>
-    <h2 class="cta-title">{{ lang.t.cta_title1 }}<br><em>{{ lang.t.cta_title2 }}</em> <span class="coral">{{ lang.t.cta_title3 }}</span></h2>
-    <p class="cta-sub">{{ lang.t.cta_sub }}</p>
-    <div class="cta-btns">
-      <a routerLink="/signaler" class="btn btn-primary btn-pulse" (click)="sound.click()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        {{ lang.t.cta_btn1 }}
-      </a>
-      <a routerLink="/auth/register" class="btn btn-ghost" (click)="sound.nav()">{{ lang.t.cta_btn2 }}</a>
+  </div>
+</section>
+
+<!-- ══ CTA ════════════════════════════════════════════════════ -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <div class="cta-counters">
+      <div *ngFor="let s of ctaStats; let i = index">
+        <div class="cta-cnt-num">{{ ctaCurrents[i] | number }}<span class="stat-suf">{{ s.suffix }}</span></div>
+        <div class="cta-cnt-label">{{ [lang.t.cta_stat1, lang.t.cta_stat2, lang.t.cta_stat3][i] }}</div>
+      </div>
     </div>
-    <p class="cta-note">{{ lang.t.cta_note }}</p>
+    <h2 class="cta-title">
+      {{ lang.t.cta_title1 }}<br>
+      <em>{{ lang.t.cta_title2 }}</em> <span class="coral">{{ lang.t.cta_title3 }}</span>
+    </h2>
+    <p class="cta-sub">Rejoignez les milliers de citoyens qui contribuent à améliorer leur ville. Signalement en moins de 60 secondes.</p>
+    <div class="cta-btns">
+      <a routerLink="/auth/signup" class="btn btn-primary" (click)="sound.click()">Créer un compte gratuit →</a>
+      <a routerLink="/signaler"
+         class="btn btn-ghost"
+         style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.18)"
+         (click)="sound.click()">Signaler directement</a>
+    </div>
+    <p class="cta-note">GRATUIT · SANS ENGAGEMENT · DONNÉES PROTÉGÉES</p>
   </div>
 </section>

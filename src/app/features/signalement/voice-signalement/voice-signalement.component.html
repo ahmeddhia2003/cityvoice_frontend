@@ -1,0 +1,356 @@
+<div class="vc-page">
+
+  <!-- Back -->
+  <a routerLink="/signaler/choix" class="vc-back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Choisir une autre méthode
+  </a>
+
+  <!-- Card principale -->
+  <div class="vc-card" id="vc-card">
+
+    <!-- ══ ÉTAT : IDLE ══════════════════════════════════════════════ -->
+    <div *ngIf="state.step === 'idle'" class="vc-state" id="state-idle">
+
+      <!-- Orbe micro animée -->
+      <div class="vc-orb-wrap" id="idle-orb">
+        <div class="vc-orb__ring vc-orb__ring--1"></div>
+        <div class="vc-orb__ring vc-orb__ring--2"></div>
+        <div class="vc-orb__core">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Texte intro -->
+      <div class="vc-intro" id="idle-intro">
+        <h1 class="vc-title">Signalement vocal</h1>
+        <p class="vc-sub">Parlez naturellement — notre assistant vous guide et crée le signalement automatiquement.</p>
+      </div>
+
+      <!-- Flow étapes -->
+      <div class="vc-flow" id="idle-flow">
+        <div class="vc-flow__step">
+          <div class="vc-flow__icon vc-flow__icon--coral">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            </svg>
+          </div>
+          <span>Décrivez</span>
+        </div>
+        <div class="vc-flow__arrow">→</div>
+        <div class="vc-flow__step">
+          <div class="vc-flow__icon vc-flow__icon--amber">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+            </svg>
+          </div>
+          <span>Localisez</span>
+        </div>
+        <div class="vc-flow__arrow">→</div>
+        <div class="vc-flow__step">
+          <div class="vc-flow__icon vc-flow__icon--green">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <span>Créé !</span>
+        </div>
+      </div>
+
+      <!-- Avantages -->
+      <ul class="vc-perks" id="idle-perks">
+        <li>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="#0D9B76" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Gratuit — aucun appel téléphonique
+        </li>
+        <li>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="#0D9B76" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Transcription automatique par IA
+        </li>
+        <li>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="#0D9B76" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Signalement créé en moins d'1 minute
+        </li>
+      </ul>
+
+      <!-- CTA -->
+      <button class="vc-btn-start" id="idle-btn"
+              (click)="startCall()"
+              [disabled]="!canStartCall">
+        <span class="vc-btn-start__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </span>
+        Démarrer le signalement vocal
+      </button>
+
+    </div>
+    <!-- /idle -->
+
+
+    <!-- ══ ÉTAT : DESCRIPTION ══════════════════════════════════════ -->
+    <div *ngIf="state.step === 'description'" class="vc-state" id="state-desc">
+
+      <div class="vc-step-badge">Étape 1 sur 2</div>
+      <h2 class="vc-recording-title">Décrivez le problème</h2>
+      <p class="vc-recording-hint">
+        L'assistant vous pose une question vocalement.<br>
+        Répondez après le bip sonore.
+      </p>
+
+      <!-- Waveform visualizer -->
+      <div class="vc-waveform" id="waveform-desc">
+        <div class="vc-bar" id="bar-0"></div>
+        <div class="vc-bar" id="bar-1"></div>
+        <div class="vc-bar" id="bar-2"></div>
+        <div class="vc-bar" id="bar-3"></div>
+        <div class="vc-bar" id="bar-4"></div>
+        <div class="vc-bar" id="bar-5"></div>
+        <div class="vc-bar" id="bar-6"></div>
+        <div class="vc-bar" id="bar-7"></div>
+        <div class="vc-bar" id="bar-8"></div>
+      </div>
+
+      <!-- Timer + statut -->
+      <div class="vc-timer-wrap">
+        <span class="vc-dot-rec"></span>
+        <span class="vc-timer-val">{{ recordingSeconds }}s</span>
+        <span class="vc-timer-label">
+          {{ recordingSeconds < 2 ? 'Prêt à enregistrer…' : 'Enregistrement en cours' }}
+        </span>
+      </div>
+
+      <button class="vc-btn-stop" id="stop-btn-desc"
+              *ngIf="canStopRecording" (click)="stopRecording()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+        </svg>
+        Terminer l'enregistrement
+      </button>
+
+    </div>
+    <!-- /description -->
+
+
+    <!-- ══ ÉTAT : LOCATION ═════════════════════════════════════════ -->
+    <div *ngIf="state.step === 'location'" class="vc-state" id="state-loc">
+
+      <div class="vc-step-badge vc-step-badge--amber">Étape 2 sur 2</div>
+      <h2 class="vc-recording-title">Indiquez la localisation</h2>
+      <p class="vc-recording-hint">
+        Donnez l'adresse, la rue ou un point de repère proche.
+      </p>
+
+      <!-- Pin icon animé -->
+      <div class="vc-pin-wrap" id="pin-anim">
+        <div class="vc-pin__shadow"></div>
+        <div class="vc-pin__body">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Waveform -->
+      <div class="vc-waveform vc-waveform--amber" id="waveform-loc">
+        <div class="vc-bar" id="lbar-0"></div>
+        <div class="vc-bar" id="lbar-1"></div>
+        <div class="vc-bar" id="lbar-2"></div>
+        <div class="vc-bar" id="lbar-3"></div>
+        <div class="vc-bar" id="lbar-4"></div>
+        <div class="vc-bar" id="lbar-5"></div>
+        <div class="vc-bar" id="lbar-6"></div>
+        <div class="vc-bar" id="lbar-7"></div>
+        <div class="vc-bar" id="lbar-8"></div>
+      </div>
+
+      <div class="vc-timer-wrap vc-timer-wrap--amber">
+        <span class="vc-dot-rec vc-dot-rec--amber"></span>
+        <span class="vc-timer-val">{{ recordingSeconds }}s</span>
+        <span class="vc-timer-label">
+          {{ recordingSeconds < 2 ? 'Prêt à enregistrer…' : 'Enregistrement en cours' }}
+        </span>
+      </div>
+
+      <button class="vc-btn-stop vc-btn-stop--amber"
+              *ngIf="canStopRecording" (click)="stopRecording()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+        </svg>
+        Terminer l'enregistrement
+      </button>
+
+    </div>
+    <!-- /location -->
+
+
+    <!-- ══ ÉTAT : PROCESSING ═══════════════════════════════════════ -->
+    <div *ngIf="state.step === 'processing'" class="vc-state" id="state-proc">
+
+      <!-- Spinner orb -->
+      <div class="vc-proc-orb" id="proc-orb">
+        <svg class="vc-proc-svg" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="44" stroke="#F5EDE4" stroke-width="8"/>
+          <circle cx="50" cy="50" r="44" stroke="#E8532A" stroke-width="8"
+                  stroke-dasharray="138 138" stroke-dashoffset="138"
+                  stroke-linecap="round" id="proc-arc"/>
+        </svg>
+        <div class="vc-proc-inner">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+               stroke="#E8532A" stroke-width="2" stroke-linecap="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+      </div>
+
+      <h2 class="vc-proc-title" id="proc-title">Analyse en cours…</h2>
+      <p class="vc-proc-sub">Transcription et structuration de votre signalement par IA</p>
+
+      <!-- Transcriptions en temps réel -->
+      <div class="vc-transcriptions" id="proc-trans">
+        <div class="vc-trans-item" *ngIf="state.descriptionTranscription" id="trans-desc">
+          <div class="vc-trans-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            </svg>
+            Description
+          </div>
+          <p class="vc-trans-text">{{ state.descriptionTranscription }}</p>
+        </div>
+        <div class="vc-trans-item vc-trans-item--amber" *ngIf="state.locationTranscription" id="trans-loc">
+          <div class="vc-trans-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+            </svg>
+            Localisation
+          </div>
+          <p class="vc-trans-text">{{ state.locationTranscription }}</p>
+        </div>
+      </div>
+
+    </div>
+    <!-- /processing -->
+
+
+    <!-- ══ ÉTAT : COMPLETED ════════════════════════════════════════ -->
+    <div *ngIf="state.step === 'completed'" class="vc-state" id="state-done">
+
+      <!-- Cercle checkmark SVG animé -->
+      <div class="vc-check-wrap" id="check-wrap">
+        <svg class="vc-check-svg" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="44" stroke="#E8F9F3" stroke-width="8"/>
+          <circle cx="50" cy="50" r="44" stroke="#0D9B76" stroke-width="8"
+                  stroke-dasharray="276" stroke-dashoffset="276"
+                  stroke-linecap="round" id="check-circle"/>
+          <polyline points="28,50 44,66 72,34" stroke="#0D9B76" stroke-width="6"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    stroke-dasharray="60" stroke-dashoffset="60" id="check-mark"/>
+        </svg>
+      </div>
+
+      <h2 class="vc-done-title" id="done-title">Signalement créé !</h2>
+      <p class="vc-done-id" id="done-id">
+        Référence
+        <strong>#{{ state.signalementId }}</strong>
+      </p>
+
+      <!-- Résumé -->
+      <div class="vc-summary" id="done-summary">
+        <div class="vc-summary__row" *ngIf="state.descriptionTranscription">
+          <span class="vc-summary__label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            </svg>
+            Problème
+          </span>
+          <span class="vc-summary__val">{{ state.descriptionTranscription }}</span>
+        </div>
+        <div class="vc-summary__row" *ngIf="state.locationTranscription">
+          <span class="vc-summary__label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+            </svg>
+            Localisation
+          </span>
+          <span class="vc-summary__val">{{ state.locationTranscription }}</span>
+        </div>
+      </div>
+
+      <p class="vc-redirect-info" id="done-redirect">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Redirection vers vos signalements…
+      </p>
+
+    </div>
+    <!-- /completed -->
+
+
+    <!-- ══ ÉTAT : ERROR ════════════════════════════════════════════ -->
+    <div *ngIf="state.step === 'error'" class="vc-state" id="state-err">
+
+      <div class="vc-error-icon" id="err-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+             stroke="#E8532A" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+
+      <h2 class="vc-err-title" id="err-title">Une erreur s'est produite</h2>
+      <p class="vc-err-msg">{{ state.errorMessage }}</p>
+
+      <button class="vc-btn-retry" (click)="retry()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 .49-3.8"/>
+        </svg>
+        Réessayer
+      </button>
+
+    </div>
+    <!-- /error -->
+
+  </div><!-- /card -->
+</div><!-- /page -->

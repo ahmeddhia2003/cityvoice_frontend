@@ -45,6 +45,16 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
   votedIds  = new Set<number>();   // chargé depuis localStorage au démarrage
   votingIds = new Set<number>();   // en-cours seulement (mémoire)
 
+  /* ── Weather banner ────────────────────────────────── */
+  weatherBannerHeight  = 0;
+  festiveBannerHeight  = 0;
+
+  /* ── Detail popup ──────────────────────────────────── */
+  selectedSig: SignalementResponse | null = null;
+
+  openPopup(sig: SignalementResponse): void  { this.selectedSig = sig; }
+  closePopup(): void                         { this.selectedSig = null; }
+
   /* ── Toast ─────────────────────────────────────────── */
   toast: { msg: string; type: 'success' | 'error' } | null = null;
   private toastTimer: any;
@@ -56,6 +66,11 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
     { key: 'RESOLU',     label: 'Résolus',    icon: '✅', count: 0 },
   ];
 
+  /* ── Pagination ──────────────────────────────────── */
+  currentPage = 0;                          // 0-based
+  pageSize    = 12;
+  readonly pageSizeOptions = [6, 12, 24, 48];
+
   get filtered(): SignalementResponse[] {
     return this.signalements.filter(s => {
       const matchFilter = this.activeFilter === 'TOUS' || s.statut === this.activeFilter;
@@ -65,6 +80,98 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
         (s.description ?? '').toLowerCase().includes(this.searchQuery.toLowerCase());
       return matchFilter && matchSearch;
     });
+  }
+
+  /** Sous-ensemble de `filtered` correspondant à la page courante. */
+  get paginated(): SignalementResponse[] {
+    const total = this.filtered.length;
+    if (total === 0) return [];
+    // Si la page courante est hors bornes (ex : changement de filtre), on clamp.
+    const maxPage = Math.max(0, Math.ceil(total / this.pageSize) - 1);
+    if (this.currentPage > maxPage) this.currentPage = maxPage;
+    const start = this.currentPage * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  /** Liste compacte des numéros de page à afficher (avec ellipses éventuelles). */
+  get pageNumbers(): (number | '…')[] {
+    const total   = this.totalPages;
+    const current = this.currentPage;                // 0-based
+    const out: (number | '…')[] = [];
+
+    if (total <= 7) {
+      for (let i = 0; i < total; i++) out.push(i);
+      return out;
+    }
+
+    // Toujours la première
+    out.push(0);
+
+    const windowStart = Math.max(1, current - 1);
+    const windowEnd   = Math.min(total - 2, current + 1);
+
+    if (windowStart > 1) out.push('…');
+    for (let i = windowStart; i <= windowEnd; i++) out.push(i);
+    if (windowEnd < total - 2) out.push('…');
+
+    // Toujours la dernière
+    out.push(total - 1);
+    return out;
+  }
+
+  /** Fenêtre d'affichage : "Affichage 1–12 sur 47" */
+  get pageRangeStart(): number {
+    return this.filtered.length === 0 ? 0 : this.currentPage * this.pageSize + 1;
+  }
+  get pageRangeEnd(): number {
+    return Math.min((this.currentPage + 1) * this.pageSize, this.filtered.length);
+  }
+
+  goToPage(p: number | '…'): void {
+    if (p === '…') return;
+    if (p < 0 || p >= this.totalPages || p === this.currentPage) return;
+    this.currentPage = p;
+    this.scrollGridIntoView();
+    this.animateCards();
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.scrollGridIntoView();
+      this.animateCards();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.scrollGridIntoView();
+      this.animateCards();
+    }
+  }
+
+  changePageSize(n: number | string): void {
+    const size = typeof n === 'string' ? parseInt(n, 10) : n;
+    if (!size || size === this.pageSize) return;
+    this.pageSize    = size;
+    this.currentPage = 0;
+    this.animateCards();
+  }
+
+  /** Réinitialise la pagination (appelé quand la recherche change). */
+  onSearchChanged(): void {
+    this.currentPage = 0;
+  }
+
+  private scrollGridIntoView(): void {
+    if (typeof document === 'undefined') return;
+    const el = document.querySelector('.signalements-grid');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   constructor(
@@ -156,6 +263,7 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
       new Date(b.dateSignalement).getTime() - new Date(a.dateSignalement).getTime()
     );
     this.updateFilters();
+    this.currentPage = 0;
     this.loading = false;
 
     if (this.viewMode === 'map') {
@@ -182,6 +290,7 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
     this.viewScope    = scope;
     this.activeFilter = 'TOUS';
     this.searchQuery  = '';
+    this.currentPage  = 0;
     this.loading      = true;
     this.error        = null;
 
@@ -204,6 +313,7 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
 
   changeRadius(km: number): void {
     this.proximiteKm = km;
+    this.currentPage = 0;
     if (this.viewScope === 'proximite' && this.userLat && this.userLng) {
       this.loading = true;
       if (this.viewMode === 'map') this.destroyMap(); // réinitialisé dans onData()
@@ -223,6 +333,7 @@ export class SignalementComponent implements OnInit, AfterViewInit, OnDestroy {
   setFilter(key: string): void {
     if (key === this.activeFilter) return;
     this.activeFilter = key;
+    this.currentPage  = 0;
     // Délai nécessaire : Angular doit rendre les nouvelles cartes
     // avant que GSAP puisse les animer (sinon animation sur l'ancien DOM)
     if (typeof gsap !== 'undefined') {

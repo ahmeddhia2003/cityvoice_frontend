@@ -133,10 +133,12 @@ export class ProfileComponent implements OnInit {
 
     this.userService.getById(auth.userId).subscribe({
       next: (u) => {
-        this.user = u;
-        this.loading = false;
-        this.photoPreview = u.photo || null;
-        this.photoError = '';
+        this.user           = u;
+        this.loading        = false;
+        this.photoPreview   = u.photo || null;
+        this.photoError     = '';
+        this.whatsappNotifs = u.whatsappNotifs ?? false;
+        this.smsNotifs      = u.smsNotifs      ?? false;
         this.selectedAgentStatus = u.agentStatus || 'DISPONIBLE';
         this.infoForm.patchValue({
           nom: u.nom,
@@ -663,6 +665,87 @@ Utilise des emojis. Sois direct et authentique.`;
     if (index >= 60) return 'Bon';
     if (index >= 40) return 'Moyen';
     return 'À améliorer';
+  }
+
+  // ── WhatsApp notifications (CallMeBot) ──────────────────────
+  whatsappNotifs    = false;
+  savingWhatsapp    = false;
+  whatsappMsg       = '';
+  whatsappSuccess   = true;
+
+  // ── SMS notifications (canal alternatif) ────────────────────
+  smsNotifs         = false;
+  savingSms         = false;
+  smsMsg            = '';
+  smsSuccess        = true;
+
+  toggleWhatsapp(): void {
+    if (!this.user?.telephone) return;
+    if (this.savingWhatsapp) return;
+
+    this.savingWhatsapp = true;
+    this.whatsappMsg    = '';
+
+    const newVal = !this.whatsappNotifs;
+
+    this.http.patch<{ whatsappNotifs: boolean; message: string }>(
+      `${environment.apiUrl}/api/users/${this.user.id}/whatsapp-notifs`,
+      { whatsappNotifs: newVal }
+    ).subscribe({
+      next: (res) => {
+        this.whatsappNotifs  = res.whatsappNotifs;
+        this.whatsappMsg     = res.message ||
+          (res.whatsappNotifs ? 'Notifications WhatsApp activées ✓' : 'Notifications WhatsApp désactivées');
+        this.whatsappSuccess = true;
+        this.savingWhatsapp  = false;
+        if (this.user) this.user.whatsappNotifs = res.whatsappNotifs;
+      },
+      error: (err) => {
+        this.savingWhatsapp  = false;
+        this.whatsappSuccess = false;
+        const errData = err?.error;
+        if (errData?.error === 'PHONE_REQUIRED') {
+          this.whatsappMsg = 'Ajoutez un numéro de téléphone dans l\'onglet Informations.';
+        } else {
+          this.whatsappMsg = 'Erreur lors de la mise à jour. Réessayez.';
+        }
+      }
+    });
+  }
+
+  // ── Toggle SMS ─────────────────────────────────────────────
+  toggleSms(): void {
+    if (!this.user?.telephone) return;
+    if (this.savingSms) return;
+
+    this.savingSms = true;
+    this.smsMsg    = '';
+
+    const newVal = !this.smsNotifs;
+
+    this.http.patch<{ smsNotifs: boolean; message: string }>(
+      `${environment.apiUrl}/api/users/${this.user.id}/sms-notifs`,
+      { smsNotifs: newVal }
+    ).subscribe({
+      next: (res) => {
+        this.smsNotifs  = res.smsNotifs;
+        this.smsMsg     = res.message ||
+          (res.smsNotifs ? 'Notifications SMS activées ✓' : 'Notifications SMS désactivées');
+        this.smsSuccess = true;
+        this.savingSms  = false;
+        if (this.user) this.user.smsNotifs = res.smsNotifs;
+      },
+      error: (err) => {
+        this.savingSms  = false;
+        this.smsSuccess = false;
+        const errData = err?.error;
+        if (errData?.error === 'PHONE_REQUIRED') {
+          this.smsMsg = 'Ajoutez un numéro de téléphone dans l\'onglet Informations.';
+        } else {
+          this.smsMsg = 'Erreur lors de la mise à jour. Réessayez.';
+        }
+      }
+    });
   }
 
   // ============================================

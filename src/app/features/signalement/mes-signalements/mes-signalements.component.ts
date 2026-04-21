@@ -24,9 +24,36 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   activeFilter  = 'TOUS';
   searchQuery   = '';
 
+  /* ── Pagination ──────────────────────────────── */
+  currentPage         = 0;
+  readonly pageSize   = 8;
+
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.pageSize));
+  }
+
+  get paged(): SignalementResponse[] {
+    const start = this.currentPage * this.pageSize;
+    return this.filtered.slice(start, start + this.pageSize);
+  }
+
   /* ── Vote ────────────────────────────────── */
   votedIds  = new Set<number>();
   votingIds = new Set<number>();
+
+  /* ── Weather banner ──────────────────────── */
+  weatherBannerHeight  = 0;
+  festiveBannerHeight  = 0;
+
+  /* ── Detail popup ────────────────────────── */
+  selectedSig: SignalementResponse | null = null;
+
+  openPopup(sig: SignalementResponse): void {
+    this.selectedSig = sig;
+  }
+  closePopup(): void {
+    this.selectedSig = null;
+  }
 
   /* ── Toast ───────────────────────────────── */
   toast: { msg: string; type: 'success' | 'error' } | null = null;
@@ -94,6 +121,7 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   setFilter(key: string): void {
     if (key === this.activeFilter) return;
     this.activeFilter = key;
+    this.currentPage = 0;
     this.applyFilter();
     if (typeof gsap !== 'undefined') {
       gsap.fromTo('.ms-card',
@@ -104,6 +132,7 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(): void {
+    this.currentPage = 0;
     this.filtered = this.signalements.filter(s => {
       const matchF = this.activeFilter === 'TOUS' || s.statut === this.activeFilter;
       const matchS = !this.searchQuery
@@ -262,7 +291,7 @@ export class MesSignalementsComponent implements OnInit, OnDestroy {
   }
 
   /* ── Navigation ──────────────────────────── */
-  goNew(): void { this.router.navigate(['/signaler/new']); }
+  goNew(): void { this.router.navigate(['/signaler/choix']); }
 
   /* ── Helpers ─────────────────────────────── */
   typeLabel(type: string): string {

@@ -132,6 +132,19 @@
              ÉTAPE 1 — Photo + GPS  →  Bouton IA
         ══════════════════════════════════════════════════ -->
         <div class="step-content" *ngIf="currentStep===1">
+
+          <!-- ── Hint météo (visible seulement si arrivée depuis la bannière) ── -->
+          <div class="weather-hint" *ngIf="weatherPreselectedType">
+            <span class="weather-hint__icon">🌧️</span>
+            <div class="weather-hint__text">
+              <strong>Type pré-sélectionné :</strong>
+              {{ weatherPreselectedType.emoji }} {{ weatherPreselectedType.label }}
+            </div>
+            <span class="weather-hint__sub">
+              Votre localisation est en cours de détection — confirmez-la puis passez à l'étape suivante.
+            </span>
+          </div>
+
           <div class="step-header">
             <h2 class="step-title">Photo & Localisation</h2>
             <p class="step-sub">
@@ -288,6 +301,25 @@
             </div>
             <div class="address-result address-result--empty" *ngIf="!form.get('adresse')?.value">
               Activez le GPS ou cliquez sur la carte pour obtenir l'adresse.
+            </div>
+          </div>
+
+          <!-- ══ NOTE : 2 chemins de traitement ══ -->
+          <div class="treatment-paths-note">
+            <div class="tpn-path tpn-path--ai">
+              <div class="tpn-icon">⚡</div>
+              <div class="tpn-body">
+                <div class="tpn-title">Avec l'IA <span class="tpn-badge tpn-badge--fast">Plus rapide</span></div>
+                <div class="tpn-desc">L'IA détecte le type, la priorité et assigne automatiquement une équipe. Votre signalement passe directement <strong>En cours</strong>.</div>
+              </div>
+            </div>
+            <div class="tpn-sep">ou</div>
+            <div class="tpn-path tpn-path--manual">
+              <div class="tpn-icon">📋</div>
+              <div class="tpn-body">
+                <div class="tpn-title">Sans l'IA</div>
+                <div class="tpn-desc">Votre signalement reste <strong>En attente</strong> jusqu'à ce qu'un admin examine et assigne manuellement une équipe.</div>
+              </div>
             </div>
           </div>
 

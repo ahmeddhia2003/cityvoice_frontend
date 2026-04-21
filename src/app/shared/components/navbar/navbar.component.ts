@@ -10,6 +10,8 @@ import { SoundService } from '../../../core/services/sound.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
 import { NotificationService, AppNotification } from '../../../core/services/notification.service';
+import { ThemeService } from '../../../core/services/theme.service';
+import { AutoTranslateService } from '../../../core/services/auto-translate.service';
 declare const gsap: any;
 
 @Component({
@@ -45,9 +47,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     public lang: LangService,
     public sound: SoundService,
+    public theme: ThemeService,
     private authService: AuthService,
     private userService: UserService,
     public notifSvc: NotificationService,
+    public autoTranslate: AutoTranslateService,
     private el: ElementRef,
     private router: Router,
   ) {}
@@ -196,11 +200,24 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     return NotificationService.timeAgo(dateStr);
   }
 
-  setLang(l: Lang): void { this.sound.nav(); this.lang.switch(l); }
+  setLang(l: Lang): void {
+    this.sound.nav();
+    // Conserver la synchronisation avec le LangService existant (textes i18n manuels)
+    this.lang.switch(l);
+    // Traduction AUTOMATIQUE du reste de la page via l'API
+    this.autoTranslate.switch(l).catch(err =>
+      console.warn('[navbar] auto-translate failed', err)
+    );
+  }
 
   toggleSound(): void {
     this.sound.toggle();
     if (this.sound.isEnabled) this.sound.click();
+  }
+
+  toggleTheme(event: MouseEvent): void {
+    this.sound.nav();
+    this.theme.toggle(event.currentTarget as HTMLElement);
   }
 
   onBtnClick(): void { this.sound.click(); }
@@ -229,7 +246,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   getRoleLabel(): string {
     const map: Record<string, string> = {
       CITOYEN: 'Citoyen',
-      CHEF_EQUIPE: 'Chef d\'equipe',
+      CHEF_EQUIPE: 'Chef d\'équipe',
       MEMBRE_EQUIPE: 'Agent terrain',
       MODERATEUR: 'Moderateur',
       ADMIN_VILLE: 'Admin',
@@ -327,5 +344,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.showToast(latest.message, 'success');
     this.sound.notification();
+  }
+
+  isChefEquipe(): boolean {
+    return this.currentUser?.role === 'CHEF_EQUIPE';
   }
 }

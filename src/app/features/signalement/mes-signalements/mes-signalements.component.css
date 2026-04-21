@@ -24,7 +24,7 @@
 .ms-toast--error   { background: #E8532A; color: #fff; }
 
 /* ── Page ───────────────────────────────────────────────── */
-.ms-page    { background: var(--cream, #F7F4EF); min-height: 100vh; padding: 96px 0 70px; }
+.ms-page    { background: var(--cream, #F7F4EF); min-height: 100vh; padding: calc(96px + var(--banner-offset, 0px)) 0 70px; }
 .container  { max-width: 840px; margin: 0 auto; padding: 0 20px; }
 
 /* ── Header ─────────────────────────────────────────────── */
@@ -356,6 +356,21 @@
   color: var(--ink-3);
 }
 
+/* ── Detail Button ───────────────────────────────────────── */
+.btn-detail {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px;
+  background: rgba(12,31,63,.05);
+  border: 1.5px solid rgba(12,31,63,.1);
+  color: #6B7280; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .18s;
+}
+.btn-detail:hover {
+  background: #0C1F3F; border-color: #0C1F3F;
+  color: #ECE8E1; transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(12,31,63,.18);
+}
+
 /* ── Vote Button ─────────────────────────────────────────── */
 .btn-vote {
   display: flex;
@@ -448,3 +463,187 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE — :host-context ensures component specificity
+   wins over global html.dark overrides
+   ══════════════════════════════════════════════════════════ */
+:host-context(html.dark) .ms-stat {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .ms-stat:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+:host-context(html.dark) .ms-filter-tab {
+  background: #1C2333;
+  color: #A8B8D0;
+  border-color: rgba(255,255,255,.09);
+}
+:host-context(html.dark) .ms-filter-tab:hover {
+  border-color: #E2EAF8;
+  color: #E2EAF8;
+}
+:host-context(html.dark) .ms-filter-tab.active {
+  background: #E2EAF8;
+  color: #0D1117;
+  border-color: #E2EAF8;
+}
+
+:host-context(html.dark) .ms-search {
+  background: #161B22;
+  border-color: rgba(255,255,255,.09);
+  color: #A8B8D0;
+}
+:host-context(html.dark) .ms-search:focus-within {
+  border-color: #E2EAF8;
+}
+
+:host-context(html.dark) .ms-card {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .ms-card:hover {
+  box-shadow: 0 10px 32px rgba(0,0,0,.4);
+}
+
+:host-context(html.dark) .ms-card-footer {
+  border-top-color: rgba(255,255,255,.07);
+}
+
+/* Status badges — semantic colours adapted for dark */
+:host-context(html.dark) .statut-EN_ATTENTE {
+  background: rgba(232, 83, 42, 0.15);
+  color: #FF8A65;
+}
+:host-context(html.dark) .statut-EN_COURS {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+}
+:host-context(html.dark) .statut-RESOLU {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+}
+:host-context(html.dark) .statut-REJETE {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+}
+
+/* Priority pills */
+:host-context(html.dark) .prio-urgente {
+  background: rgba(185, 28, 28, 0.2);
+  color: #FCA5A5;
+}
+:host-context(html.dark) .prio-haute {
+  background: rgba(194, 65, 12, 0.2);
+  color: #FDBA74;
+}
+:host-context(html.dark) .prio-moyenne {
+  background: rgba(161, 98, 7, 0.2);
+  color: #FDE047;
+}
+:host-context(html.dark) .prio-faible {
+  background: rgba(21, 128, 61, 0.2);
+  color: #86EFAC;
+}
+
+:host-context(html.dark) .btn-vote {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.1);
+  color: #A8B8D0;
+}
+:host-context(html.dark) .btn-vote:not([disabled]):hover {
+  background: rgba(16,185,129,.12);
+  border-color: #10B981;
+  color: #10B981;
+}
+
+:host-context(html.dark) .btn-detail {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.1);
+  color: #A8B8D0;
+}
+:host-context(html.dark) .btn-detail:hover {
+  background: #E2EAF8;
+  border-color: #E2EAF8;
+  color: #0D1117;
+}
+
+:host-context(html.dark) .ms-ia-row {
+  background: rgba(255,255,255,.04);
+}
+
+:host-context(html.dark) .ms-progress-steps {
+  color: rgba(255,255,255,.2);
+}
+:host-context(html.dark) .ms-progress-steps span.done {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .prog-dot {
+  background: rgba(255,255,255,.15);
+}
+:host-context(html.dark) .ms-progress-steps span.done .prog-dot {
+  background: #E2EAF8;
+}
+
+/* ── Results row ─────────────────────────────────────────── */
+.ms-results-row {
+  font-size: 12.5px;
+  color: var(--ink-3, #8A95A3);
+  margin: 0 0 12px;
+}
+
+/* ── Pagination ─────────────────────────────────────────── */
+.ms-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 20px 0 8px;
+}
+
+.ms-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1.5px solid rgba(12,31,63,.12);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--navy, #0C1F3F);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.ms-page-btn:hover:not(:disabled):not(.ms-page-btn--active) {
+  background: #F0F3FA;
+  border-color: rgba(12,31,63,.25);
+}
+
+.ms-page-btn--active {
+  background: var(--navy, #0C1F3F);
+  color: #fff;
+  border-color: var(--navy, #0C1F3F);
+}
+
+.ms-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+:host-context(html.dark) .ms-page-btn {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+  color: #E2EAF8;
+}
+
+:host-context(html.dark) .ms-page-btn--active {
+  background: #4A90D9;
+  border-color: #4A90D9;
+  color: #fff;
+}

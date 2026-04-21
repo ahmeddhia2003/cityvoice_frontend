@@ -26,6 +26,11 @@ export interface UserDto {
   trustLevel:       string;
   emailVerified:    boolean;
 
+  // ── Notifications ────────────────────────────────────
+  whatsappNotifs:   boolean;
+  smsNotifs:        boolean;   // canal alternatif si pas de WhatsApp / préférence utilisateur
+  callmebotApiKey:  string;
+
   // ── Champs calculés ──────────────────────────────────
   statut: string;       // ACTIF | NOUVEAU | INCOMPLET | EN_ATTENTE_VERIFICATION | SUSPENDU
   civicIndex:       number;   // 0-100, -1 si non citoyen
@@ -127,6 +132,10 @@ export class UserService {
 
   getById(id: string): Observable<UserDto> {
     return this.http.get<UserDto>(`${this.URL}/${id}`);
+  }
+
+  getUserId(): string {
+    return localStorage.getItem('userId') ?? '';
   }
 
   update(id: string, data: Partial<UserDto> & { photo?: string }): Observable<UserDto> {

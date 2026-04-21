@@ -108,7 +108,7 @@
               <div class="cs-field"><span>Équipe</span><strong>{{ contrat.equipeLabel }}</strong></div>
               <div class="cs-field"><span>Code</span><strong>{{ contrat.equipeCode | uppercase }}</strong></div>
               <div class="cs-field"><span>Chef d'équipe</span>
-                <strong>{{ contrat.chefEquipeId ?? 'À attribuer par le module équipe' }}</strong>
+                <strong>{{ contrat.chefEquipeNom ?? contrat.chefEquipeId ?? 'À attribuer' }}</strong>
               </div>
               <div class="cs-field"><span>Délai d'intervention</span>
                 <strong>{{ contrat.delaiEstimeHeures ? contrat.delaiEstimeHeures + 'h' : '48h' }}</strong>
@@ -160,24 +160,49 @@
             <div class="cs-sig-block">
               <div class="cs-sig-role">Pour la Municipalité de Madina</div>
               <div class="cs-sig-stamp">
-                <!-- Cachet SVG compact -->
-                <svg width="90" height="90" viewBox="0 0 80 80" class="cs-cachet">
-                  <circle cx="40" cy="40" r="38" fill="rgba(12,31,63,0.04)" stroke="#0C1F3F" stroke-width="2"/>
-                  <circle cx="40" cy="40" r="30" fill="none" stroke="#0C1F3F" stroke-width="0.8"/>
-                  <path id="a1" d="M 10,40 a30,30 0 0,1 60,0" fill="none"/>
-                  <text font-size="5.5" font-family="Arial" font-weight="bold" fill="#0C1F3F" letter-spacing="1.1">
-                    <textPath href="#a1" startOffset="5%">• MUNICIPALITÉ DE MADINA •</textPath>
+                <!-- Cachet SVG officiel — haute résolution -->
+                <svg width="150" height="150" viewBox="0 0 200 200" class="cs-cachet" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Halo doux -->
+                  <circle cx="100" cy="100" r="96" fill="rgba(12,31,63,0.025)"/>
+                  <!-- Cercle extérieur épais -->
+                  <circle cx="100" cy="100" r="90" fill="none" stroke="#0C1F3F" stroke-width="3.5"/>
+                  <!-- Cercle intermédiaire (double trait) -->
+                  <circle cx="100" cy="100" r="84" fill="none" stroke="#0C1F3F" stroke-width="1"/>
+                  <!-- Cercle intérieur -->
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#0C1F3F" stroke-width="0.8"/>
+
+                  <!-- Texte circulaire haut -->
+                  <defs>
+                    <path id="arcTop"    d="M 24,100 a76,76 0 0,1 152,0" fill="none"/>
+                    <path id="arcBottom" d="M 24,100 a76,76 0 0,0 152,0" fill="none"/>
+                  </defs>
+                  <text font-size="11" font-family="Arial, sans-serif" font-weight="700" fill="#0C1F3F" letter-spacing="3">
+                    <textPath href="#arcTop" startOffset="50%" text-anchor="middle">MUNICIPALITÉ DE MADINA</textPath>
                   </text>
-                  <path id="a2" d="M 10,40 a30,30 0 0,0 60,0" fill="none"/>
-                  <text font-size="5.5" font-family="Arial" fill="#0C1F3F" letter-spacing="0.9">
-                    <textPath href="#a2" startOffset="12%">• TUNISIE • CITYVOICE •</textPath>
+                  <text font-size="9" font-family="Arial, sans-serif" font-weight="600" fill="#0C1F3F" letter-spacing="2">
+                    <textPath href="#arcBottom" startOffset="50%" text-anchor="middle">★ RÉPUBLIQUE TUNISIENNE ★ CITYVOICE ★</textPath>
                   </text>
-                  <text x="40" y="34" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#0C1F3F" font-family="Arial">MADINA</text>
-                  <text x="40" y="44" text-anchor="middle" font-size="13" fill="#E8532A">★</text>
-                  <text x="40" y="54" text-anchor="middle" font-size="6" fill="#0C1F3F" font-family="Arial" letter-spacing="1">OFFICIEL</text>
+
+                  <!-- Étoiles cardinales (gauche / droite) -->
+                  <text x="18" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+                  <text x="182" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+
+                  <!-- Bloc central -->
+                  <text x="100" y="86" text-anchor="middle" font-size="22" font-weight="800" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="2">MADINA</text>
+                  <text x="100" y="106" text-anchor="middle" font-size="20" fill="#E8532A" font-weight="700">★</text>
+                  <text x="100" y="122" text-anchor="middle" font-size="9" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="3">OFFICIEL</text>
+
+                  <!-- Numéro + date dans le cercle intérieur -->
+                  <line x1="58" y1="135" x2="142" y2="135" stroke="#0C1F3F" stroke-width="0.4" opacity="0.4"/>
+                  <text x="100" y="146" text-anchor="middle" font-size="7" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="0.8">
+                    N° {{ contrat.numeroContrat?.slice(-12) }}
+                  </text>
+                  <text x="100" y="156" text-anchor="middle" font-size="6.5" fill="#4B5563" font-family="Arial, sans-serif">
+                    {{ contrat.dateCreation | date:'dd/MM/yyyy' }}
+                  </text>
                 </svg>
               </div>
-              <div class="cs-sig-date">Le : {{ contrat.dateCreation | date:'dd/MM/yyyy' }}</div>
+              <div class="cs-sig-date">Cachet numérique authentifié</div>
             </div>
 
             <!-- Côté Chef d'équipe -->
@@ -205,74 +230,35 @@
 
       </div><!-- fin .cs-document -->
 
-      <!-- ══ PANNEAU D'ACTIONS ══ -->
-      <div class="cs-actions-panel" *ngIf="contrat.statut === 'EN_ATTENTE_SIGNATURE'">
-
-        <!-- Idle : boutons Accept / Refuse -->
-        <ng-container *ngIf="action === 'idle'">
-          <p class="cs-action-hint">Lisez attentivement le contrat avant de signer ou refuser.</p>
-          <div class="cs-action-btns">
-            <button class="cs-btn cs-btn-refuse" (click)="openRefusePanel()">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              Refuser le contrat
-            </button>
-            <button class="cs-btn cs-btn-accept" (click)="openSignPanel()">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-              Signer et accepter
-            </button>
-          </div>
-        </ng-container>
-
-        <!-- Panneau signature -->
-        <ng-container *ngIf="action === 'signing'">
-          <div class="cs-sign-panel">
-            <h3>Signature numérique</h3>
-            <p class="cs-sign-hint">Signez dans la zone ci-dessus (dans le contrat) puis confirmez.</p>
-            <div class="cs-sign-actions">
-              <button class="cs-btn cs-btn-ghost" (click)="clearSignature()">🗑 Effacer</button>
-              <button class="cs-btn cs-btn-outline" (click)="cancel()">Annuler</button>
-              <button class="cs-btn cs-btn-accept"
-                      [disabled]="signatureEmpty"
-                      (click)="accepter()">
-                ✅ Confirmer la signature
-              </button>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Panneau refus -->
-        <ng-container *ngIf="action === 'refusing'">
-          <div class="cs-refuse-panel">
-            <h3>Motif de refus</h3>
-            <textarea class="cs-motif-input" [(ngModel)]="motifRefus"
-                      placeholder="Expliquez pourquoi vous refusez ce contrat (capacité insuffisante, zone non couverte, matériel manquant…)"
-                      rows="3"></textarea>
-            <p class="cs-refuse-hint">
-              ⚠️ En cas de refus, le contrat sera automatiquement réassigné à une autre équipe spécialisée.
-            </p>
-            <div class="cs-sign-actions">
-              <button class="cs-btn cs-btn-outline" (click)="cancel()">Annuler</button>
-              <button class="cs-btn cs-btn-refuse"
-                      [disabled]="!motifRefus.trim()"
-                      (click)="refuser()">
-                ❌ Confirmer le refus
-              </button>
-            </div>
-          </div>
-        </ng-container>
-
-        <!-- Envoi en cours -->
-        <div class="cs-submitting" *ngIf="action === 'submitting'">
-          <div class="cs-spinner"></div>
-          <span>Enregistrement en cours…</span>
+      <!-- ══ PANNEAU ADMIN — lecture seule ══ -->
+      <!-- L'admin consulte le contrat mais ne peut PAS signer ni refuser.
+           Seul le chef d'équipe désigné peut effectuer ces actions depuis son espace. -->
+      <div class="cs-admin-readonly-banner">
+        <div class="cs-readonly-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
         </div>
-
-      </div><!-- fin cs-actions-panel -->
-
-      <!-- Contrat déjà traité -->
-      <div class="cs-already-done" *ngIf="contrat.statut !== 'EN_ATTENTE_SIGNATURE'">
-        <p>Ce contrat a déjà été traité : <strong>{{ statutLabel(contrat.statut) }}</strong></p>
-        <button class="cs-btn cs-btn-outline" (click)="goBack()">← Retour</button>
+        <div class="cs-readonly-body">
+          <ng-container *ngIf="contrat.statut === 'EN_ATTENTE_SIGNATURE'">
+            <strong>En attente de signature du chef d'équipe</strong>
+            <p>Ce contrat a été envoyé au chef de l'équipe <em>{{ contrat.equipeLabel }}</em>.
+               Seul le chef d'équipe désigné peut signer ou refuser ce contrat depuis son espace personnel.</p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'ACCEPTE'">
+            <strong>Contrat signé et accepté</strong>
+            <p>Ce contrat a été accepté par le chef d'équipe le {{ contrat.dateReponse | date:'dd/MM/yyyy' }}.</p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'REFUSE'">
+            <strong>Contrat refusé — réaffectation automatique</strong>
+            <p>Motif : <em>{{ contrat.motifRefus || 'Non précisé' }}</em></p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'REASSIGNE'">
+            <strong>Contrat réassigné à une autre équipe</strong>
+            <p>Une nouvelle affectation a été générée automatiquement.</p>
+          </ng-container>
+        </div>
       </div>
 
     </ng-container>

@@ -1,0 +1,172 @@
+/* ══════════════════════════════════════════════════
+   FESTIVE BANNER — Tunisian holidays
+   ══════════════════════════════════════════════════ */
+
+.fb-banner {
+  --fb-c:  #064E3B;
+  --fb-ce: #059669;
+
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 189;        /* under weather banner (190) */
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--fb-c) 0%, var(--fb-ce) 100%);
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  padding: 12px 24px;
+  box-shadow: 0 4px 28px rgba(0,0,0,.3);
+}
+
+/* Confetti canvas fills banner */
+.fb-confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Content layout ───────────────────────────────── */
+.fb-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fb-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Big emoji ────────────────────────────────────── */
+.fb-emoji {
+  font-size: 36px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.3));
+}
+
+.fb-emoji-swing {
+  animation: fb-swing 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes fb-swing {
+  0%, 100% { transform: rotate(-8deg); }
+  50%       { transform: rotate(8deg); }
+}
+
+/* ── Text ─────────────────────────────────────────── */
+.fb-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fb-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fb-ar {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.75);
+  direction: rtl;
+}
+
+.fb-msg {
+  font-size: 12.5px;
+  color: rgba(255,255,255,.85);
+  line-height: 1.45;
+  max-width: 560px;
+}
+
+/* Message opérationnel : "signalement traité à la reprise" */
+.fb-ops {
+  margin-top: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,.92);
+  background: rgba(0,0,0,.18);
+  border-left: 3px solid rgba(255,255,255,.55);
+  padding: 5px 10px;
+  border-radius: 4px;
+  line-height: 1.35;
+  max-width: 620px;
+  animation: fb-ops-fade 0.5s ease-out 0.35s both;
+}
+
+@keyframes fb-ops-fade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Right actions ────────────────────────────────── */
+.fb-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.fb-share-btn {
+  background: rgba(255,255,255,.92);
+  color: #0C1F3F;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background .18s, transform .18s;
+  white-space: nowrap;
+}
+.fb-share-btn:hover { background: #fff; transform: translateY(-1px); }
+
+.fb-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,.55);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color .18s, background .18s;
+  line-height: 1;
+}
+.fb-close:hover { color: #fff; background: rgba(255,255,255,.1); }
+
+/* ── Stars / sparkle shimmer (national) ──────────────── */
+.fb-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(255,255,255,.05) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(255,255,255,.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 768px) {
+  .fb-banner     { padding: 10px 14px; }
+  .fb-content    { flex-direction: column; align-items: flex-start; }
+  .fb-right      { width: 100%; }
+  .fb-msg        { font-size: 12px; }
+  .fb-emoji      { font-size: 28px; }
+}

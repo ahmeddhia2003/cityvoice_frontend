@@ -39,6 +39,7 @@ export interface ContratTravailResponse {
   equipeCode:        string;
   equipeLabel:       string;
   chefEquipeId:      string | null;
+  chefEquipeNom:     string | null;
   signalement:       SignalementEmbed;
   delaiEstimeHeures: number | null;
   motifRefus:        string | null;
@@ -93,6 +94,19 @@ export class ContratTravailService {
 
   getStats(): Observable<ContratStats> {
     return this.http.get<ContratStats>(`${this.URL}/stats`);
+  }
+
+  getContratsParChef(chefId: string): Observable<ContratTravailResponse[]> {
+    return this.http.get<ContratTravailResponse[]>(`${this.URL}/chef/${chefId}`);
+  }
+
+  getContratsEquipeEnAttente(equipeCode: string): Observable<ContratTravailResponse[]> {
+    return this.http.get<ContratTravailResponse[]>(`${this.URL}/equipe/${equipeCode}/en-attente`);
+  }
+
+  /** Tous les contrats d'une équipe tous statuts — fallback si chefId non lié */
+  getContratsParEquipe(equipeCode: string): Observable<ContratTravailResponse[]> {
+    return this.http.get<ContratTravailResponse[]>(`${this.URL}/equipe/${equipeCode}`);
   }
 
   accepter(id: number, req: ContratReponseRequest, chefId: string): Observable<ContratTravailResponse> {

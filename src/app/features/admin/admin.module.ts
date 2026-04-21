@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { AdminSidebarComponent } from './admin-sidebar/admin-sidebar.component';
@@ -28,6 +29,7 @@ import { ContratSigningComponent } from './contrats/contrat-signing.component';
     CommonModule,
     FormsModule,
     RouterModule,
+    HttpClientModule,
     AdminRoutingModule
   ],
   providers: [
