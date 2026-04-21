@@ -1,0 +1,262 @@
+/* ── Page ──────────────────────────────────────────── */
+.stats-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Header ────────────────────────────────────────── */
+.stats-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.stats-title {
+  font-family: var(--fd);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--navy, #0C1F3F);
+  letter-spacing: -.02em;
+}
+.stats-title em { font-style: italic; color: var(--ink-3, #9CA3AF); }
+.stats-sub { font-size: 13px; color: var(--ink-3, #9CA3AF); margin-top: 3px; }
+
+.btn-back {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border, #E5E7EB);
+  background: var(--white, #fff);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2, #4B5563);
+  cursor: pointer;
+  font-family: var(--fb);
+  transition: all .18s;
+}
+.btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
+/* ── Loading ───────────────────────────────────────── */
+.ae-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px;
+  color: var(--ink-3, #9CA3AF);
+  font-size: 13px;
+}
+.ae-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--border, #E5E7EB);
+  border-top-color: var(--coral, #E8532A);
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Animations ────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fillBar {
+  from { width: 0 !important; }
+  to   { /* width set inline */ }
+}
+
+.kpi-card {
+  background: var(--white, #fff);
+  border: 1.5px solid var(--border, #E5E7EB);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(12,31,63,.10);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--ka);
+  border-radius: 0 0 2px 2px;
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ── KPI Content ───────────────────────────────────── */
+.kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.kpi-icon { font-size: 22px; }
+.kpi-trend {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: rgba(232,83,42,.1);
+  color: var(--coral, #E8532A);
+}
+.kpi-num {
+  font-family: var(--fd);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--navy, #0C1F3F);
+  letter-spacing: -.02em;
+  line-height: 1;
+  margin-bottom: 5px;
+  transition: all 0.1s;
+}
+.kpi-num-sm {
+  font-size: 18px !important;
+  letter-spacing: 0 !important;
+}
+.kpi-label {
+  font-size: 11px;
+  color: var(--ink-3, #9CA3AF);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ── Progress Bar ──────────────────────────────────── */
+.kpi-progress {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  margin: 10px 0 8px;
+  overflow: hidden;
+}
+.kpi-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 2s cubic-bezier(.25,.46,.45,.94);
+  animation: fillBar 2s cubic-bezier(.25,.46,.45,.94) forwards;
+}
+
+/* ── Grid ──────────────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.chart-full { grid-column: span 2; }
+
+/* ── Chart Cards ───────────────────────────────────── */
+.chart-card {
+  background: var(--white, #fff);
+  border: 1.5px solid var(--border, #E5E7EB);
+  border-radius: 14px;
+  padding: 20px;
+  transition: box-shadow .2s;
+}
+.chart-card:hover {
+  box-shadow: 0 6px 20px rgba(12,31,63,.07);
+}
+.chart-title {
+  font-family: var(--fd);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--navy, #0C1F3F);
+  margin-bottom: 16px;
+  letter-spacing: -.01em;
+}
+.chart-title em { font-style: italic; color: var(--ink-3, #9CA3AF); }
+
+/* ── Semaine ───────────────────────────────────────── */
+.semaine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.semaine-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  opacity: 0;
+  animation: fadeInUp 0.4s ease forwards;
+  transition: background .2s;
+}
+.semaine-item:hover { background: #f0f4ff; }
+.semaine-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #E8532A;
+  min-width: 85px;
+  text-transform: capitalize;
+}
+.semaine-info { flex: 1; min-width: 0; }
+.semaine-titre {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0C1F3F;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.semaine-meta {
+  font-size: 11px;
+  color: #8888A8;
+  margin-top: 2px;
+}
+.semaine-inscrits {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0C1F3F;
+  min-width: 70px;
+  text-align: center;
+}
+.semaine-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* ── Empty ─────────────────────────────────────────── */
+.empty-semaine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px;
+  color: #8888A8;
+  font-size: 13px;
+}
+
+/* ── Responsive ────────────────────────────────────── */
+@media (max-width: 900px) {
+  .kpi-row      { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid  { grid-template-columns: 1fr; }
+  .chart-full   { grid-column: span 1; }
+}
+@media (max-width: 600px) {
+  .kpi-row      { grid-template-columns: 1fr; }
+  .semaine-item { flex-wrap: wrap; }
+}

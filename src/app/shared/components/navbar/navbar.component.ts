@@ -12,6 +12,8 @@ import { UserService } from '../../../core/services/user.service';
 import { NotificationService, AppNotification } from '../../../core/services/notification.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { AutoTranslateService } from '../../../core/services/auto-translate.service';
+import { EvenementNotificationService } from '../../../core/services/evenement-notification.service';
+import { EvenementNotification } from '../../../features/evenement/models/evenement-notification.model';
 declare const gsap: any;
 
 @Component({
@@ -25,13 +27,15 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   notifsOpen = false;
   userMenuOpen = false;
 
+  // Auth
   isAuthenticated = false;
   authLoading = true;
   currentUser: any = null;
 
-  toastMsg = '';
+  // Toast
+  toastMsg  = '';
   toastType: 'success' | 'error' = 'success';
-  toast = false;
+  toast     = false;
   private toastTimeout: any;
 
   private authSub!: Subscription;
@@ -39,6 +43,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   private incomingNotifSub!: Subscription;
   private seenNotifIds = new Set<number>();
   private notificationsHydrated = false;
+  //notif evenement
+  evNotifications: EvenementNotification[] = [];
+  evNonLues = 0;
 
   notifications: AppNotification[] = [];
 
@@ -54,6 +61,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     public autoTranslate: AutoTranslateService,
     private el: ElementRef,
     private router: Router,
+    public notifService: EvenementNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -90,31 +98,47 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.userService.getById(user.userId).subscribe({
         next: (fullUser) => {
           this.currentUser = {
-            id: fullUser.id,
-            email: fullUser.email,
-            role: fullUser.role,
-            nom: fullUser.nom,
+            id:     fullUser.id,
+            email:  fullUser.email,
+            role:   fullUser.role,
+            nom:    fullUser.nom,
             points: fullUser.points || 0,
-            photo: fullUser.photo || null,
+            photo:  fullUser.photo || null,
             telephone: fullUser.telephone || null,
           };
           this.authLoading = false;
           this.animateUserIn();
           this.notifSvc.init();
+          // notif
+          this.notifService.init(user.userId);
+          this.notifService.getNotifications().subscribe(notifs => {
+            this.evNotifications = notifs;
+          });
+          this.notifService.getNonLues().subscribe(count => {
+            this.evNonLues = count;
+          });
         },
         error: () => {
           this.currentUser = {
-            id: user.userId,
-            email: user.email,
-            role: user.role,
-            nom: user.email?.split('@')[0] || 'Utilisateur',
+            id:     user.userId,
+            email:  user.email,
+            role:   user.role,
+            nom:    user.email?.split('@')[0] || 'Utilisateur',
             points: 0,
-            photo: null,
+            photo:  null,
             telephone: null,
           };
           this.authLoading = false;
           this.animateUserIn();
           this.notifSvc.init();
+          // notif
+          this.notifService.init(user.userId);
+          this.notifService.getNotifications().subscribe(notifs => {
+            this.evNotifications = notifs;
+          });
+          this.notifService.getNonLues().subscribe(count => {
+            this.evNonLues = count;
+          });
         }
       });
     } else {
@@ -126,6 +150,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // Animation d'apparition du bloc utilisateur
   private animateUserIn(): void {
     if (typeof gsap === 'undefined') return;
     setTimeout(() => {
@@ -133,7 +158,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       if (el) {
         gsap.fromTo(el,
           { opacity: 0, x: 20, scale: 0.92 },
-          { opacity: 1, x: 0, scale: 1, duration: .5, ease: 'back.out(1.6)' }
+          { opacity: 1, x: 0,  scale: 1, duration: .5, ease: 'back.out(1.6)' }
         );
       }
     }, 50);
@@ -161,7 +186,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.notifsOpen = false;
+    this.notifsOpen  = false;
     this.userMenuOpen = false;
   }
 
@@ -171,24 +196,35 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.notifsOpen && typeof gsap !== 'undefined') {
       setTimeout(() => {
         gsap.fromTo('.nd-item',
-          { opacity: 0, y: 8 },
-          { opacity: 1, y: 0, duration: .3, stagger: .05, ease: 'power2.out' }
+          { opacity:0, y:8 },
+          { opacity:1, y:0, duration:.3, stagger:.05, ease:'power2.out' }
         );
       }, 10);
     }
   }
 
   toggleUserMenu(): void { this.userMenuOpen = !this.userMenuOpen; this.sound.nav(); }
-  closeUserMenu(): void { this.userMenuOpen = false; }
+  closeUserMenu():  void { this.userMenuOpen = false; }
 
   readNotif(n: AppNotification): void {
     this.notifSvc.marquerLue(n);
     if (n.lien) this.router.navigate([n.lien]);
   }
 
+  //notif
+  readNotiftass(n: EvenementNotification): void {
+    if (!n.lu) {
+      this.notifService.marquerLue(n.id);
+    }
+  }
+
   markAllRead(e: Event): void {
     e.stopPropagation();
     this.notifSvc.marquerToutesLues();
+    const user = this.authService.getCurrentUser();
+    if (user?.userId) {
+      this.notifService.marquerToutesLues(user.userId);
+    }
     this.sound.toggle2(true);
   }
 
@@ -245,38 +281,39 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getRoleLabel(): string {
     const map: Record<string, string> = {
-      CITOYEN: 'Citoyen',
-      CHEF_EQUIPE: 'Chef d\'équipe',
+      CITOYEN:       'Citoyen',
+      CHEF_EQUIPE:   'Chef d\'équipe',
       MEMBRE_EQUIPE: 'Agent terrain',
-      MODERATEUR: 'Moderateur',
-      ADMIN_VILLE: 'Admin',
+      MODERATEUR:    'Modérateur',
+      ADMIN_VILLE:   'Admin',
     };
     return map[this.currentUser?.role ?? ''] ?? 'Utilisateur';
   }
 
   getRoleColor(): string {
     const map: Record<string, string> = {
-      CITOYEN: '#0D9B76',
-      CHEF_EQUIPE: '#3B82F6',
+      CITOYEN:       '#0D9B76',
+      CHEF_EQUIPE:   '#3B82F6',
       MEMBRE_EQUIPE: '#C9973E',
-      MODERATEUR: '#E8532A',
-      ADMIN_VILLE: '#7C3AED',
+      MODERATEUR:    '#E8532A',
+      ADMIN_VILLE:   '#7C3AED',
     };
     return map[this.currentUser?.role ?? ''] ?? '#8888A8';
   }
 
   getRoleBg(): string {
     const map: Record<string, string> = {
-      CITOYEN: 'rgba(13,155,118,.1)',
-      CHEF_EQUIPE: 'rgba(59,130,246,.1)',
+      CITOYEN:       'rgba(13,155,118,.1)',
+      CHEF_EQUIPE:   'rgba(59,130,246,.1)',
       MEMBRE_EQUIPE: 'rgba(201,151,62,.1)',
-      MODERATEUR: 'rgba(232,83,42,.1)',
-      ADMIN_VILLE: 'rgba(124,58,237,.1)',
+      MODERATEUR:    'rgba(232,83,42,.1)',
+      ADMIN_VILLE:   'rgba(124,58,237,.1)',
     };
     return map[this.currentUser?.role ?? ''] ?? 'rgba(136,136,168,.1)';
   }
 
   logout(): void {
+    // Animer la sortie du bloc user avant de déconnecter
     const el = document.querySelector('.user-menu-wrap');
     if (el && typeof gsap !== 'undefined') {
       gsap.to(el, {
@@ -289,6 +326,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private doLogout(): void {
+    this.notifService.deconnecter();
     this.authService.logout();
     this.userMenuOpen = false;
     this.sound.success();
@@ -299,9 +337,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   showToast(msg: string, type: 'success' | 'error'): void {
-    this.toastMsg = msg;
+    this.toastMsg  = msg;
     this.toastType = type;
-    this.toast = true;
+    this.toast     = true;
 
     setTimeout(() => {
       const el = document.querySelector('.nav-toast');
@@ -312,17 +350,17 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
       gsap.killTweensOf(el);
       gsap.fromTo(el,
-        { opacity: 0, x: 32 },
-        { opacity: 1, x: 0, duration: .35, ease: 'power3.out' }
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0,  duration: .4, ease: 'back.out(1.6)' }
       );
 
       if (this.toastTimeout) clearTimeout(this.toastTimeout);
       this.toastTimeout = setTimeout(() => {
         gsap.to(el, {
-          opacity: 0, x: 32, duration: .3, ease: 'power2.in',
+          opacity: 0, y: 30, duration: .35, ease: 'power2.in',
           onComplete: () => { this.toast = false; }
         });
-      }, 3500);
+      }, 3000);
     }, 50);
   }
 

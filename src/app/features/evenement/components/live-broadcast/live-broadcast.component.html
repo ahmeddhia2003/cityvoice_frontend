@@ -1,0 +1,151 @@
+<div class="broadcast-page">
+
+  <div class="broadcast-header">
+    <div class="broadcast-title">
+      🎙️ Diffusion Live
+      <span class="live-badge" *ngIf="isLive">🔴 EN DIRECT</span>
+    </div>
+    <div class="broadcast-spectateurs" *ngIf="isLive"
+         (click)="showSpectateurs = !showSpectateurs"
+         style="cursor:pointer">
+      👥 {{ spectateurs }} spectateur(s)
+      <span style="font-size:11px; opacity:0.7">▼</span>
+    </div>
+  </div>
+
+  <!-- Liste spectateurs -->
+  <div class="spectateurs-panel" *ngIf="showSpectateurs && spectateursList.length > 0">
+    <div class="spectateurs-title">👥 Spectateurs connectés</div>
+    <div class="spectateur-item" *ngFor="let s of spectateursList">
+      <span class="spectateur-name">{{ s.userName }}</span>
+      <span class="spectateur-time">{{ s.joinedAt }}</span>
+      <button class="ban-btn" (click)="bannirUser(s.userId)"
+              title="Bannir">🚫</button>
+    </div>
+  </div>
+
+  <div class="broadcast-erreur" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="broadcast-body">
+    <!-- Vidéo -->
+    <div class="broadcast-video-section">
+      <div class="broadcast-video-container">
+        <video #localVideo class="broadcast-video"
+               autoplay muted playsinline>
+        </video>
+        <div class="broadcast-overlay" *ngIf="!isLive">
+          <div class="overlay-icon">📹</div>
+          <p>Cliquez sur "Démarrer" pour lancer la diffusion</p>
+        </div>
+        <div class="broadcast-indicator" *ngIf="isLive">
+          <span class="live-dot"></span> EN DIRECT
+        </div>
+        <div class="camera-off-overlay" *ngIf="isLive && !cameraOn">
+          📷 Caméra désactivée
+        </div>
+      </div>
+
+      <!-- Message épinglé -->
+      <div class="pinned-message" *ngIf="pinnedMessage">
+        <span class="pin-icon">📌</span>
+        <span class="pin-text">{{ pinnedMessage.message }}</span>
+        <span class="pin-author">— {{ pinnedMessage.userName }}</span>
+      </div>
+
+      <!-- Contrôles -->
+      <div class="broadcast-controls">
+        <button class="ctrl-btn" *ngIf="!isLive"
+                [disabled]="loading" (click)="demarrerLive()">
+          {{ loading ? '⏳ Démarrage...' : '🔴 Démarrer le Live' }}
+        </button>
+
+        <ng-container *ngIf="isLive">
+          <button class="ctrl-btn ctrl-mic"
+                  [class.ctrl-off]="!micOn"
+                  (click)="toggleMic()"
+                  [title]="micOn ? 'Couper le micro' : 'Activer le micro'">
+            {{ micOn ? '🎙️' : '🔇' }}
+          </button>
+          <button class="ctrl-btn ctrl-cam"
+                  [class.ctrl-off]="!cameraOn"
+                  (click)="toggleCamera()"
+                  [title]="cameraOn ? 'Couper la caméra' : 'Activer la caméra'">
+            {{ cameraOn ? '📹' : '📷' }}
+          </button>
+          <button class="ctrl-btn ctrl-fs"
+                  (click)="toggleFullscreen()"
+                  title="Plein écran">
+            {{ isFullscreen ? '⛶' : '⛶' }} 🔲
+          </button>
+          <button class="ctrl-btn ctrl-qonly"
+                  [class.ctrl-active]="questionsOnly"
+                  (click)="toggleQuestionsOnly()"
+                  [title]="questionsOnly ? 'Désactiver mode questions' : 'Mode questions uniquement'">
+            ❓
+          </button>
+          <button class="ctrl-btn ctrl-stop"
+                  (click)="arreterLive()">
+            ⏹️ Arrêter
+          </button>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="broadcast-chat" *ngIf="isLive">
+      <div class="chat-header">
+        💬 Chat en direct
+        <span class="questions-badge" *ngIf="questionsOnly">
+          ❓ Questions uniquement
+        </span>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div *ngFor="let msg of chatMessages"
+             class="chat-msg"
+             [class.chat-msg-system]="msg.type === 'system'"
+             [class.chat-msg-admin]="msg.role === 'admin'">
+
+          <ng-container *ngIf="msg.type === 'system'">
+            <span class="chat-system-text">{{ msg.message }}</span>
+          </ng-container>
+
+          <ng-container *ngIf="msg.type !== 'system'">
+            <div class="chat-msg-header">
+              <span class="chat-username"
+                    [class.admin-name]="msg.role === 'admin'">
+                {{ msg.role === 'admin' ? '👑 ' : '' }}{{ msg.userName }}
+              </span>
+              <span class="chat-time">{{ msg.time }}</span>
+              <!-- Actions admin -->
+              <div class="chat-actions">
+                <button (click)="epinglerMessage(msg)" title="Épingler">📌</button>
+                <button (click)="supprimerMessage(msg.id)" title="Supprimer">🗑️</button>
+                <button *ngIf="msg.role !== 'admin'"
+                        (click)="bannirUser(msg.userId!)"
+                        title="Bannir">🚫</button>
+              </div>
+            </div>
+            <div class="chat-msg-text">{{ msg.message }}</div>
+          </ng-container>
+        </div>
+
+        <div *ngIf="chatMessages.length === 0" class="chat-empty">
+          Aucun message pour l'instant...
+        </div>
+      </div>
+
+      <div class="chat-input">
+        <input type="text"
+               [(ngModel)]="newMessage"
+               (keydown)="onEnter($event)"
+               placeholder="Message en tant qu'admin..."
+               class="chat-input-field">
+        <button class="chat-send-btn"
+                (click)="envoyerMessage()">
+          ➤
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

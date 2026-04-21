@@ -1,0 +1,676 @@
+<div class="ev-shell">
+
+  <!-- Back -->
+  <button class="ev-back" (click)="retour()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    {{ 'ev.detail.retour' | t }}
+  </button>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="ev-loading">
+    <div class="ev-spinner"></div>
+    <p>{{ 'ev.detail.chargement' | t }}</p>
+  </div>
+
+  <div *ngIf="evenement && !loading" class="ev-detail-wrapper">
+
+    <!-- ─── Hero Banner ─────────────────────────────────── -->
+    <div class="ev-hero-banner"
+         [style.background-image]="'url(' + (evenement.imageUrl || getImageDefaut(evenement.type)) + ')'">
+      <div class="ev-hero-overlay">
+        <!-- Pills en haut à gauche -->
+        <div class="ev-hero-pills">
+          <span class="ev-pill-type">{{ evenement.type }}</span>
+          <span class="ev-pill-statut" [ngClass]="getStatutClass(evenement.statut!)">
+            {{ getStatutLabel(evenement.statut!) }}
+          </span>
+        </div>
+        <!-- Contenu en bas -->
+        <div class="ev-hero-bottom">
+          <h1 class="ev-hero-title">{{ evenement.titre }}</h1>
+          <div class="ev-hero-chips">
+            <span class="ev-hero-chip">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ evenement.lieu }}
+            </span>
+            <span class="ev-hero-chip">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ evenement.dateDebut | date:'dd MMM yyyy, HH:mm' }}
+            </span>
+            <span class="ev-hero-chip">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+              {{ evenement.nbInscrits || 0 }} / {{ evenement.capaciteMax || '∞' }}
+            </span>
+            <span class="ev-hero-chip ev-hero-chip--price"
+                  [class.gratuit]="!evenement.estPayant">
+              {{ evenement.estPayant ? (evenement.prix + ' TND') : ('ev.list.gratuit' | t) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Body ──────────────────────────────────────────── -->
+    <div class="ev-detail-body">
+      <!-- Colonne gauche -->
+      <div class="ev-detail-left">
+
+        <div class="ev-detail-section">
+          <!-- Header avec dropdown traduire -->
+          <div class="ev-section-header">
+            <h2 class="ev-section-title">{{ 'ev.detail.description' | t }}</h2>
+
+            <div class="ev-translate-wrap">
+              <select class="ev-translate-select"
+                      (change)="traduire($any($event.target).value)"
+                      [disabled]="traductionLoading">
+                <option value="fr">{{ 'ev.detail.langue' | t }}</option>
+                <option value="fr">{{ 'ev.detail.lang.fr' | t }}</option>
+                <option value="en">{{ 'ev.detail.lang.en' | t }}</option>
+                <option value="ar">{{ 'ev.detail.lang.ar' | t }}</option>
+              </select>
+              <svg class="ev-select-arrow" width="14" height="14"
+                  fill="none" stroke="currentColor"
+                  stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Loading traduction -->
+          <div *ngIf="traductionLoading" class="ev-translate-loading">
+            <div class="ev-spinner-sm"></div>
+            <span>{{ 'ev.detail.traduction.cours' | t }}</span>
+          </div>
+
+          <!-- Description -->
+          <div *ngIf="!traductionLoading"
+              class="ev-desc-wrapper"
+              [class.ev-desc-rtl]="langueActive === 'ar'">
+
+            <span class="ev-lang-badge" *ngIf="langueActive !== 'fr'">
+              {{ langueActive === 'ar' ? ('ev.detail.lang.ar' | t) :
+                 langueActive === 'en' ? ('ev.detail.lang.en' | t) : '' }}
+              <button class="ev-lang-reset" (click)="traduire('fr')">✕</button>
+            </span>
+
+            <p class="ev-detail-desc"
+              [dir]="langueActive === 'ar' ? 'rtl' : 'ltr'">
+              {{ getDescription() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="ev-detail-section">
+          <h2 class="ev-section-title">{{ 'ev.detail.informations' | t }}</h2>
+          <div class="ev-meta-grid">
+            <div class="ev-meta-card">
+              <div class="ev-meta-card-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.lieu' | t }}</div>
+                <div class="ev-meta-card-value">{{ evenement.lieu }}</div>
+              </div>
+            </div>
+            <div class="ev-meta-card">
+              <div class="ev-meta-card-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.date.debut' | t }}</div>
+                <div class="ev-meta-card-value">{{ evenement.dateDebut | date:'EEEE dd MMMM yyyy, HH:mm' }}</div>
+              </div>
+            </div>
+            <div class="ev-meta-card" *ngIf="evenement.dateFin">
+              <div class="ev-meta-card-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.date.fin' | t }}</div>
+                <div class="ev-meta-card-value">{{ evenement.dateFin | date:'EEEE dd MMMM yyyy, HH:mm' }}</div>
+              </div>
+            </div>
+            
+            <div class="ev-meta-card">
+              <div class="ev-meta-card-icon">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.participants' | t }}</div>
+                <div class="ev-meta-card-value">
+                  {{ evenement.nbInscrits || 0 }} {{ 'ev.detail.inscrits' | t }}
+                  <span *ngIf="evenement.capaciteMax"> / {{ evenement.capaciteMax }} {{ 'ev.detail.places' | t }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Type de lieu — REMPLACE l'existant -->
+            <div class="ev-meta-card" *ngIf="evenement.typeLieu">
+              <div class="ev-meta-card-icon">🏛️</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.form.type.lieu' | t }}</div>
+                <div class="ev-meta-card-value">
+                  {{ getTypeLieuLabel(evenement.typeLieu) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Zone géographique — REMPLACE l'existant -->
+            <div class="ev-meta-card" *ngIf="evenement.zone">
+              <div class="ev-meta-card-icon">🗺️</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.form.zone' | t }}</div>
+                <div class="ev-meta-card-value">
+                  {{ getZoneLabel(evenement.zone) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Médias & Streaming — REMPLACE l'existant -->
+            <div class="ev-meta-card"
+                *ngIf="evenement.mediaPrevu !== undefined || evenement.streamingPrevu !== undefined">
+              <div class="ev-meta-card-icon">📺</div>
+              <div>
+                <div class="ev-meta-card-label">{{ 'ev.detail.diffusion' | t }}</div>
+                <div class="ev-meta-card-value" style="display:flex; flex-direction:column; gap:4px">
+                  <span style="color:#1a1a2e">
+                    📰 {{ evenement.mediaPrevu ? ('ev.form.media.oui' | t) : ('ev.form.media.non' | t) }}
+                  </span>
+                  <span style="color:#1a1a2e">
+                    {{ evenement.streamingPrevu ? '🔴' : '📡' }}
+                    {{ evenement.streamingPrevu ? ('ev.form.streaming.oui' | t) : ('ev.form.streaming.non' | t) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions — CITOYEN : publier brouillon -->
+        <div class="ev-detail-actions" *ngIf="evenement.statut === 'BROUILLON' && !isAdmin">
+          <button class="btn btn-primary" (click)="publier()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ 'ev.detail.publier.ev' | t }}
+          </button>
+        </div>
+
+        <!-- Actions — ADMIN uniquement -->
+        <div class="ev-detail-actions" *ngIf="isAdmin">
+          <button class="btn btn-outline" (click)="modifierEvenement()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            {{ 'ev.detail.modifier' | t }}
+          </button>
+          <button class="btn btn-primary" *ngIf="evenement.statut === 'BROUILLON'" (click)="publier()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ 'ev.detail.publier.btn' | t }}
+          </button>
+          <button class="btn btn-danger" *ngIf="evenement.statut === 'PUBLIE'" (click)="annuler()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            {{ 'ev.detail.annuler.ev' | t }}
+          </button>
+          <button class="btn btn-live"
+                  *ngIf="evenement.statut === 'PUBLIE'"
+                  (click)="allerLiveBroadcast()">
+            🔴 Démarrer Live
+          </button>
+        </div>
+        <div class="ev-detail-actions" 
+            *ngIf="!isAdmin && evenement.statut === 'PUBLIE'">
+          <button class="btn btn-primary"
+                  (click)="allerLiveWatch()">
+            📺 Regarder le Live
+          </button>
+        </div>
+        <div *ngIf="isAdmin && evenement" style="margin-top: 16px;">
+          <app-budget-prediction
+            [typeEvenement]="evenement.type"
+            [capaciteMax]="evenement.capaciteMax || 100"
+            [lieu]="evenement.lieu"
+            [typeLieu]="evenement.typeLieu || 'SALLE'"
+            [zone]="evenement.zone || 'CENTRE_VILLE'"
+            [mediaPrevu]="evenement.mediaPrevu || false"
+            [streamingPrevu]="evenement.streamingPrevu || false"
+            [estPayant]="evenement.estPayant || false"
+            [prix]="evenement.prix || 0"
+            [dateDebut]="evenement.dateDebut"
+            [dateFin]="evenement.dateFin || evenement.dateDebut"
+            (budgetPrédit)="onBudgetPredit($event)">
+          </app-budget-prediction>
+        </div>
+        <div *ngIf="isAdmin && evenement" style="margin-top: 24px;">
+          <app-sponsor-prediction
+            [typeEvenement]="evenement.type"
+            [capaciteMax]="evenement.capaciteMax || 100"
+            [lieu]="evenement.lieu"
+            [typeLieu]="evenement.typeLieu || 'SALLE'"
+            [zone]="evenement.zone || 'CENTRE_VILLE'"
+            [mediaPrevu]="evenement.mediaPrevu || false"
+            [streamingPrevu]="evenement.streamingPrevu || false"
+            [dateDebut]="evenement.dateDebut"
+            [dateFin]="evenement.dateFin || evenement.dateDebut"
+            [budgetSuggere]="budgetSuggerePred">
+          </app-sponsor-prediction>
+        </div>
+        <!-- Partage réseaux sociaux -->
+        <div class="ev-share">
+          <span class="ev-share-label">{{ 'ev.detail.partager' | t }}</span>
+
+          <!-- ✅ Indicateur chargement IA -->
+          <span *ngIf="shareLoading" 
+                style="font-size:11px; color:#8888A8; font-style:italic; display:flex; align-items:center; gap:4px;">
+            ⏳ Génération IA...
+          </span>
+
+          <!-- Facebook -->
+          <button class="ev-share-btn ev-share-fb"
+                  [disabled]="shareLoading"
+                  (click)="partagerFacebook()"
+                  title="Partager sur Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </button>
+
+          <!-- WhatsApp -->
+          <button class="ev-share-btn ev-share-wa"
+                  [disabled]="shareLoading"
+                  (click)="partagerWhatsapp()"
+                  title="Partager sur WhatsApp">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+          </button>
+
+          <!-- Twitter/X -->
+          <button class="ev-share-btn ev-share-tw"
+                  [disabled]="shareLoading"
+                  (click)="partagerTwitter()"
+                  title="Partager sur X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </button>
+
+          <!-- LinkedIn -->
+          <button class="ev-share-btn ev-share-li"
+                  [disabled]="shareLoading"
+                  (click)="partagerLinkedin()"
+                  title="Partager sur LinkedIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+          </button>
+
+          <!-- Copy — pas de disable car pas besoin d'IA -->
+          <button class="ev-share-btn ev-share-copy"
+                  (click)="copierLien()"
+                  title="Copier le lien">
+            <svg width="16" height="16" fill="none" stroke="currentColor"
+                stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="ev-detail-sidebar">
+        <div class="ev-price-card">
+          <div class="ev-price-header">
+            <span class="ev-price-label">{{ evenement.estPayant ? ('ev.detail.tarif' | t) : ('ev.detail.entree' | t) }}</span>
+            <span class="ev-price-val" [class.gratuit]="!evenement.estPayant">
+              {{ evenement.estPayant ? (evenement.prix + ' TND') : ('ev.detail.gratuite' | t) }}
+            </span>
+          </div>
+          <div *ngIf="evenement.capaciteMax" class="ev-cap-section">
+            <div class="ev-cap-header">
+              <span>{{ 'ev.detail.places.dispo' | t }}</span>
+              <span class="ev-cap-count" [style.color]="getCapaciteColor()">
+                {{ getPlacesRestantes() }} {{ 'ev.detail.restantes' | t }}
+              </span>
+            </div>
+            <div class="ev-cap-bar">
+              <div class="ev-cap-fill"
+                  [style.width.%]="getCapacitePercent()"
+                  [style.background]="getCapaciteColor()">
+              </div>
+            </div>
+            <div class="ev-cap-info">
+              {{ evenement.nbInscrits || 0 }} / {{ evenement.capaciteMax }} {{ 'ev.detail.participants' | t }}
+            </div>
+          </div>
+        </div>
+
+        <div class="ev-sponsors-card" *ngIf="sponsors.length > 0">
+          <h4 class="ev-sponsors-title">{{ 'sp.sponsors' | t }}</h4>
+          <div class="ev-sponsor-item" *ngFor="let s of sponsors">
+            <div class="ev-sponsor-niveau" [ngClass]="getNiveauClass(s.niveauSponsorat!)">
+              {{ s.niveauSponsorat }}
+            </div>
+            <div class="ev-sponsor-info">
+              <div class="ev-sponsor-name">{{ s.nomEntreprise }}</div>
+              <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="ev-sponsor-link">{{ 'sp.visiter' | t }}</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Countdown -->
+        <div class="ev-countdown-card" *ngIf="countdown">
+          <div class="ev-countdown-label">{{ 'ev.detail.commence.dans' | t }}</div>
+          <div class="ev-countdown-val">{{ countdown }}</div>
+        </div>
+
+        <!-- ─── Météo ─────────────────────────────────────────── -->
+        <div class="ev-meteo-card" *ngIf="meteo || meteoLoading">
+          <div class="ev-meteo-loading" *ngIf="meteoLoading">
+            <div class="ev-spinner"></div>
+          </div>
+          <div *ngIf="meteo && !meteoLoading">
+            <div class="ev-meteo-header">
+              <span class="ev-meteo-label">{{ 'ev.detail.meteo' | t }}</span>
+            </div>
+            <div class="ev-meteo-body">
+              <div class="ev-meteo-main">
+                <span class="ev-meteo-icon">{{ meteo.icon }}</span>
+                <span class="ev-meteo-temp">{{ meteo.temperature }}°C</span>
+              </div>
+              <div class="ev-meteo-desc">{{ meteo.description }}</div>
+              <div class="ev-meteo-details">
+                <span>💨 {{ meteo.windSpeed }} km/h</span>
+                <span>🌧️ {{ meteo.humidity }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton intéressé -->
+        <button class="ev-btn-interesse-detail"
+                [class.active]="interesse"
+                (click)="toggleInteresse()">
+          <svg width="16" height="16" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                    2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                    C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+                    c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          {{ interesse ? ('ev.detail.interesse.ok' | t) : ('ev.detail.interesse' | t) }}
+        </button>
+
+        <!-- google calendar-->
+        <button class="ev-btn-gcal"
+                (click)="ajouterAuCalendar()"
+                *ngIf="(inscriptionReussie || participantInscrit) && !isAdmin">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg"
+              width="16" height="16" alt="Google Calendar">
+          {{ 'ev.detail.calendar' | t }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Localisation -->
+    <app-evenement-map [evenement]="evenement" *ngIf="evenement">
+    </app-evenement-map>
+
+    <!-- ─── Événements similaires ─────────────────────────── -->
+    <div class="ev-similaires" *ngIf="evenementsSimilaires.length > 0">
+      <h2 class="ev-section-title">{{ 'ev.detail.similaires.titre' | t }}</h2>
+      <div class="ev-similaires-grid">
+        <div class="ev-sim-card" *ngFor="let ev of evenementsSimilaires"
+            (click)="router.navigate(['/evenements', ev.id])">
+          <div class="ev-sim-image">
+            <img [src]="ev.imageUrl || getImageDefaut(ev.type)" [alt]="ev.titre" loading="lazy">
+            <span class="pill" [ngClass]="getTypePill(ev.type)">{{ getTypeLabel(ev.type) }}</span>
+          </div>
+          <div class="ev-sim-body">
+            <h4 class="ev-sim-title">{{ ev.titre }}</h4>
+            <div class="ev-sim-meta">
+              <span>📍 {{ ev.lieu }}</span>
+              <span>📅 {{ ev.dateDebut | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <span class="ev-sim-prix" [class.gratuit]="!ev.estPayant">
+              {{ ev.estPayant ? (ev.prix + ' TND') : ('ev.list.gratuit' | t) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Inscription gratuite — CITOYEN seulement -->
+    <div class="ev-inscription-card"
+        *ngIf="evenement.statut === 'PUBLIE' && !isAdmin && !evenement.estPayant">
+      <div class="ev-inscription-header">
+        <div>
+          <h3>{{ 'ev.detail.inscrire' | t }}</h3>
+          <p>{{ 'ev.detail.confirmer.particip' | t }}</p>
+        </div>
+        <span class="pill pill-teal">{{ 'ev.detail.inscription.gratuite' | t }}</span>
+      </div>
+      <div class="ev-inscription-form" [formGroup]="inscriptionForm">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.detail.tel' | t }}</label>
+          <input type="tel" class="ev-input"
+                formControlName="telCitoyen"
+                placeholder="+216 XX XXX XXX">
+          <span style="font-size:11px; color:var(--ink3)">
+            {{ 'ev.detail.tel.hint' | t }}
+          </span>
+        </div>
+        <button class="btn btn-primary"
+                [disabled]="inscriptionLoading"
+                (click)="inscrire()">
+          <span *ngIf="inscriptionLoading" class="ev-btn-spinner"></span>
+          <svg *ngIf="!inscriptionLoading" width="14" height="14" fill="none"
+              stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ 'ev.detail.confirmer' | t }}
+        </button>
+        <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
+        <div *ngIf="succes" class="ev-alert ev-alert-success">{{ succes }}</div>
+      </div>
+    </div>
+
+    <!-- ✅ Inscription payante — CITOYEN seulement -->
+    <div class="ev-inscription-card"
+        *ngIf="evenement.statut === 'PUBLIE' && !isAdmin && evenement.estPayant">
+      <div class="ev-inscription-header">
+        <div>
+          <h3>{{ 'ev.detail.inscrire.payant' | t }}</h3>
+          <p>{{ 'ev.detail.inscrire.sub2' | t }}</p>
+        </div>
+        <span class="pill pill-coral">{{ evenement.prix }} TND</span>
+      </div>
+      <div class="ev-inscription-form" *ngIf="!afficherChoixPaiement" [formGroup]="inscriptionForm">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.detail.tel' | t }}</label>
+          <input type="tel" class="ev-input"
+                formControlName="telCitoyen"
+                placeholder="+216 XX XXX XXX">
+          <span style="font-size:11px; color:var(--ink3)">
+            {{ 'ev.detail.tel.hint' | t }}
+          </span>
+        </div>
+        <button class="btn btn-primary"
+                [disabled]="inscriptionLoading"
+                (click)="inscrire()">
+          <span *ngIf="inscriptionLoading" class="ev-btn-spinner"></span>
+          {{ 'ev.detail.paiement.choisir.btn' | t }}
+        </button>
+        <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
+      </div>
+      <div class="ev-payment-choice" *ngIf="afficherChoixPaiement">
+        <h4 class="ev-payment-title">{{ 'ev.detail.paiement.comment' | t }}</h4>
+        <p class="ev-payment-sub">{{ 'ev.detail.paiement.montant' | t }} <strong>{{ evenement.prix }} TND</strong></p>
+        <div class="ev-payment-options">
+          <div class="ev-payment-card ev-payment-online" (click)="payerEnLigne()">
+            <div class="ev-payment-icon">💳</div>
+            <div class="ev-payment-info">
+              <div class="ev-payment-name">{{ 'ev.detail.payer.ligne' | t }}</div>
+              <div class="ev-payment-desc">{{ 'ev.detail.stripe.desc' | t }}</div>
+            </div>
+            <div class="ev-payment-arrow">
+              <span *ngIf="inscriptionLoading" class="ev-btn-spinner"></span>
+              <span *ngIf="!inscriptionLoading">→</span>
+            </div>
+          </div>
+          <div class="ev-payment-card ev-payment-especes" (click)="payerEspeces()">
+            <div class="ev-payment-icon">💵</div>
+            <div class="ev-payment-info">
+              <div class="ev-payment-name">{{ 'ev.detail.payer.especes' | t }}</div>
+              <div class="ev-payment-desc">{{ 'ev.detail.especes.desc' | t }}</div>
+            </div>
+            <div class="ev-payment-arrow">→</div>
+          </div>
+        </div>
+        <button class="ev-payment-back" (click)="afficherChoixPaiement = false">{{ 'ev.detail.retour.btn' | t }}</button>
+        <div *ngIf="erreur" class="ev-alert ev-alert-danger">{{ erreur }}</div>
+      </div>
+    </div>
+
+    <!-- ✅ QR Code — CITOYEN seulement -->
+    <app-evenement-qrcode
+      *ngIf="inscriptionReussie && participantInscrit && evenement && !isAdmin"
+      [participant]="participantInscrit!"
+      [evenement]="evenement">
+    </app-evenement-qrcode>
+
+    <!-- ✅ Participants — ADMIN seulement -->
+    <div class="ev-participants-card" *ngIf="isAdmin">
+      <div class="ev-participants-header">
+        <div>
+          <h3>{{ 'ev.detail.participants.inscrits' | t }}</h3>
+          <p>{{ participants.length }} {{ 'ev.detail.participants.total' | t }}</p>
+        </div>
+        <div class="ev-participants-actions">
+          <button class="btn btn-outline" (click)="modifierEvenement()">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            {{ 'ev.detail.modifier.ev' | t }}
+          </button>
+          <button class="btn btn-primary"
+                  (click)="router.navigate(['/admin/scan'])">
+            <svg width="14" height="14" fill="none" stroke="currentColor"
+                 stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+              <path d="M14 14h3v3M17 20h3M20 17v3"/>
+            </svg>
+            {{ 'ev.detail.scanner.qr' | t }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Alertes admin -->
+      <div *ngIf="succes" class="ev-alert ev-alert-success" style="margin: 16px 24px 0">{{ succes }}</div>
+      <div *ngIf="erreur" class="ev-alert ev-alert-danger" style="margin: 16px 24px 0">{{ erreur }}</div>
+
+      <div class="ev-participants-loading" *ngIf="participantsLoading">
+        <div class="ev-spinner"></div>
+      </div>
+
+      <div class="ev-participants-table" *ngIf="!participantsLoading">
+        <table class="ev-ptable" *ngIf="participants.length > 0">
+          <thead>
+            <tr>
+              <th>{{ 'ev.detail.nom' | t }}</th>
+              <th>{{ 'ev.detail.email' | t }}</th>
+              <th>{{ 'ev.detail.inscrit.le' | t }}</th>
+              <th>{{ 'ev.detail.presence' | t }}</th>
+              <th>{{ 'ev.detail.actions' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of participants">
+              <td class="p-nom">{{ p.nomCitoyen }}</td>
+              <td class="p-email">{{ p.emailCitoyen }}</td>
+              <td class="p-date">{{ p.inscritLe | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="p-statut-badge"
+                      [class.statut-confirme]="p.statutPresence === 'CONFIRME'"
+                      [class.statut-attente]="p.statutPresence === 'EN_ATTENTE'"
+                      [class.statut-absent]="p.statutPresence === 'ABSENT'">
+                  {{ p.statutPresence === 'CONFIRME' ? ('ev.detail.present'   | t) :
+                     p.statutPresence === 'ABSENT'   ? ('ev.detail.absent'    | t) :
+                                                       ('ev.detail.en.attente'| t) }}
+                </span>
+              </td>
+              <td>
+                <div class="p-actions">
+                  <button class="p-btn p-btn-confirm"
+                          *ngIf="p.statutPresence === 'EN_ATTENTE'"
+                          (click)="confirmerPresence(p.id!)"
+                          title="Confirmer présence">
+                    <svg width="13" height="13" fill="none" stroke="currentColor"
+                         stroke-width="2.5" viewBox="0 0 24 24">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </button>
+                  <button class="p-btn p-btn-delete"
+                          (click)="supprimerParticipant(p.id!)"
+                          title="Désinscrire">
+                    <svg width="13" height="13" fill="none" stroke="currentColor"
+                         stroke-width="2" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14H6L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="ev-empty-participants" *ngIf="participants.length === 0">
+          <div style="font-size: 32px; margin-bottom: 10px">👥</div>
+          <div>{{ 'ev.detail.aucun.participant' | t }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Toast ────────────────────────────────────────── -->
+    <div class="ev-toast" *ngIf="toast" [class.ev-toast--error]="toastType === 'error'">
+      {{ toast }}
+    </div>
+  </div>
+</div>

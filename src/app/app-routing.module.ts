@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import {LandingComponent} from './features/landing/landing.component';
+import {AdminScanComponent} from './features/evenement/components/admin-scan/admin-scan.component';
 
 const routes: Routes = [
 
@@ -38,7 +39,7 @@ const routes: Routes = [
     path: 'evenements',
     loadChildren: () =>
       import('./features/evenement/evenement.module').then(m => m.EvenementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'projets',

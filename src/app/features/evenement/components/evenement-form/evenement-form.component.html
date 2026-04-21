@@ -1,0 +1,434 @@
+<div [class]="isAdminMode ? 'ae-form-shell' : 'ev-shell'">
+
+  <button class="ev-back" (click)="retour()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    {{ isAdminMode ? ('ev.form.retour.liste' | t) : ('ev.form.retour' | t) }}
+  </button>
+
+  <div class="ev-form-page">
+
+    <!-- Left — Form -->
+    <div class="ev-form-main">
+      <div class="ev-form-header">
+        <span class="pill pill-coral" style="margin-bottom:12px">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          {{ isEditMode ? ('ev.form.pill.modifier' | t) : ('ev.form.pill.nouveau' | t) }}
+        </span>
+        <h2 class="heading-display">
+          {{ isEditMode ? ('ev.form.heading.modifier' | t) : ('ev.form.heading.creer' | t) }}
+          <span class="italic" style="color:var(--ink3)">{{ 'ev.form.heading.em' | t }}</span>
+        </h2>
+        <p class="ev-form-sub">
+          {{ isEditMode ? ('ev.form.sub.modifier' | t) : ('ev.form.sub.creer' | t) }}
+        </p>
+      </div>
+
+      <div *ngIf="succes" class="ev-alert ev-alert-success">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ succes }}
+      </div>
+      <div *ngIf="erreur" class="ev-alert ev-alert-danger">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+        </svg>
+        {{ erreur }}
+      </div>
+
+      <div *ngIf="loading && isEditMode" class="ae-loading">
+        <div class="ae-spinner"></div>
+        <span>{{ 'ev.form.loading' | t }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()" class="ev-create-form"
+            *ngIf="!loading || !isEditMode">
+
+        <!-- ─── OCR Import ──────────────────────────────────── -->
+        <div class="ev-ocr-section">
+          <div class="ev-ocr-header">
+            <span class="ev-ocr-title">{{ 'ev.form.ocr.titre' | t }}</span>
+            <span class="ev-ocr-sub">{{ 'ev.form.ocr.sub' | t }}</span>
+          </div>
+
+          <div class="ev-ocr-langs">
+            <div class="ev-form-group">
+              <label class="ev-label">{{ 'ev.form.ocr.langue.affiche' | t }}</label>
+              <select class="ev-select-input" [(ngModel)]="langueAffiche"
+                      [ngModelOptions]="{standalone: true}">
+                <option value="fr">🇫🇷 {{ 'ev.detail.lang.fr' | t }}</option>
+                <option value="en">🇬🇧 {{ 'ev.detail.lang.en' | t }}</option>
+                <option value="ar">🇹🇳 {{ 'ev.detail.lang.ar' | t }}</option>
+              </select>
+            </div>
+            <div class="ev-form-group">
+              <label class="ev-label">{{ 'ev.form.ocr.langue.sortie' | t }}</label>
+              <select class="ev-select-input" [(ngModel)]="langueSortie"
+                      [ngModelOptions]="{standalone: true}">
+                <option value="fr">🇫🇷 {{ 'ev.detail.lang.fr' | t }}</option>
+                <option value="en">🇬🇧 {{ 'ev.detail.lang.en' | t }}</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="ev-ocr-upload" [class.ev-ocr-loading]="ocrLoading">
+            <input type="file" accept="image/*"
+                   (change)="onAfficheUpload($event)"
+                   [disabled]="ocrLoading"
+                   style="display:none">
+            <div *ngIf="!ocrLoading" class="ev-ocr-upload-content">
+              <span class="ev-ocr-icon">📎</span>
+              <span class="ev-ocr-upload-text">{{ 'ev.form.ocr.upload' | t }}</span>
+              <span class="ev-ocr-upload-hint">{{ 'ev.form.ocr.hint' | t }}</span>
+            </div>
+            <div *ngIf="ocrLoading" class="ev-ocr-upload-content">
+              <div class="ev-btn-spinner"></div>
+              <span class="ev-ocr-upload-text">{{ 'ev.form.ocr.analyse' | t }}</span>
+            </div>
+          </label>
+
+          <div *ngIf="ocrErreur" class="ev-alert ev-alert-danger" style="margin-top:8px">
+            {{ ocrErreur }}
+          </div>
+        </div>
+
+        <div class="ev-ocr-divider">
+          <span>{{ 'ev.form.ou.manuel' | t }}</span>
+        </div>
+
+        <!-- Titre -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.form.titre.label' | t }}</label>
+          <input type="text" class="ev-input" formControlName="titre"
+                 [placeholder]="'ev.form.titre.ph' | t"
+                 [class.ev-input-error]="form.get('titre')?.invalid && form.get('titre')?.touched">
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['required'] && form.get('titre')?.touched">
+            {{ 'ev.form.err.titre.required' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['minlength'] && form.get('titre')?.touched">
+            {{ 'ev.form.err.titre.min' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('titre')?.errors?.['maxlength'] && form.get('titre')?.touched">
+            {{ 'ev.form.err.titre.max' | t }}
+          </span>
+        </div>
+
+        <!-- Description -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.form.desc.label' | t }}</label>
+          <textarea class="ev-textarea" formControlName="description"
+                    [placeholder]="'ev.form.desc.ph' | t"
+                    rows="4"
+                    [class.ev-input-error]="form.get('description')?.invalid
+                      && form.get('description')?.touched"></textarea>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['required']
+                  && form.get('description')?.touched">
+            {{ 'ev.form.err.desc.required' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['minlength']
+                  && form.get('description')?.touched">
+            {{ 'ev.form.err.desc.min' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('description')?.errors?.['maxlength']
+                  && form.get('description')?.touched">
+            {{ 'ev.form.err.desc.max' | t }}
+          </span>
+        </div>
+
+        <!-- Type + Lieu -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.type.label' | t }}</label>
+            <select class="ev-select-input" formControlName="type"
+                    [class.ev-input-error]="form.get('type')?.invalid && form.get('type')?.touched">
+              <option value="">{{ 'ev.form.type.select' | t }}</option>
+              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('type')?.errors?.['required'] && form.get('type')?.touched">
+              {{ 'ev.form.err.type.required' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.lieu.label' | t }}</label>
+            <input type="text" class="ev-input" formControlName="lieu"
+                   [placeholder]="'ev.form.lieu.ph' | t"
+                   [class.ev-input-error]="form.get('lieu')?.invalid && form.get('lieu')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('lieu')?.errors?.['required'] && form.get('lieu')?.touched">
+              {{ 'ev.form.err.lieu.required' | t }}
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('lieu')?.errors?.['minlength'] && form.get('lieu')?.touched">
+              {{ 'ev.form.err.lieu.min' | t }}
+            </span>
+          </div>
+        </div>
+        <!-- ─── Type Lieu + Zone ──────────────────── -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.type.lieu' | t }}</label>
+            <select class="ev-select-input" formControlName="typeLieu">
+              <option value="">-- {{ 'ev.form.type.lieu' | t }} --</option>
+              <option value="SALLE">🏛️ Salle de conférence</option>
+              <option value="PLEIN_AIR">🌳 Plein air</option>
+              <option value="HOTEL">🏨 Hôtel</option>
+              <option value="UNIVERSITE">🎓 Université</option>
+              <option value="MUNICIPALITE">🏛️ Municipalité</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('typeLieu')?.touched && form.get('typeLieu')?.invalid">
+              {{ 'ev.form.err.type.lieu' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.zone' | t }}</label>
+            <select class="ev-select-input" formControlName="zone">
+              <option value="">-- {{ 'ev.form.zone' | t }} --</option>
+              <option value="LAC">🏙️ Lac / Les Berges du Lac</option>
+              <option value="MARSA">🌊 La Marsa / Gammarth</option>
+              <option value="CENTRE_VILLE">🏛️ Centre ville Tunis</option>
+              <option value="BANLIEUE">🏘️ Banlieue</option>
+              <option value="SFAX_CENTRE">🏙️ Sfax Centre</option>
+              <option value="SOUSSE_CENTRE">🏖️ Sousse Centre</option>
+              <option value="AUTRE">📍 Autre</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="form.get('zone')?.touched && form.get('zone')?.invalid">
+              {{ 'ev.form.err.zone' | t }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ─── Budget ────────────────────────────── -->
+        <div class="ev-form-row">
+          <!-- Toggles médias -->
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.media.prevu' | t }}</label>
+            <label class="ev-toggle">
+              <input type="checkbox" formControlName="mediaPrevu">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('mediaPrevu')?.value
+                   ? ('ev.form.media.oui' | t)
+                   : ('ev.form.media.non' | t) }}
+              </span>
+            </label>
+            <label class="ev-toggle" style="margin-top:8px">
+              <input type="checkbox" formControlName="streamingPrevu">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('streamingPrevu')?.value
+                   ? ('ev.form.streaming.oui' | t)
+                   : ('ev.form.streaming.prevu' | t) }}
+              </span>
+            </label>
+          </div>
+        </div>
+        <!-- Map -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.form.map.label' | t }}</label>
+          <div class="ev-map-picker">
+            <div #miniMap class="ev-mini-map"></div>
+            <p class="ev-map-hint">
+              <svg width="12" height="12" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ 'ev.form.map.hint' | t }}
+            </p>
+            <div class="ev-coords-row">
+              <div class="ev-coord-item">
+                <span class="ev-coord-label">{{ 'ev.form.lat.label' | t }}</span>
+                <input type="number" class="ev-input ev-coord-input"
+                       formControlName="latitude" placeholder="36.8065" step="0.0001"
+                       [class.ev-input-error]="form.get('latitude')?.invalid
+                         && form.get('latitude')?.touched">
+                <span class="ev-field-error"
+                      *ngIf="(form.get('latitude')?.errors?.['min'] || form.get('latitude')?.errors?.['max'])
+                        && form.get('latitude')?.touched">
+                  {{ 'ev.form.err.lat' | t }}
+                </span>
+              </div>
+              <div class="ev-coord-item">
+                <span class="ev-coord-label">{{ 'ev.form.lng.label' | t }}</span>
+                <input type="number" class="ev-input ev-coord-input"
+                       formControlName="longitude" placeholder="10.1815" step="0.0001"
+                       [class.ev-input-error]="form.get('longitude')?.invalid
+                         && form.get('longitude')?.touched">
+                <span class="ev-field-error"
+                      *ngIf="(form.get('longitude')?.errors?.['min'] || form.get('longitude')?.errors?.['max'])
+                        && form.get('longitude')?.touched">
+                  {{ 'ev.form.err.lng' | t }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dates -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.date.debut.label' | t }}</label>
+            <input type="datetime-local" class="ev-input" formControlName="dateDebut"
+                   [class.ev-input-error]="form.get('dateDebut')?.invalid
+                     && form.get('dateDebut')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('dateDebut')?.errors?.['required']
+                    && form.get('dateDebut')?.touched">
+              {{ 'ev.form.err.date.required' | t }}
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('dateDebut')?.errors?.['datePasse']
+                    && form.get('dateDebut')?.touched">
+              {{ 'ev.form.err.date.passe' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.date.fin.label' | t }}</label>
+            <input type="datetime-local" class="ev-input" formControlName="dateFin"
+                   [class.ev-input-error]="form.hasError('dateFin')
+                     && form.get('dateFin')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.hasError('dateFin') && form.get('dateFin')?.touched">
+              {{ 'ev.form.err.date.fin' | t }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Capacité + Payant -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ev.form.capacite.label' | t }}</label>
+            <input type="number" class="ev-input" formControlName="capaciteMax"
+                   [placeholder]="'ev.form.capacite.ph' | t" min="10"
+                   [class.ev-input-error]="form.get('capaciteMax')?.invalid
+                     && form.get('capaciteMax')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="form.get('capaciteMax')?.errors?.['min']
+                    && form.get('capaciteMax')?.touched">
+              {{ 'ev.form.err.cap.min' | t }}
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="form.get('capaciteMax')?.errors?.['max']
+                    && form.get('capaciteMax')?.touched">
+              {{ 'ev.form.err.cap.max' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group ev-form-group-check">
+            <label class="ev-label">{{ 'ev.form.acces.label' | t }}</label>
+            <label class="ev-toggle">
+              <input type="checkbox" formControlName="estPayant">
+              <span class="ev-toggle-track"></span>
+              <span class="ev-toggle-label">
+                {{ form.get('estPayant')?.value
+                   ? ('ev.form.payant.toggle' | t)
+                   : ('ev.form.gratuit.toggle' | t) }}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Prix -->
+        <div class="ev-form-group" *ngIf="form.get('estPayant')?.value">
+          <label class="ev-label">{{ 'ev.form.prix.label' | t }}</label>
+          <div class="ev-input-prefix">
+            <span class="ev-prefix">TND</span>
+            <input type="number" class="ev-input ev-input-with-prefix"
+                   formControlName="prix" placeholder="0.000" min="0" step="0.001"
+                   [class.ev-input-error]="form.get('prix')?.invalid
+                     && form.get('prix')?.touched">
+          </div>
+          <span class="ev-field-error"
+                *ngIf="form.get('prix')?.errors?.['min'] && form.get('prix')?.touched">
+            {{ 'ev.form.err.prix.min' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="form.get('prix')?.errors?.['max'] && form.get('prix')?.touched">
+            {{ 'ev.form.err.prix.max' | t }}
+          </span>
+        </div>
+
+        <!-- Image URL -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ev.form.image.label' | t }}</label>
+          <input type="url" class="ev-input" formControlName="imageUrl"
+                 [placeholder]="'ev.form.image.ph' | t"
+                 [class.ev-input-error]="form.get('imageUrl')?.invalid
+                   && form.get('imageUrl')?.touched">
+          <span class="ev-field-error"
+                *ngIf="form.get('imageUrl')?.errors?.['pattern']
+                  && form.get('imageUrl')?.touched">
+            {{ 'ev.form.err.image.url' | t }}
+          </span>
+        </div>
+
+        <!-- Footer -->
+        <div class="ev-form-footer">
+          <button type="button" class="btn btn-outline" (click)="retour()">
+            {{ 'ev.form.btn.annuler' | t }}
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="form.invalid || loading">
+            <span *ngIf="loading" class="ev-btn-spinner"></span>
+            <svg *ngIf="!loading" width="14" height="14" fill="none"
+                 stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {{ isEditMode ? ('ev.form.btn.modifier' | t) : ('ev.form.btn.creer' | t) }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Right — Tips -->
+    <div class="ev-form-tips">
+      <div class="ev-tips-card">
+        <h4 class="ev-tips-title">{{ 'ev.form.tip.titre' | t }}</h4>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">📝</div>
+          <div>
+            <div class="ev-tip-label">{{ 'ev.form.tip1.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'ev.form.tip1.text' | t }}</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">📍</div>
+          <div>
+            <div class="ev-tip-label">{{ 'ev.form.tip2.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'ev.form.tip2.text' | t }}</p>
+          </div>
+        </div>
+        <div class="ev-tip-item">
+          <div class="ev-tip-icon">👥</div>
+          <div>
+            <div class="ev-tip-label">{{ 'ev.form.tip3.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'ev.form.tip3.text' | t }}</p>
+          </div>
+        </div>
+        <div class="ev-tip-item" *ngIf="isAdminMode">
+          <div class="ev-tip-icon">✅</div>
+          <div>
+            <div class="ev-tip-label">{{ 'ev.form.tip4.label' | t }}</div>
+            <p class="ev-tip-text">{{ 'ev.form.tip4.text' | t }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

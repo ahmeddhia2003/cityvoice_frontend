@@ -1,0 +1,117 @@
+<div class="sp-card">
+  <div class="sp-header">
+    <h3>{{ 'sp.pred.titre' | t }}</h3>
+    <p>{{ 'sp.pred.sous.titre' | t }}</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="predire()" class="sp-form">
+    <div class="sp-field">
+      <label>{{ 'sp.pred.budget.label' | t }}</label>
+      <input type="number" formControlName="budgetEvenement"
+             placeholder="Ex: 5000" min="100">
+    </div>
+    <button type="submit" class="sp-btn" [disabled]="loading">
+      <span *ngIf="!loading">{{ 'sp.pred.btn.predire' | t }}</span>
+      <span *ngIf="loading">{{ 'sp.pred.loading' | t }}</span>
+    </button>
+  </form>
+
+  <div class="sp-error" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="sp-result" *ngIf="prediction">
+
+    <!-- Niveau recommandé -->
+    <div class="sp-niveau-card"
+         [style.border-color]="getNiveauColor(prediction.niveau_recommande)">
+      <div class="sp-niveau-icon">
+        {{ getNiveauIcon(prediction.niveau_recommande) }}
+      </div>
+      <div class="sp-niveau-info">
+        <div class="sp-niveau-label">{{ 'sp.niveau.recommande' | t }}</div>
+        <div class="sp-niveau-value"
+             [style.color]="getNiveauColor(prediction.niveau_recommande)">
+          {{ prediction.niveau_recommande }}
+        </div>
+      </div>
+      <div class="sp-montant">
+        <div class="sp-montant-label">{{ 'sp.montant.optimal' | t }}</div>
+        <div class="sp-montant-value">{{ prediction.montant_optimal }} TND</div>
+      </div>
+      <div class="sp-proba">
+        <div class="sp-proba-label">{{ 'sp.proba.acceptation' | t }}</div>
+        <div class="sp-proba-value">{{ prediction.probabilite_acceptation }}%</div>
+      </div>
+    </div>
+
+    <!-- Barres de probabilité -->
+    <div class="sp-probas">
+      <div class="sp-probas-title">{{ 'sp.probas.titre' | t }}</div>
+      <div *ngFor="let niveau of ['PLATINE','OR','ARGENT','BRONZE']"
+           class="sp-proba-row">
+        <span class="sp-proba-label">
+          {{ getNiveauIcon(niveau) }} {{ niveau }}
+        </span>
+        <div class="sp-proba-bar">
+          <div class="sp-proba-fill"
+               [style.width.%]="getBarWidth(niveau)"
+               [style.background]="getNiveauColor(niveau)">
+          </div>
+        </div>
+        <span class="sp-proba-pct">{{ getBarWidth(niveau) }}%</span>
+      </div>
+    </div>
+
+    <!-- Facteurs clés -->
+    <div class="sp-facteurs" *ngIf="prediction!.facteurs_cles">
+      <div class="sp-facteurs-title">{{ 'sp.facteurs.titre' | t }}</div>
+      <div class="sp-facteurs-grid">
+        <div class="sp-facteur-item">
+          <span class="sp-facteur-label">{{ 'sp.facteur.lieu' | t }}</span>
+          <span class="sp-facteur-value"
+                [class.fort]="prediction!.facteurs_cles['lieu_impact'] === 'Fort'">
+            {{ prediction!.facteurs_cles['lieu_impact'] }}
+          </span>
+        </div>
+        <div class="sp-facteur-item">
+          <span class="sp-facteur-label">{{ 'sp.facteur.zone' | t }}</span>
+          <span class="sp-facteur-value"
+                [class.fort]="prediction!.facteurs_cles['zone_impact'] === 'Fort'">
+            {{ prediction!.facteurs_cles['zone_impact'] }}
+          </span>
+        </div>
+        <div class="sp-facteur-item">
+          <span class="sp-facteur-label">{{ 'sp.facteur.medias' | t }}</span>
+          <span class="sp-facteur-value"
+                [class.fort]="prediction!.facteurs_cles['media_impact'] === 'Fort'">
+            {{ prediction!.facteurs_cles['media_impact'] }}
+          </span>
+        </div>
+        <div class="sp-facteur-item">
+          <span class="sp-facteur-label">{{ 'sp.facteur.saison' | t }}</span>
+          <span class="sp-facteur-value"
+                [class.fort]="prediction!.facteurs_cles['saison_impact'] === 'Favorable'">
+            {{ prediction!.facteurs_cles['saison_impact'] }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explication Ollama -->
+    <div class="sp-explication">
+      <div class="sp-explication-title">{{ 'sp.analyse.titre' | t }}</div>
+      <p>{{ prediction.explication }}</p>
+    </div>
+
+    <!-- Email de démarchage -->
+    <div class="sp-email">
+      <div class="sp-email-header">
+        <span class="sp-email-title">{{ 'sp.email.titre' | t }}</span>
+        <button class="sp-copy-btn" (click)="copierEmail()">
+          {{ emailCopied ? ('sp.email.copie' | t) : ('sp.email.copier' | t) }}
+        </button>
+      </div>
+      <pre class="sp-email-body">{{ prediction.email_demarche }}</pre>
+    </div>
+
+  </div>
+</div>

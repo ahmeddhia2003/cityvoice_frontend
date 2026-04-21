@@ -42,4 +42,8 @@ import { ChefResolutionModalComponent } from './components/chef-resolution-modal
     ChefResolutionModalComponent,
   ],
 })
-export class SharedModule { }
+export class SharedModule {
+  constructor() {
+    console.log('PIPE REGISTERED');
+  }
+ }

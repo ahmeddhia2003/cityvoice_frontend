@@ -10,7 +10,12 @@
     <span class="live-dot"></span>
     Temps réel
   </div>
-
+  <!-- Language switcher -->
+  <div class="lang-sw">
+    <button class="lang-btn" [class.active]="lang.current === 'fr'" (click)="setLang('fr')">FR</button>
+    <span class="lang-sep"></span>
+    <button class="lang-btn" [class.active]="lang.current === 'en'" (click)="setLang('en')">EN</button>
+  </div>
   <!-- Search -->
   <div class="tb-search">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

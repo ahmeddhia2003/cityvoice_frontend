@@ -7,6 +7,7 @@ export class TranslatePipe implements PipeTransform, OnDestroy {
   private sub: Subscription;
 
   constructor(private i18n: I18nService, private cd: ChangeDetectorRef) {
+    console.log('TRANSLATE PIPE LOADED');
     this.sub = this.i18n.lang$.subscribe(() => this.cd.markForCheck());
   }
 

@@ -1,0 +1,25 @@
+<div class="qr-card">
+  <div class="qr-header">
+    <div class="qr-icon-check">✅</div>
+    <h3>{{ 'qr.titre' | t }}</h3>
+    <p class="qr-ev-title">{{ evenement.titre }}</p>
+  </div>
+
+  <div class="qr-body">
+    <div class="qr-canvas-wrapper">
+      <canvas #qrCanvas></canvas>
+    </div>
+    
+    <div class="qr-info">
+      <p><strong>{{ 'qr.participant' | t }}</strong> {{ participant.nomCitoyen }}</p>
+      <p><strong>{{ 'qr.lieu' | t }}</strong> {{ evenement.lieu }}</p>
+      <p><strong>{{ 'qr.date' | t }}</strong> {{ evenement.dateDebut | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+  </div>
+
+  <div class="qr-footer">
+    <button class="btn-download" (click)='telecharger()'>
+      <span>📥</span> {{ 'qr.telecharger' | t }}
+    </button>
+  </div>
+</div>

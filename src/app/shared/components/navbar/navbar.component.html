@@ -1,4 +1,4 @@
-<nav [class.solid]="scrolled || !isHomePage">
+<nav [class.solid]="scrolled">
 
   <!-- Logo -->
   <a routerLink="/" class="nav-logo" (click)="sound.nav()">
@@ -18,9 +18,8 @@
     <a href="#map-section"  (click)="sound.nav()">{{ lang.t.nav_map }}</a>
     <a href="#testimonials" (click)="sound.nav()">{{ lang.t.nav_testi }}</a>
     <a routerLink="/personnel/list" (click)="sound.nav()">Offres d'emploi</a>
-
+    <a routerLink="/evenements" (click)="sound.nav()">{{ lang.t.nav_events }}</a>
   </div>
-  
 
   <!-- Actions -->
   <div class="nav-actions">
@@ -91,6 +90,7 @@
           <span class="nd-title">Notifications</span>
           <button class="nd-mark-all" (click)="markAllRead($event)">Tout lire</button>
         </div>
+
         <div class="nd-list">
           <div class="nd-empty" *ngIf="notifications.length === 0">
             <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3">
@@ -106,6 +106,7 @@
               <svg *ngIf="notifIconType(n.type)==='badge'"   width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
               <svg *ngIf="notifIconType(n.type)==='info'"    width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
             </div>
+
             <div class="nd-body">
               <p class="nd-msg">{{ n.message }}</p>
               <span class="nd-time">{{ notifTimeAgo(n.dateCreation) }}</span>
@@ -165,6 +166,7 @@
             <div>
               <div class="ud-name">{{ getFullName() }}</div>
               <div class="ud-email">{{ currentUser?.email }}</div>
+              <!-- ← nouveau : rôle + téléphone -->
               <div class="ud-meta">
             <span class="ud-role-badge" [style.background]="getRoleBg()" [style.color]="getRoleColor()">
               {{ getRoleLabel() }}

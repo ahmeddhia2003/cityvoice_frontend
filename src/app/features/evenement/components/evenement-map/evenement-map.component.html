@@ -1,0 +1,37 @@
+<!-- Avec coordonnées -->
+<div class="ev-map-shell" *ngIf="hasCoordinates()">
+
+  <!-- Header -->
+  <div class="ev-map-header">
+    <svg width="14" height="14" fill="none" stroke="currentColor"
+         stroke-width="2" viewBox="0 0 24 24">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+      <circle cx="12" cy="10" r="3"/>
+    </svg>
+    {{ 'ev.detail.localisation' | t }}
+  </div>
+
+  <!-- Map -->
+  <div #mapEl class="ev-map-el"></div>
+
+  <!-- Footer -->
+  <div class="ev-map-footer">
+    <span>📍 {{ evenement.lieu }}</span>
+    <a [href]="'https://www.google.com/maps?q=' + evenement.latitude + ',' + evenement.longitude"
+       target="_blank"
+       class="ev-map-directions">
+      {{ 'ev.map.gmaps' | t }}
+    </a>
+  </div>
+
+</div>
+
+<!-- Pas de coordonnées -->
+<div class="ev-map-no-location" *ngIf="!hasCoordinates()">
+  <svg width="18" height="18" fill="none" stroke="currentColor"
+       stroke-width="1.5" viewBox="0 0 24 24">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+  <span>{{ 'ev.map.no.location' | t }}</span>
+</div>

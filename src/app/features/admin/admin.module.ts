@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe, UpperCasePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { AdminRoutingModule } from './admin-routing.module';
@@ -13,6 +13,15 @@ import { InvitationCodesComponent } from './invitation-codes/invitation-codes.co
 import { AdminSignalementsComponent } from './signalements/admin-signalements.component';
 import { ContratSigningComponent } from './contrats/contrat-signing.component';
 
+import { AdminEvenementListComponent } from '../evenement/components/admin-evenement-list/admin-evenement-list.component';
+import { AdminEvenementStatsComponent } from '../evenement/components/admin-evenement-stats/admin-evenement-stats.component';
+import { EvenementFormComponent } from '../evenement/components/evenement-form/evenement-form.component';
+import { SharedEvenementModule } from '../evenement/shared-evenement.module';
+import { AdminScanComponent } from '../evenement/components/admin-scan/admin-scan.component';
+import { AdminSuggestionListComponent } from '../evenement/components/admin-suggestion-list/admin-suggestion-list.component';
+import { AdminSponsorListComponent } from '../evenement/components/admin-sponsor-list/admin-sponsor-list.component';
+import { SharedModule } from '../../shared/shared.module';
+import { RapportSponsorComponent } from '../evenement/components/rapport-sponsor/rapport-sponsor.component';
 
 @NgModule({
   declarations: [
@@ -24,13 +33,23 @@ import { ContratSigningComponent } from './contrats/contrat-signing.component';
     InvitationCodesComponent,
     AdminSignalementsComponent,
     ContratSigningComponent,
+    AdminEvenementListComponent,
+    AdminEvenementStatsComponent,
+    //EvenementFormComponent,
+    AdminScanComponent,
+    AdminSuggestionListComponent,
+    AdminSponsorListComponent,
+    RapportSponsorComponent,
   ],
   imports: [
     CommonModule,
     FormsModule,
+    AdminRoutingModule,
+    ReactiveFormsModule,
     RouterModule,
+    SharedEvenementModule,
+    SharedModule,
     HttpClientModule,
-    AdminRoutingModule
   ],
   providers: [
     DatePipe,

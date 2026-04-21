@@ -1,0 +1,328 @@
+<div class="ev-shell">
+
+  <!-- ─── Header ───────────────────────────────────────── -->
+  <div class="ev-header">
+    <div>
+      <span class="pill pill-teal" style="margin-bottom:12px">
+        <span class="ev-live-dot"></span> {{ 'ev.list.title'| t  }}
+      </span>
+      <h2 class="heading-display">
+        {{ 'ev.list.title' | t }}
+        <span class="italic" style="color:var(--ink3)">
+          {{ 'ev.list.sub.accent'| t }}
+        </span>
+      </h2>
+      <p class="ev-sub">{{ 'ev.list.sub' | t }}</p>
+    </div>
+    <div class="ev-header-actions">
+      <div class="ev-search">
+        <svg width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" [(ngModel)]="searchQuery"
+               (input)="filtrer()"
+               [placeholder]="'ev.list.search' | t">
+      </div>
+      <select class="ev-select" [(ngModel)]="typeFiltre"
+              (change)="sound.nav(); filtrer()">
+        <option value="">{{ 'ev.list.tous.types' | t}}</option>
+        <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+      </select>
+      <button class="btn btn-outline" (click)="allerCalendrier()">
+        <svg width="14" height="14" fill="none" stroke="currentColor"
+            stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        {{ 'ev.list.calendrier'| t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Stats ─────────────────────────────────────────── -->
+  <div class="ev-stats-row">
+    <div class="ev-stat-card" style="--ka:var(--coral)">
+      <div class="ev-stat-num">{{ evenements.length }}</div>
+      <div class="ev-stat-label">{{ 'ev.list.publie'| t }}</div>
+    </div>
+    <div class="ev-stat-card" style="--ka:var(--teal)">
+      <div class="ev-stat-num">{{ getTotalInscrits() }}</div>
+      <div class="ev-stat-label">{{ 'ev.list.inscrits'| t }}</div>
+    </div>
+    <div class="ev-stat-card" style="--ka:var(--gold)">
+      <div class="ev-stat-num">{{ getEvenementsGratuits() }}</div>
+      <div class="ev-stat-label">{{ 'ev.list.gratuits'| t }}</div>
+    </div>
+    <div class="ev-stat-card" style="--ka:var(--navy2)">
+      <div class="ev-stat-num">{{ suggestions.length }}</div>
+      <div class="ev-stat-label">{{ 'ev.list.suggestions'| t }}</div>
+    </div>
+  </div>
+
+  <!-- ─── Section Recommandations ───────────────────────── -->
+  <div class="ev-recommandations"
+       *ngIf="recommandationsFiltrees.length > 0 || loadingRecommandations">
+
+    <div class="ev-reco-header">
+      <div>
+        <span class="pill pill-coral" style="margin-bottom:8px"></span>
+        <h3 class="ev-reco-title">{{ 'ev.list.reco.titre'| t }}</h3>
+        <p class="ev-reco-sub">{{ 'ev.list.reco.sub'| t }}</p>
+      </div>
+    </div>
+
+    <!-- Loading recommandations -->
+    <div class="ev-reco-loading" *ngIf="loadingRecommandations">
+      <div class="ev-reco-skeleton" *ngFor="let i of [1,2,3]">
+        <div class="ev-skeleton-img"></div>
+        <div class="ev-skeleton-body">
+          <div class="ev-skeleton-line" style="width:60%"></div>
+          <div class="ev-skeleton-line" style="width:90%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carousel horizontal -->
+    <div class="ev-reco-carousel" *ngIf="!loadingRecommandations">
+      <div class="ev-reco-card"
+           *ngFor="let ev of recommandationsFiltrees"
+           (click)="voirDetail(ev.id!)">
+
+        <div class="ev-reco-image">
+          <img [src]="ev.imageUrl || getImageDefaut(ev.type)"
+               [alt]="ev.titre" loading="lazy"
+               (error)="onImageError($event, ev.type)">
+          <div class="ev-reco-overlay">
+            <span class="pill" [ngClass]="getTypePill(ev.type)">
+              {{ getTypeLabel(ev.type) }}
+            </span>
+          </div>
+          <div class="ev-countdown" *ngIf="getCountdown(ev.dateDebut)">
+            ⏱ {{ getCountdown(ev.dateDebut) }}
+          </div>
+        </div>
+
+        <div class="ev-reco-body">
+          <h4 class="ev-reco-card-title">{{ ev.titre }}</h4>
+          <div class="ev-reco-meta">
+            <span>
+              <svg width="11" height="11" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ ev.lieu }}
+            </span>
+            <span>
+              <svg width="11" height="11" fill="none" stroke="currentColor"
+                   stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ ev.dateDebut | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="ev-reco-footer">
+            <span class="ev-prix" [class.gratuit]="!ev.estPayant">
+              {{ ev.estPayant ? (ev.prix + ' TND') :
+                 'ev.list.gratuit'| t }}
+            </span>
+            <button class="ev-btn-detail"
+                    (click)="voirDetail(ev.id!);
+                             $event.stopPropagation()">
+              {{ 'ev.list.voir'| t }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Séparateur ────────────────────────────────────── -->
+  <div class="ev-section-title"
+       *ngIf="recommandationsFiltrees.length > 0">
+    <h3>📅 {{ 'ev.list.tous.events'| t }}</h3>
+  </div>
+
+  <!-- ─── Alert erreur ──────────────────────────────────── -->
+  <div *ngIf="erreur && !loading" class="ev-alert ev-alert-danger">
+    <svg width="16" height="16" fill="none" stroke="currentColor"
+         stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <circle cx="12" cy="16" r="1" fill="currentColor"/>
+    </svg>
+    {{ erreur }}
+  </div>
+
+  <!-- ─── Skeleton loading ───────────────────────────────── -->
+  <div class="ev-grid" *ngIf="loading">
+    <div class="ev-card-skeleton" *ngFor="let i of [1,2,3,4,5,6]">
+      <div class="ev-skeleton-img"></div>
+      <div class="ev-skeleton-body">
+        <div class="ev-skeleton-line" style="width:60%"></div>
+        <div class="ev-skeleton-line" style="width:90%"></div>
+        <div class="ev-skeleton-line" style="width:40%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Grille événements ─────────────────────────────── -->
+  <div *ngIf="!loading" class="ev-grid">
+
+    <div *ngIf="evenementsFiltres.length === 0" class="ev-empty">
+      <div class="ev-empty-icon">📅</div>
+      <h3>{{ 'ev.list.empty'| t }}</h3>
+      <p>{{ 'ev.list.empty.sub'| t }}</p>
+      <button class="btn btn-primary" (click)="allerSuggestion()">
+        {{ 'ev.list.suggestion.btn'| t }}
+      </button>
+    </div>
+
+    <div class="ev-card" *ngFor="let ev of evenementsFiltres"
+         (click)="voirDetail(ev.id!)">
+
+      <!-- Image lazy loading -->
+      <div class="ev-card-image">
+        <img [src]="ev.imageUrl || getImageDefaut(ev.type)"
+             [alt]="ev.titre"
+             loading="lazy"
+             class="ev-img"
+             (error)="onImageError($event, ev.type)">
+        <div class="ev-card-image-overlay">
+          <span class="pill" [ngClass]="getTypePill(ev.type)">
+            {{ getTypeLabel(ev.type) }}
+          </span>
+          <span class="ev-card-badge"
+                [ngClass]="getStatutClass(ev.statut!)">
+            {{ getStatutLabel(ev.statut!) }}
+          </span>
+        </div>
+        <div class="ev-countdown" *ngIf="getCountdown(ev.dateDebut)">
+          ⏱ {{ getCountdown(ev.dateDebut) }}
+        </div>
+      </div>
+
+      <!-- Corps -->
+      <div class="ev-card-body">
+        <h3 class="ev-card-title">{{ ev.titre }}</h3>
+        <p class="ev-card-desc">{{ ev.description }}</p>
+
+        <div class="ev-card-meta">
+          <div class="ev-meta-item">
+            <svg width="13" height="13" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ ev.lieu }}
+          </div>
+          <div class="ev-meta-item">
+            <svg width="13" height="13" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            {{ ev.dateDebut | date:'dd/MM/yyyy' }}
+          </div>
+          <div class="ev-meta-item">
+            <svg width="13" height="13" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+            {{ ev.nbInscrits || 0 }} / {{ ev.capaciteMax || '∞' }}
+          </div>
+        </div>
+
+        <div class="ev-capacity-bar" *ngIf="ev.capaciteMax">
+          <div class="ev-capacity-fill"
+               [style.width.%]="getCapacitePercent(ev)"
+               [style.background]="getCapaciteColor(ev)">
+          </div>
+        </div>
+
+        <div class="ev-card-footer">
+          <span class="ev-prix" [class.gratuit]="!ev.estPayant">
+            {{ ev.estPayant ? (ev.prix + ' TND') :
+               'ev.list.gratuit'| t }}
+          </span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="ev-btn-interesse"
+                    [class.active]="isInteresse(ev.id!)"
+                    (click)="toggleInteresse(ev.id!);
+                             $event.stopPropagation()">
+              <svg width="13" height="13" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                         2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                         C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+                         c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+             {{ isInteresse(ev.id!) 
+                  ? ('ev.list.interesse.ok' | t)
+                  : ('ev.list.interesse' | t)
+              }}
+            </button>
+            <button class="ev-btn-detail"
+                    (click)="voirDetail(ev.id!);
+                             $event.stopPropagation()">
+              {{ 'ev.list.voir'| t }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Pagination ────────────────────────────────────── -->
+  <div class="ev-pagination" *ngIf="totalPages > 1">
+    <button class="ev-page-btn" [disabled]="page === 0"
+            (click)="changerPage(page - 1)">
+      <svg width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button class="ev-page-btn"
+            *ngFor="let p of getPages()"
+            [class.active]="p === page"
+            (click)="changerPage(p)">
+      {{ p + 1 }}
+    </button>
+    <button class="ev-page-btn" [disabled]="page === totalPages - 1"
+            (click)="changerPage(page + 1)">
+      <svg width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ─── Suggestion banner ─────────────────────────────── -->
+  <div class="ev-suggestion-banner">
+    <div class="ev-suggestion-content">
+      <span class="pill pill-gold" style="margin-bottom:10px">
+        💡 {{ 'ev.list.suggestion.pill'| t }}
+      </span>
+      <h3>{{ 'ev.list.suggestion.titre'| t }}</h3>
+      <p>{{ 'ev.list.suggestion.sub'| t }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="allerSuggestion()">
+      {{ 'ev.list.suggestion.btn'| t }}
+    </button>
+    <button class="btn btn-primary" (click)="allerMesSuggestions()">
+      💡 {{ 'ev.list.mes.suggestions'| t }}
+    </button>
+  </div>
+
+</div>

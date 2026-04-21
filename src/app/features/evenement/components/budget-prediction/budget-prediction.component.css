@@ -1,0 +1,226 @@
+.bp-card {
+  background: var(--surface, #fff);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  margin-top: 16px;
+}
+
+.bp-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy, #0C1F3F);
+  margin: 0 0 4px;
+}
+
+.bp-header p {
+  font-size: 13px;
+  color: #8888A8;
+  margin: 0 0 20px;
+}
+
+.bp-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.bp-field { flex: 1; }
+
+.bp-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4a6a;
+  margin-bottom: 6px;
+}
+
+.bp-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.bp-field input:focus { border-color: var(--gold, #C9973E); }
+
+.bp-btn {
+  padding: 10px 20px;
+  background: var(--gold, #C9973E);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bp-error { color: #E8532A; font-size: 13px; margin-bottom: 16px; }
+
+.bp-result { display: flex; flex-direction: column; gap: 16px; }
+
+.bp-main {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #C9973E15, #C9973E05);
+  border-radius: 12px;
+  border: 2px solid #C9973E40;
+}
+
+.bp-main-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #8888A8;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.bp-main-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--gold, #C9973E);
+}
+
+.bp-range {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.bp-range-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #4a4a6a;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.bp-range-bar {
+  position: relative;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.bp-range-fill {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #0D9B76, #C9973E, #E8532A);
+  border-radius: 4px;
+  opacity: 0.3;
+}
+
+.bp-range-cursor {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: var(--gold, #C9973E);
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  cursor: pointer;
+}
+
+.bp-range-tooltip {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy, #0C1F3F);
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.bp-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #8888A8;
+}
+
+.bp-explication {
+  background: #FFF8EC;
+  border-left: 4px solid var(--gold, #C9973E);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.bp-explication-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold, #C9973E);
+  margin-bottom: 8px;
+}
+
+.bp-explication p {
+  font-size: 13px;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin: 0;
+}
+.bp-decomposition {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+}
+.bp-decomp-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a4a6a;
+  margin-bottom: 12px;
+}
+.bp-decomp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13px;
+  color: #4a4a6a;
+}
+.bp-decomp-row:last-child { border-bottom: none; }
+.bp-decomp-value {
+  font-weight: 700;
+  color: var(--navy, #0C1F3F);
+}
+
+.bp-extras {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.bp-extra-card {
+  text-align: center;
+  padding: 16px 12px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+.bp-extra-icon { font-size: 24px; margin-bottom: 6px; }
+.bp-extra-label {
+  font-size: 11px;
+  color: #8888A8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.bp-extra-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teal, #0D9B76);
+}
