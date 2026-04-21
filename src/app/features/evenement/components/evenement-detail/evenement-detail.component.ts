@@ -51,7 +51,8 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
   descriptionTraduite: string | null = null;
   langueActive: 'fr' | 'ar' | 'en' = 'fr';
   traductionLoading = false;
-
+  
+  shareLoading = false;
   constructor(
     private route: ActivatedRoute,
     public router: Router,
@@ -96,13 +97,16 @@ export class EvenementDetailComponent implements OnInit, OnDestroy {
 
   chargerEvenement(id: number): void {
     this.loading = true;
+    this.shareTexts = {};
     this.evenementService.getEvenementById(id).subscribe({
       next: (data) => { 
         this.evenement = data; 
         this.loading = false;
+        this.updateMetaTags();
         this.startCountdown();                          
         this.chargerSimilaires(data.type, data.id!); 
         this.chargerMeteo(data);
+        this.prechargerTextes(data.id!);
        },
       error: () => { this.erreur = this.i18n.t('adm.ev.err.load'); this.loading = false; }
     });
@@ -449,7 +453,7 @@ getTypePill(type: string): string {
   }
 
   get currentUrl(): string {
-    return encodeURIComponent(window.location.href);
+    return window.location.href;
   }
 
   get shareText(): string {
@@ -674,6 +678,133 @@ getTypePill(type: string): string {
 
   allerLiveWatch(): void {
     this.router.navigate(['/evenements', this.evenement!.id, 'live', 'watch']);
+  }
+  // ── Open Graph meta tags ──────────────────────────
+  updateMetaTags(): void {
+    if (!this.evenement) return;
+
+    const title       = this.evenement.titre;
+    const description = this.evenement.description?.substring(0, 200) || '';
+    const image       = this.evenement.imageUrl || this.getImageDefaut(this.evenement.type);
+    const prix        = this.evenement.estPayant
+      ? `💰 ${this.evenement.prix} TND` : '🎟️ Gratuit';
+    const date        = new Date(this.evenement.dateDebut!)
+      .toLocaleDateString('fr-FR', {
+        weekday: 'long', day: 'numeric',
+        month: 'long', year: 'numeric'
+      });
+
+    this.setMeta('og:title',       `${title} | CityVoice`);
+    this.setMeta('og:description', `📅 ${date} | 📍 ${this.evenement.lieu} | ${prix} — ${description}`);
+    this.setMeta('og:image',       image);
+    this.setMeta('og:url',         this.currentUrl);
+    this.setMeta('og:type',        'event');
+    this.setMeta('twitter:card',   'summary_large_image');
+    this.setMeta('twitter:title',  `${title} | CityVoice`);
+    this.setMeta('twitter:image',  image);
+
+    document.title = `${title} | CityVoice`;
+  }
+
+  private setMeta(name: string, content: string): void {
+    let el = document.querySelector(`meta[property="${name}"]`);
+    if (!el) {
+      el = document.createElement('meta');
+      el.setAttribute('property', name);
+      document.head.appendChild(el);
+    }
+    el.setAttribute('content', content);
+  }
+
+  // ── Textes partage Gemma2 ─────────────────────────
+  shareTexts: Record<string, string> = {};
+
+  genererTextePartage(plateforme: string): void {
+    
+  }
+
+  partagerFacebook(): void {
+    const url = encodeURIComponent(window.location.href); // ← encoder ici
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      '_blank'
+    );
+  }
+  partagerWhatsapp(): void {
+    const lien  = window.location.href;
+    const titre = this.evenement?.titre || '';
+    const lieu  = this.evenement?.lieu  || '';
+    const date  = this.evenement?.dateDebut
+      ? new Date(this.evenement.dateDebut).toLocaleDateString('fr-FR', {
+          day: 'numeric', month: 'long', year: 'numeric'
+        }) : '';
+    const prix = this.evenement?.estPayant
+      ? `${this.evenement.prix} TND` : 'Gratuit';
+
+    // Texte Gemma2 si disponible
+    const texteIA = this.shareTexts['whatsapp'];
+
+    const text = texteIA
+      ? `${texteIA}\n\n${lien}`
+      : `*${titre}*\n\nLieu: ${lieu}\nDate: ${date}\nPrix: ${prix}\n\nInscription: ${lien}\n\nPartage via CityVoice`;
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      '_blank'
+    );
+  }
+
+  
+  partagerLinkedin(): void {
+    const url   = encodeURIComponent(window.location.href);
+    const titre = encodeURIComponent(this.evenement?.titre || '');
+    const texteIA = this.shareTexts['linkedin'] || '';
+    const summary = encodeURIComponent(texteIA);
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${titre}&summary=${summary}`,
+      '_blank'
+    );
+  }
+
+  partagerTwitter(): void {
+    const text = this.shareTexts['twitter'] ||
+      `🎉 ${this.evenement?.titre} | 📍 ${this.evenement?.lieu} #CityVoice`;
+    const encoded = encodeURIComponent(text + ' ' + window.location.href);
+    window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank');
+  }
+
+  prechargerTextes(id: number): void {
+    this.shareLoading = true;
+    const plateformes = ['whatsapp', 'twitter', 'facebook', 'linkedin'];
+    
+    // ✅ Séquentiel au lieu de parallèle
+    this.chargerTexteSequentiel(id, plateformes, 0);
+  }
+
+  private chargerTexteSequentiel(
+    id: number, 
+    plateformes: string[], 
+    index: number
+  ): void {
+    if (index >= plateformes.length) {
+      this.shareLoading = false;
+      return;
+    }
+
+    const plateforme = plateformes[index];
+    this.evenementService.getPostSocial(id, plateforme).subscribe({
+      next: (r: any) => {
+        this.shareTexts[plateforme] = r.post;
+        console.log(`✅ Texte ${plateforme} chargé`);
+        // ← Passer au suivant
+        this.chargerTexteSequentiel(id, plateformes, index + 1);
+      },
+      error: () => {
+        console.warn(`⚠️ Texte ${plateforme} échoué — skip`);
+        // ← Continuer même si erreur
+        this.chargerTexteSequentiel(id, plateformes, index + 1);
+      }
+    });
   }
   retour(): void {
     this.sound.nav();  

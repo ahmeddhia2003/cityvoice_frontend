@@ -57,6 +57,10 @@ export class EvenementListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (this.authService.isAdmin()) {
+      this.router.navigate(['/admin/dashboard']);
+      return;
+    }
     this.chargerEvenements();
     this.chargerSuggestions();
     this.chargerInteresses();

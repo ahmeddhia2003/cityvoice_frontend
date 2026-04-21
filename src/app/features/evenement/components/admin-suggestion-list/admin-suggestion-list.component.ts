@@ -27,6 +27,9 @@ export class AdminSuggestionListComponent implements OnInit {
   // Commentaire rejet
   commentaireModal: Suggestion | null = null;
   commentaire = '';
+  //Ai justif
+  justifications: { [id: number]: string } = {};
+  justificationEnCours: number | null = null;
 
   constructor(
     private evenementService: EvenementService,
@@ -75,33 +78,6 @@ export class AdminSuggestionListComponent implements OnInit {
     });
   }
 
-  accepter(s: Suggestion): void {
-    this.sound.success();
-    this.evenementService.traiterSuggestion(s.id!, 'ACCEPTEE', 'Suggestion acceptée').subscribe({
-      next: () => {
-        this.succes = this.i18n.t('adm.sug.succes.accepter');
-        this.charger();
-        // Naviguer vers création événement pré-rempli
-        this.router.navigate(['/admin/evenements/nouveau'], {
-          queryParams: {
-            titre:        s.titre,
-            description:  s.description || '',
-            type:         s.typeSouhaite || '',
-            lieu:         s.lieuSouhaite || '',
-            date:         s.dateSouhaitee || ''
-          }
-        });
-        setTimeout(() => this.succes = '', 3000);
-      }
-    });
-  }
-
-  ouvrirRejet(s: Suggestion): void {
-    this.sound.nav();
-    this.commentaireModal = s;
-    this.commentaire = '';
-  }
-
   confirmerRejet(): void {
     if (!this.commentaireModal?.id) return;
     if (!this.commentaire || this.commentaire.trim().length < 10) {
@@ -146,6 +122,97 @@ export class AdminSuggestionListComponent implements OnInit {
     return '#E8532A';
   }
   countStatut(statut: string): number {
-  return this.suggestions.filter(s => s.statut === statut).length;
-}
+    return this.suggestions.filter(s => s.statut === statut).length;
+  }
+  // ── Justification IA ───────────────────────────────
+  genererJustification(s: Suggestion, statut: string): void {
+    this.sound.click();
+    this.justificationEnCours = s.id!;
+    this.evenementService.genererJustification(s.id!, statut).subscribe({
+      next: (res: any) => {
+        this.justifications[s.id!] = res.justification;
+        this.commentaire = res.justification; // ← pré-remplit le commentaire
+        this.justificationEnCours = null;
+        this.sound.success();
+      },
+      error: () => {
+        this.justificationEnCours = null;
+      }
+    });
+  }
+
+  // accepter() + générer justification auto ──
+  accepter(s: Suggestion): void {
+    this.sound.click();
+    this.justificationEnCours = s.id!;
+
+    this.evenementService.genererJustification(s.id!, 'ACCEPTEE')
+      .subscribe({
+        next: (res: any) => {
+          const justification = res.justification ||
+            'Félicitations ! Votre suggestion a été acceptée.';
+          this.justificationEnCours = null;
+
+          // ✅ Traiter ET naviguer dans le même subscribe
+          this.evenementService.traiterSuggestion(
+            s.id!, 'ACCEPTEE', justification
+          ).subscribe({
+            next: () => {
+              this.sound.success();
+              this.succes = this.i18n.t('adm.sug.succes.accepter');
+              this.charger();
+              setTimeout(() => {
+                // ✅ Navigation APRÈS sauvegarde
+                this.router.navigate(['/admin/evenements/nouveau'], {
+                  queryParams: {
+                    titre:       s.titre,
+                    description: s.description || '',
+                    type:        s.typeSouhaite || '',
+                    lieu:        s.lieuSouhaite || '',
+                    date:        s.dateSouhaitee || ''
+                  }
+                });
+              }, 500); // ← petit délai pour laisser charger()
+              setTimeout(() => this.succes = '', 3000);
+            },
+            error: () => {
+              this.erreur = 'Erreur lors de l\'acceptation';
+            }
+          });
+        },
+        error: () => {
+          // ✅ Fallback — accepter sans justification IA
+          this.justificationEnCours = null;
+          this.evenementService.traiterSuggestion(
+            s.id!, 'ACCEPTEE',
+            'Félicitations ! Votre suggestion a été acceptée par notre équipe municipale.'
+          ).subscribe({
+            next: () => {
+              this.sound.success();
+              this.succes = this.i18n.t('adm.sug.succes.accepter');
+              this.charger();
+              setTimeout(() => {
+                this.router.navigate(['/admin/evenements/nouveau'], {
+                  queryParams: {
+                    titre:       s.titre,
+                    description: s.description || '',
+                    type:        s.typeSouhaite || '',
+                    lieu:        s.lieuSouhaite || '',
+                    date:        s.dateSouhaitee || ''
+                  }
+                });
+              }, 500);
+            }
+          });
+        }
+      });
+  }
+  // ── Modifier ouvrirRejet() pour pré-remplir avec IA ──
+  ouvrirRejet(s: Suggestion): void {
+    this.sound.nav();
+    this.commentaireModal = s;
+    this.commentaire = '';
+    // Générer justification automatiquement
+    this.genererJustification(s, 'REJETEE');
+  }
 }

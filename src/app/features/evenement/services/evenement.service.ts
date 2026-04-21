@@ -96,7 +96,8 @@ export class EvenementService {
 
   traiterSuggestion(id: number, statut: string, commentaire?: string): Observable<Suggestion> {
     return this.http.put<Suggestion>(
-      `${this.apiUrl}/suggestions/${id}/traiter?statut=${statut}&commentaire=${commentaire || ''}`, {}
+      `${this.apiUrl}/suggestions/${id}/traiter?statut=${statut}`,
+      { commentaire: commentaire || '' }
     );
   }
 
@@ -183,5 +184,15 @@ export class EvenementService {
     }
     getStats(): Observable<any> {
       return this.http.get(`${this.apiUrl}/evenements/stats`);
+    }
+    getPostSocial(id: number, plateforme = 'facebook'): Observable<any> {
+      return this.http.get(
+        `${this.apiUrl}/resume/${id}/social?plateforme=${plateforme}`
+      );
+    }
+    genererJustification(id: number, statut: string): Observable<any> {
+      return this.http.get(
+        `${this.apiUrl}/suggestions/${id}/justification?statut=${statut}`
+      );
     }
 }

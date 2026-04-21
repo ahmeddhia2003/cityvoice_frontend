@@ -9,6 +9,8 @@ export class EvenementNotificationService implements OnDestroy {
 
   private readonly API = 'http://localhost:8084/api/notifications';
   private eventSource: EventSource | null = null;
+  private pollingInterval: any;
+  private initialized = false; //  empêche les multiples initialisations
 
   // State
   private notifications$ = new BehaviorSubject<EvenementNotification[]>([]);
@@ -21,8 +23,17 @@ export class EvenementNotificationService implements OnDestroy {
 
   // ── Initialiser (appelé au login / au démarrage) ──
   init(destinataireId: string): void {
+    //  Évite les appels multiples
+    if (this.initialized) return;
+    this.initialized = true;
+
     this.charger(destinataireId);
     this.connecterSSE(destinataireId);
+
+    //  Polling toutes les 5 secondes
+    this.pollingInterval = setInterval(() => {
+      this.charger(destinataireId);
+    }, 5000);
   }
 
   // ── Charger les notifs existantes ─────────────────
@@ -40,25 +51,33 @@ export class EvenementNotificationService implements OnDestroy {
 
   // ── SSE ───────────────────────────────────────────
   private connecterSSE(destinataireId: string): void {
-    // Fermer connexion existante
     this.deconnecter();
 
-    this.eventSource = new EventSource(
-      `${this.API}/stream/${destinataireId}`
-    );
+    try {
+      this.eventSource = new EventSource(
+        `${this.API}/stream/${destinataireId}`
+      );
 
-    // Événement "notification" — nouvelle notif reçue
-    this.eventSource.addEventListener('notification', (event: MessageEvent) => {
-      const notif: EvenementNotification = JSON.parse(event.data);
-      const current = this.notifications$.value;
-      this.notifications$.next([notif, ...current]);
-      this.nonLues$.next(this.nonLues$.value + 1);
-    });
+      this.eventSource.addEventListener(
+        'notification',
+        (event: MessageEvent) => {
+          try {
+            const notif: EvenementNotification = JSON.parse(event.data);
+            const current = this.notifications$.value;
+            this.notifications$.next([notif, ...current]);
+            this.nonLues$.next(this.nonLues$.value + 1);
+          } catch {}
+        }
+      );
 
-    this.eventSource.onerror = () => {
-      // Reconnexion automatique après 5s
-      setTimeout(() => this.connecterSSE(destinataireId), 5000);
-    };
+      // ✅ Ferme silencieusement sans reconnexion infinie
+      this.eventSource.onerror = () => {
+        this.deconnecter();
+      };
+
+    } catch {
+      //  Silencieux si EventSource non supporté
+    }
   }
 
   deconnecter(): void {
@@ -86,17 +105,22 @@ export class EvenementNotificationService implements OnDestroy {
         );
         this.notifications$.next(updated);
         this.mettreAJourCount(updated);
-      }
+      },
+      error: () => {}
     });
   }
 
   marquerToutesLues(destinataireId: string): void {
-    this.http.put(`${this.API}/${destinataireId}/tout-lire`, {}).subscribe({
+    this.http.put(
+      `${this.API}/${destinataireId}/tout-lire`, {}
+    ).subscribe({
       next: () => {
-        const updated = this.notifications$.value.map(n => ({ ...n, lu: true }));
+        const updated = this.notifications$.value
+          .map(n => ({ ...n, lu: true }));
         this.notifications$.next(updated);
         this.nonLues$.next(0);
-      }
+      },
+      error: () => {}
     });
   }
 
@@ -107,31 +131,35 @@ export class EvenementNotificationService implements OnDestroy {
 
   getIconType(type: string): string {
     const map: any = {
-      'INSCRIPTION':          '✅',
-      'PAIEMENT':             '💳',
-      'SUGGESTION_ACCEPTEE':  '🎉',
-      'SUGGESTION_REJETEE':   '❌',
-      'EVENEMENT_ANNULE':     '⚠️',
-      'NOUVEAU_PARTICIPANT':  '👤',
-      'NOUVELLE_SUGGESTION':  '💡',
+      'INSCRIPTION':         '✅',
+      'PAIEMENT':            '💳',
+      'SUGGESTION_ACCEPTEE': '🎉',
+      'SUGGESTION_REJETEE':  '❌',
+      'EVENEMENT_ANNULE':    '⚠️',
+      'NOUVEAU_PARTICIPANT': '👤',
+      'NOUVELLE_SUGGESTION': '💡',
     };
     return map[type] || '🔔';
   }
 
   getColorType(type: string): string {
     const map: any = {
-      'INSCRIPTION':          '#0D9B76',
-      'PAIEMENT':             '#3B82F6',
-      'SUGGESTION_ACCEPTEE':  '#0D9B76',
-      'SUGGESTION_REJETEE':   '#E8532A',
-      'EVENEMENT_ANNULE':     '#C9973E',
-      'NOUVEAU_PARTICIPANT':  '#6366F1',
-      'NOUVELLE_SUGGESTION':  '#C9973E',
+      'INSCRIPTION':         '#0D9B76',
+      'PAIEMENT':            '#3B82F6',
+      'SUGGESTION_ACCEPTEE': '#0D9B76',
+      'SUGGESTION_REJETEE':  '#E8532A',
+      'EVENEMENT_ANNULE':    '#C9973E',
+      'NOUVEAU_PARTICIPANT': '#6366F1',
+      'NOUVELLE_SUGGESTION': '#C9973E',
     };
     return map[type] || '#9CA3AF';
   }
 
   ngOnDestroy(): void {
     this.deconnecter();
+    this.initialized = false; //  reset au logout
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 }

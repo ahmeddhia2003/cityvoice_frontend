@@ -129,12 +129,17 @@
           <span *ngIf="analyseEnCours !== s.id">🤖</span>
           {{ analyseEnCours === s.id ? ('adm.sug.btn.analyse.encours' | t) : ('adm.sug.btn.analyser' | t) }}
         </button>
-        <button class="as-btn-accept" (click)="accepter(s)">
-          <svg width="13" height="13" fill="none" stroke="currentColor"
-               stroke-width="2.5" viewBox="0 0 24 24">
+        <button class="as-btn-accept" 
+                (click)="accepter(s)"
+                [disabled]="justificationEnCours === s.id">
+          <span *ngIf="justificationEnCours === s.id" 
+                class="ae-spinner-sm"></span>
+          <svg *ngIf="justificationEnCours !== s.id"
+              width="13" height="13" fill="none" stroke="currentColor"
+              stroke-width="2.5" viewBox="0 0 24 24">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          {{ 'adm.sug.btn.accepter' | t }}
+          {{ justificationEnCours === s.id ? '🤖 Génération IA...' : ('adm.sug.btn.accepter' | t) }}
         </button>
         <button class="as-btn-reject" (click)="ouvrirRejet(s)">
           <svg width="13" height="13" fill="none" stroke="currentColor"
@@ -150,29 +155,56 @@
   </div>
 
   <!-- Modal rejet -->
-  <div class="ms-modal-overlay" *ngIf="commentaireModal" (click)="commentaireModal = null">
+  <div class="ms-modal-overlay" *ngIf="commentaireModal"
+      (click)="commentaireModal = null">
     <div class="ms-modal" (click)="$event.stopPropagation()">
+
       <div class="ms-modal-header">
         <h3>{{ 'adm.sug.modal.titre' | t }}</h3>
-        <button class="ms-modal-close" (click)="sound.nav(); commentaireModal = null">✕</button>
+        <button class="ms-modal-close"
+                (click)="sound.nav(); commentaireModal = null">✕</button>
       </div>
+
       <div style="margin-bottom: 16px">
-        <p style="font-size:13px;color:var(--ink-3);margin-bottom:12px">
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px">
           {{ 'adm.sug.modal.desc' | t }}
         </p>
+
+        <!-- ✅ Indicateur génération IA -->
+        <div *ngIf="justificationEnCours === commentaireModal.id"
+            style="display:flex; align-items:center; gap:8px;
+                    font-size:13px; color:#8888A8; margin-bottom:10px;
+                    font-style:italic;">
+          <span class="ae-spinner-sm"></span>
+          🤖 Génération justification IA en cours...
+        </div>
+
+        <!-- ✅ Badge IA si justification générée -->
+        <div *ngIf="justifications[commentaireModal.id!] &&
+                    justificationEnCours !== commentaireModal.id"
+            style="font-size:11px; color:#0D9B76; margin-bottom:6px;
+                    font-weight:600;">
+          ✅ Justification générée par Llama3.2 IA
+        </div>
+
         <textarea class="ev-textarea"
                   [(ngModel)]="commentaire"
                   [placeholder]="'adm.sug.modal.ph' | t"
-                  rows="4"></textarea>
+                  rows="5"></textarea>
       </div>
+
       <div class="ms-modal-footer">
-        <button class="btn btn-outline" (click)="sound.nav(); commentaireModal = null">
+        <button class="btn btn-outline"
+                (click)="sound.nav(); commentaireModal = null">
           {{ 'adm.sug.modal.annuler' | t }}
         </button>
-        <button class="btn btn-danger" (click)="confirmerRejet()">
+        <button class="btn btn-danger"
+                (click)="confirmerRejet()"
+                [disabled]="justificationEnCours === commentaireModal.id">
           {{ 'adm.sug.modal.confirmer' | t }}
         </button>
       </div>
+
     </div>
   </div>
 
