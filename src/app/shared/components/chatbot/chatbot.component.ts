@@ -9,6 +9,7 @@ import { WeatherService, WeatherAlert } from '../../../core/services/weather.ser
 import { LangService }         from '../../../core/services/lang.service';
 import { SoundService }        from '../../../core/services/sound.service';
 import { SignalementService, SignalementResponse } from '../../../core/services/signalement.service';
+import { ChatbotAiService, ChatHistoryMessage } from '../../../core/services/chatbot-ai.service';
 
 // Real stats shape from /api/v1/signalements/stats
 interface LiveStats {
@@ -67,6 +68,11 @@ export class ChatbotComponent implements OnInit, OnDestroy {
   private mySignalements: SignalementResponse[] = [];
   private weatherSub!: Subscription;
 
+  /** Historique envoyé au LLM (max 10 tours) */
+  private aiHistory: ChatHistoryMessage[] = [];
+  /** Désactiver temporairement l'IA si le service est indisponible */
+  private aiAvailable = true;
+
   @ViewChild('chatBody') chatBodyRef!: ElementRef<HTMLDivElement>;
   @ViewChild('chatInput') inputRef!: ElementRef<HTMLInputElement>;
 
@@ -78,6 +84,7 @@ export class ChatbotComponent implements OnInit, OnDestroy {
     private router:      Router,
     private cdr:         ChangeDetectorRef,
     private sigSvc:      SignalementService,
+    private chatAi:      ChatbotAiService,
   ) {}
 
   ngOnInit(): void {
@@ -128,6 +135,8 @@ export class ChatbotComponent implements OnInit, OnDestroy {
     this.isOpen = !this.isOpen;
 
     if (this.isOpen) {
+      // Réessayer l'IA à chaque réouverture (le service a pu être (re)démarré)
+      this.aiAvailable = true;
       if (this.messages.length === 0) {
         setTimeout(() => this.sendWelcome(), 200);
       }
@@ -182,10 +191,77 @@ export class ChatbotComponent implements OnInit, OnDestroy {
     this.inputText = '';
 
     const intent = this.detectIntent(msg);
-    this.showTyping(() => {
-      const reply = this.buildReply(intent, msg);
-      this.addBotMessage(reply.text, reply.chips);
+
+    // Intents structurés → rule-based (navigation, météo, stats réelles, urgence)
+    if (intent !== 'FALLBACK') {
+      this.showTyping(() => {
+        const reply = this.buildReply(intent, msg);
+        this.addBotMessage(reply.text, reply.chips);
+        // Garder la trace dans l'historique IA
+        this._pushToAiHistory('user', msg);
+        this._pushToAiHistory('assistant', reply.text);
+      });
+      return;
+    }
+
+    // FALLBACK → essayer le LLM si disponible
+    if (this.aiAvailable) {
+      this._askAi(msg);
+    } else {
+      this.showTyping(() => {
+        const reply = this.buildFallbackReply(this.lang.current === 'en', msg);
+        this.addBotMessage(reply.text, reply.chips);
+      });
+    }
+  }
+
+  /** Appelle le service IA et affiche la réponse, ou bascule sur le fallback */
+  private _askAi(msg: string): void {
+    this.typing = true;
+    this.cdr.detectChanges();
+    this.scrollBottom();
+
+    const isEn = this.lang.current === 'en';
+
+    this.chatAi.chat({
+      message: msg,
+      history: [...this.aiHistory],
+      lang:    this.lang.current,
+      user_context: {
+        name:  this.userName   || undefined,
+        role:  this.userRole   || undefined,
+        stats: this.liveStats  ? {
+          total:     this.liveStats.total,
+          resolus:   this.liveStats.resolus,
+          enCours:   this.liveStats.enCours,
+          enAttente: this.liveStats.enAttente,
+        } : undefined,
+      },
+    }).subscribe(reply => {
+      this.typing = false;
+
+      if (reply) {
+        // Succès : afficher la réponse IA
+        this._pushToAiHistory('user', msg);
+        this._pushToAiHistory('assistant', reply);
+        this.addBotMessage(reply);
+      } else {
+        // Service indisponible → fallback rule-based + désactiver pour cette session
+        this.aiAvailable = false;
+        const fallback = this.buildFallbackReply(isEn, msg);
+        this.addBotMessage(fallback.text, fallback.chips);
+      }
+
+      this.cdr.detectChanges();
     });
+  }
+
+  /** Ajoute un message à l'historique IA (fenêtre glissante de 10 tours) */
+  private _pushToAiHistory(role: 'user' | 'assistant', content: string): void {
+    this.aiHistory.push({ role, content });
+    if (this.aiHistory.length > 20) {          // 20 = 10 tours user+assistant
+      this.aiHistory = this.aiHistory.slice(-20);
+    }
   }
 
   onChipClick(chip: string): void {

@@ -146,7 +146,8 @@
       </svg>
       <input type="text"
              placeholder="Type, adresse, description…"
-             [(ngModel)]="searchQuery"/>
+             [(ngModel)]="searchQuery"
+             (ngModelChange)="onSearchChanged()"/>
     </div>
   </div>
 
@@ -189,11 +190,14 @@
       <span class="results-hint" *ngIf="viewScope === 'proximite' && userLat">
         · dans un rayon de {{ proximiteKm }} km autour de vous
       </span>
+      <span class="results-hint results-range" *ngIf="filtered.length > pageSize">
+        · affichage {{ pageRangeStart }}–{{ pageRangeEnd }}
+      </span>
     </p>
 
     <!-- ── GRILLE CARTES ENRICHIES ─────────────────────────── -->
     <div class="signalements-grid">
-      <article class="sig-card" *ngFor="let s of filtered; let i = index">
+      <article class="sig-card" *ngFor="let s of paginated; let i = index">
 
         <!-- ── ZONE IMAGE / GRADIENT ─── -->
         <div class="sig-card__media"
@@ -311,6 +315,52 @@
         </div><!-- /body -->
       </article>
     </div>
+
+    <!-- ── PAGINATION ─────────────────────────────────────── -->
+    <nav class="pagination-bar"
+         *ngIf="filtered.length > pageSize"
+         aria-label="Pagination des signalements">
+
+      <button class="page-btn page-btn--nav"
+              (click)="prevPage()"
+              [disabled]="currentPage === 0"
+              aria-label="Page précédente">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <ng-container *ngFor="let p of pageNumbers">
+        <button *ngIf="p !== '…'"
+                class="page-btn"
+                [class.active]="p === currentPage"
+                [attr.aria-current]="p === currentPage ? 'page' : null"
+                (click)="goToPage(p)">
+          {{ +p + 1 }}
+        </button>
+        <span *ngIf="p === '…'" class="page-ellipsis" aria-hidden="true">…</span>
+      </ng-container>
+
+      <button class="page-btn page-btn--nav"
+              (click)="nextPage()"
+              [disabled]="currentPage >= totalPages - 1"
+              aria-label="Page suivante">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      <div class="page-size-selector">
+        <label for="pageSizeSel">Par page&nbsp;:</label>
+        <select id="pageSizeSel"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize($event)">
+          <option *ngFor="let n of pageSizeOptions" [ngValue]="n">{{ n }}</option>
+        </select>
+      </div>
+    </nav>
 
     <!-- Empty state -->
     <div class="empty-state" *ngIf="filtered.length === 0">

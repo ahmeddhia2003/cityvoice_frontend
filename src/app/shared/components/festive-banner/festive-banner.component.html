@@ -22,6 +22,9 @@
             <span class="fb-ar">{{ holiday.nameAr }}</span>
           </div>
           <div class="fb-msg">{{ holiday.message }}</div>
+          <div class="fb-ops" *ngIf="holiday.opsMessage">
+            {{ holiday.opsMessage }}
+          </div>
         </div>
       </div>
 

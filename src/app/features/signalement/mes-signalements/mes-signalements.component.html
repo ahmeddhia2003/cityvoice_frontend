@@ -89,8 +89,12 @@
       </div>
 
       <!-- ══ LISTE ════════════════════════════════════════ -->
+      <div class="ms-results-row" *ngIf="filtered.length > 0">
+        {{ filtered.length }} signalement{{ filtered.length > 1 ? 's' : '' }}
+        <span *ngIf="pageCount > 1"> — page {{ currentPage + 1 }}/{{ pageCount }}</span>
+      </div>
       <div class="ms-list" *ngIf="filtered.length > 0">
-        <div class="ms-card" *ngFor="let sig of filtered; let i = index"
+        <div class="ms-card" *ngFor="let sig of paged; let i = index"
              [attr.data-statut]="sig.statut">
 
           <!-- Header -->
@@ -209,6 +213,24 @@
           </div>
 
         </div>
+      </div>
+
+      <!-- ══ PAGINATION ══════════════════════════════════════ -->
+      <div class="ms-pagination" *ngIf="pageCount > 1">
+        <button class="ms-page-btn"
+                [disabled]="currentPage === 0"
+                (click)="currentPage = currentPage - 1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="ms-page-btn"
+                *ngFor="let p of [].constructor(pageCount); let i = index"
+                [class.ms-page-btn--active]="currentPage === i"
+                (click)="currentPage = i">{{ i + 1 }}</button>
+        <button class="ms-page-btn"
+                [disabled]="currentPage === pageCount - 1"
+                (click)="currentPage = currentPage + 1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
 
       <!-- ══ VIDE ══════════════════════════════════════════ -->

@@ -12,20 +12,31 @@
 
   <!-- Nav links -->
   <div class="nav-links">
+
     <a href="#how-it-works" (click)="sound.nav()">{{ lang.t.nav_how }}</a>
     <a href="#stats"        (click)="sound.nav()">{{ lang.t.nav_impact }}</a>
     <a href="#map-section"  (click)="sound.nav()">{{ lang.t.nav_map }}</a>
     <a href="#testimonials" (click)="sound.nav()">{{ lang.t.nav_testi }}</a>
+    <a routerLink="/personnel/list" (click)="sound.nav()">Offres d'emploi</a>
+
   </div>
+  
 
   <!-- Actions -->
   <div class="nav-actions">
 
     <!-- Language -->
-    <div class="lang-sw">
-      <button class="lang-btn" [class.active]="lang.current === 'fr'" (click)="setLang('fr')">FR</button>
+    <div class="lang-sw" [class.translating]="autoTranslate.busy$ | async" data-no-translate>
+      <button class="lang-btn" [class.active]="lang.current === 'fr'"
+              [disabled]="autoTranslate.busy$ | async"
+              (click)="setLang('fr')">FR</button>
       <span class="lang-sep"></span>
-      <button class="lang-btn" [class.active]="lang.current === 'en'" (click)="setLang('en')">EN</button>
+      <button class="lang-btn" [class.active]="lang.current === 'en'"
+              [disabled]="autoTranslate.busy$ | async"
+              (click)="setLang('en')">
+        <span *ngIf="!(autoTranslate.busy$ | async)">EN</span>
+        <span *ngIf="autoTranslate.busy$ | async" class="lang-spinner" aria-label="Traduction en cours"></span>
+      </button>
     </div>
 
     <!-- Dark mode toggle -->
@@ -128,7 +139,7 @@
         <img *ngIf="currentUser?.photo"
              [src]="currentUser.photo"
              class="user-avatar-sm user-avatar-photo"
-             [alt]="getFullName()">
+            [alt]="getFullName()">
         <div class="user-btn-info">
           <span class="user-name-sm">{{ getFirstName() }}</span>
           <!-- Points only for CITOYEN, otherwise show role -->
@@ -137,8 +148,8 @@
                 [style.color]="getRoleColor()">{{ getRoleLabel() }}</span>
         </div>
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
-             [style.transform]="userMenuOpen ? 'rotate(180deg)' : 'rotate(0)'"
-             style="transition: transform .2s; flex-shrink:0">
+            [style.transform]="userMenuOpen ? 'rotate(180deg)' : 'rotate(0)'"
+            style="transition: transform .2s; flex-shrink:0">
           <polyline points="6 9 12 15 18 9"/>
         </svg>
       </button>
@@ -148,9 +159,9 @@
           <div class="ud-user-info">
             <div class="ud-avatar" *ngIf="!currentUser?.photo">{{ getUserInitials() }}</div>
             <img *ngIf="currentUser?.photo"
-                 [src]="currentUser.photo"
-                 class="ud-avatar ud-avatar-photo"
-                 [alt]="getFullName()">
+              [src]="currentUser.photo"
+                  class="ud-avatar ud-avatar-photo"
+                [alt]="getFullName()">
             <div>
               <div class="ud-name">{{ getFullName() }}</div>
               <div class="ud-email">{{ currentUser?.email }}</div>
@@ -173,7 +184,7 @@
 
         <div class="ud-divider"></div>
 
-        <!-- These links only for CITOYEN -->
+        <!-- ── CITOYEN ─────────────────────────────────────── -->
         <a *ngIf="isCitoyen()" routerLink="/signaler/mes-signalements" class="ud-item" (click)="sound.nav(); closeUserMenu()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
@@ -182,18 +193,35 @@
         </a>
         <a *ngIf="isCitoyen()" routerLink="/user/leaderboard" class="ud-item" (click)="sound.nav(); closeUserMenu()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <line x1="18" y1="20" x2="18" y2="10"/>
-            <line x1="12" y1="20" x2="12" y2="4"/>
-            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
           </svg>
           Classement
         </a>
 
-        <!-- Profile link for everyone -->
+        <!-- ── CHEF_EQUIPE ──────────────────────────────────── -->
+        <a *ngIf="isChefEquipe()" routerLink="/personnel/equipelist" class="ud-item" (click)="sound.nav(); closeUserMenu()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Activité
+        </a>
+
+        <!-- ── AUTRES RÔLES (MEMBRE, MODO, ADMIN) ──────────── -->
+        <a *ngIf="!isCitoyen() && !isChefEquipe()" routerLink="/personnel/equipelist" class="ud-item" (click)="sound.nav(); closeUserMenu()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Équipes
+        </a>
+
+        <div class="ud-divider"></div>
+
+        <!-- Profil pour tous -->
         <a routerLink="/user/profile" class="ud-item" (click)="sound.nav(); closeUserMenu()">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
           Mon profil
         </a>

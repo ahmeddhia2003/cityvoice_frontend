@@ -9,8 +9,8 @@ import { SoundService } from '../../core/services/sound.service';
 import { environment } from '../../../environments/environment';
 
 declare const gsap: any;
-declare const ScrollTrigger: any;
 declare const L: any;
+declare const ScrollTrigger: any;
 
 interface LiveItem {
   id: number;
@@ -25,10 +25,11 @@ interface LiveItem {
 @Component({
   selector: 'app-landing',
   templateUrl: './landing.component.html',
-  styleUrls: ['./landing.component.css'],
+  styleUrls: ['./landing.component.css']
 })
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('mapEl')  mapElRef!: ElementRef;
+
+  @ViewChild('mapEl') mapElRef!: ElementRef;
   @ViewChild('progEl') progRef!: ElementRef;
 
   private map:       any;
@@ -40,46 +41,37 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private ctaDone    = false;
   private feedTimer: any;
 
-  // All signalement coords for the heatmap [lat, lng, intensity]
   heatPoints: [number, number, number][] = [];
 
   statCurrents = [0,0,0,0];
   ctaCurrents  = [0,0,0];
   liveResolved = 0;
   liveProgress = 0;
-  livePending  = 0;
+  livePending = 0;
 
   // Banner heights (for hero padding-top compensation)
   weatherBannerHeight  = 0;
   festiveBannerHeight  = 0;
 
   liveFeed: LiveItem[] = [
-    { id:1, type:'Trou chaussée',    emoji:'🕳️', address:'Av. Habib Bourguiba', status:'resolved',    time:'il y a 3 min' },
-    { id:2, type:'Lampadaire cassé', emoji:'💡', address:'Rue de la Liberté',   status:'in-progress', time:'il y a 8 min' },
-    { id:3, type:'Fuite d\'eau',     emoji:'💧', address:'Cité El Menzah 6',    status:'resolved',    time:'il y a 12 min'},
-    { id:4, type:'Déchets',          emoji:'🗑️', address:'Rue Ibn Khaldoun',    status:'pending',     time:'il y a 18 min'},
-    { id:5, type:'Poteau endommagé', emoji:'⚡', address:'Av. Mohamed V',       status:'in-progress', time:'il y a 24 min'},
+    { id: 1, type: 'Trou chaussée', emoji: '🕳️', address: 'Av. Habib Bourguiba', status: 'resolved', time: '3 min' },
+    { id: 2, type: 'Lampadaire cassé', emoji: '💡', address: 'Rue de la Liberté', status: 'in-progress', time: '8 min' },
+    { id: 3, type: 'Fuite d\'eau', emoji: '💧', address: 'Menzah 6', status: 'resolved', time: '12 min' },
+    { id: 4, type: 'Déchets', emoji: '🗑️', address: 'Rue Ibn Khaldoun', status: 'pending', time: '18 min' }
   ];
 
-  private newItems: LiveItem[] = [
-    { id:6, type:'Caniveau bouché',  emoji:'🌊', address:'Bd du 7 Novembre',  status:'pending',     time:'à l\'instant' },
-    { id:7, type:'Trou chaussée',    emoji:'🕳️', address:'Av. Farhat Hached', status:'resolved',    time:'à l\'instant' },
-    { id:8, type:'Signalisation',    emoji:'🚦', address:'Bab Bhar',          status:'in-progress', time:'à l\'instant' },
+  // données UI
+  stats: { val: number; suffix: string; cls: string; trend?: boolean }[] = [
+    { val: 94,    suffix: '%', cls: 'stat1', trend: true },
+    { val: 4827,  suffix: '+', cls: 'stat2' },
+    { val: 12400, suffix: '',  cls: 'stat3' },
+    { val: 38,    suffix: '',  cls: 'stat4' }
   ];
-  private newIdx = 0;
-
-  stats = [
-    { val:4827,  cls:'coral', suffix:'',  trend:true  },
-    { val:3241,  cls:'teal',  suffix:'',  trend:false },
-    { val:12400, cls:'gold',  suffix:'+', trend:false },
-    { val:38,    cls:'white', suffix:'h', trend:false },
-  ];
-  ctaStats = [ { val:4827 }, { val:3241 }, { val:12400, suffix:'+' } ];
 
   steps = [
-    { num:'01', icon:'camera' },
-    { num:'02', icon:'cpu' },
-    { num:'03', icon:'tool' },
+    { num: '01', icon: 'camera' },
+    { num: '02', icon: 'cpu' },
+    { num: '03', icon: 'tool' }
   ];
 
   marqueeItems = [
@@ -97,10 +89,28 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     '🌊 Caniveaux bouchés',
   ];
 
+  ctaStats: { val: number; suffix: string }[] = [
+    { val: 4827,  suffix: '+' },
+    { val: 94,    suffix: '%' },
+    { val: 12400, suffix: ''  }
+  ];
+
   testimonials = [
-    { av:'SB', name:'Sonia Belhaj',   loc:'Tunis Centre', accent:'coral', text_fr:'"Mon signalement concernant un trou dangereux a été traité en moins de 48h. Enfin une application qui fonctionne !"', text_en:'"My report was handled in less than 48h. Finally an app that actually works!"' },
-    { av:'KM', name:'Karim Mansouri', loc:'Ariana',       accent:'teal',  text_fr:'"Simple, rapide, efficace. On voit vraiment les équipes intervenir sur le terrain. Bravo !"',                          text_en:'"Simple, fast, effective. You can really see the teams working on the ground!"'                },
-    { av:'LH', name:'Lina Hamdi',     loc:'La Marsa',     accent:'gold',  text_fr:'"J\'ai suivi en temps réel la résolution du problème dans ma rue. Transparence totale."',                              text_en:'"I tracked the resolution in real time. Total transparency."'                                    },
+    {
+      name: 'Amine', loc: 'Tunis', av: 'A', accent: 'coral',
+      text_fr: 'Grâce à Madina, le trou dans ma rue a été réparé en 3 jours. Avant, ça prenait des mois et personne ne répondait jamais.',
+      text_en: 'Thanks to Madina, the pothole on my street was fixed in 3 days. Before, it used to take months with no response.',
+    },
+    {
+      name: 'Sara', loc: 'Sfax', av: 'S', accent: 'teal',
+      text_fr: 'Interface très intuitive. J\'ai pu suivre mon signalement en temps réel jusqu\'à sa résolution. Exactement ce dont on avait besoin.',
+      text_en: 'Very intuitive interface. I could track my report in real time until it was resolved. Exactly what we needed.',
+    },
+    {
+      name: 'Youssef', loc: 'Sousse', av: 'Y', accent: 'gold',
+      text_fr: 'L\'IA identifie instantanément le bon service municipal. La fuite d\'eau que j\'ai signalée a été prise en charge en moins de 48h.',
+      text_en: 'The AI instantly identifies the right municipal service. The water leak I reported was handled in less than 48 hours.',
+    },
   ];
 
   /* ── FAQ ──────────────────────────────────────────────────── */
@@ -160,27 +170,30 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(public lang: LangService, public sound: SoundService, private http: HttpClient) {}
 
   ngOnInit(): void {
-    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
     this.calcLive();
     this.loadRealData();
     this.feedTimer = setInterval(() => {
-      if (this.newIdx < this.newItems.length) {
-        const item = { ...this.newItems[this.newIdx++], isNew: true };
-        this.liveFeed.unshift(item);
-        if (this.liveFeed.length > 6) this.liveFeed.pop();
-        this.calcLive();
-        setTimeout(() => {
-          if (typeof gsap !== 'undefined') gsap.fromTo('.live-item:first-child', { opacity:0, y:-18, scale:.97 }, { opacity:1, y:0, scale:1, duration:.5, ease:'back.out(1.5)' });
-          setTimeout(() => item.isNew = false, 2200);
-        }, 50);
-      }
-    }, 5500);
+      const item: LiveItem = {
+        id: Date.now(),
+        type: 'Nouveau signalement',
+        emoji: '🚨',
+        address: 'Zone inconnue',
+        status: 'pending',
+        time: 'à l\'instant',
+        isNew: true
+      };
+
+      this.liveFeed.unshift(item);
+      if (this.liveFeed.length > 6) this.liveFeed.pop();
+
+      this.calcLive();
+    }, 5000);
   }
 
   private calcLive(): void {
-    this.liveResolved = this.liveFeed.filter(i=>i.status==='resolved').length;
-    this.liveProgress = this.liveFeed.filter(i=>i.status==='in-progress').length;
-    this.livePending  = this.liveFeed.filter(i=>i.status==='pending').length;
+    this.liveResolved = this.liveFeed.filter(i => i.status === 'resolved').length;
+    this.liveProgress = this.liveFeed.filter(i => i.status === 'in-progress').length;
+    this.livePending = this.liveFeed.filter(i => i.status === 'pending').length;
   }
 
   // ── Real data from API ─────────────────────────────────────────────────────
@@ -320,80 +333,147 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       this.initHero();
       this.initScrollAnimations();
       this.initMap();
-    }, 80);
+    }, 100);
+  }
+
+  // ── Hero entrance animations ───────────────────────────────────────────────
+  private initHero(): void {
+    if (typeof gsap === 'undefined') {
+      // GSAP not loaded — reveal everything immediately
+      const sel = '.hero-eyebrow,.hero-desc,.hero-buttons,.hero-trust,' +
+                  '.live-panel,.live-stat-card,.live-item';
+      document.querySelectorAll(sel).forEach((el: any) => {
+        el.style.opacity = '1'; el.style.transform = 'none';
+      });
+      document.querySelectorAll('.hero-title-word').forEach((el: any) => {
+        el.style.transform = 'translateY(0)';
+      });
+      return;
+    }
+
+    // Set starting positions for elements that need x/y animation
+    gsap.set('.hero-eyebrow',    { opacity: 0, y: 18 });
+    gsap.set('.hero-desc',       { opacity: 0, y: 16 });
+    gsap.set('.hero-buttons',    { opacity: 0, y: 14 });
+    gsap.set('.hero-trust',      { opacity: 0, y: 12 });
+    gsap.set('.live-panel',      { opacity: 0, x: 40 });
+    gsap.set('.live-stat-card',  { opacity: 0, y: 10 });
+    gsap.set('.live-item',       { opacity: 0, x: 16 });
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // Eyebrow badge
+    tl.to('.hero-eyebrow', { opacity: 1, y: 0, duration: .55 }, 0.1)
+
+    // Title words cascade (CSS starts at translateY(110%), GSAP animates to 0)
+      .to('.hero-title-word', { y: 0, duration: .7, stagger: .12, ease: 'power4.out' }, 0.25)
+
+    // Description + buttons + trust
+      .to('.hero-desc',    { opacity: 1, y: 0, duration: .5 }, 0.7)
+      .to('.hero-buttons', { opacity: 1, y: 0, duration: .45 }, 0.85)
+      .to('.hero-trust',   { opacity: 1, y: 0, duration: .4 }, 1.0)
+
+    // Live panel slides in from right
+      .to('.live-panel', { opacity: 1, x: 0, duration: .65, ease: 'back.out(1.2)' }, 0.5)
+
+    // Stats mini cards stagger
+      .to('.live-stat-card', { opacity: 1, y: 0, duration: .35, stagger: .1 }, 0.85)
+
+    // Feed items stagger
+      .to('.live-item', { opacity: 1, x: 0, duration: .3, stagger: .07 }, 1.05);
+  }
+
+  // ── Scroll-triggered animations (stats, steps, features, testi) ──────────
+  private initScrollAnimations(): void {
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+      // Fallback: make everything visible immediately
+      document.querySelectorAll(
+        '.stat-cell,.step-card,.reveal-card,.testi-card,.reveal-heading'
+      ).forEach((el: any) => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      return;
+    }
+
+    // Stat cells
+    ScrollTrigger.create({
+      trigger: '.stats-section', start: 'top 75%',
+      onEnter: () => {
+        if (this.statsDone) return; this.statsDone = true;
+        gsap.to('.stat-cell', {
+          opacity: 1, y: 0, duration: .6, stagger: .1, ease: 'power3.out',
+          onStart: () => {
+            this.stats.forEach((st, i) => {
+              const o = { v: 0 };
+              gsap.to(o, {
+                v: st.val, duration: 2.2, ease: 'power2.out',
+                onUpdate: () => { this.statCurrents[i] = Math.round(o.v); },
+              });
+            });
+          },
+        });
+      },
+    });
+
+    // CTA counters
+    ScrollTrigger.create({
+      trigger: '.cta-section', start: 'top 80%',
+      onEnter: () => {
+        if (this.ctaDone) return; this.ctaDone = true;
+        this.ctaStats.forEach((s, i) => {
+          const o = { v: 0 };
+          gsap.to(o, {
+            v: s.val, duration: 2.0, ease: 'power2.out',
+            onUpdate: () => { this.ctaCurrents[i] = Math.round(o.v); },
+          });
+        });
+      },
+    });
+
+    // Step cards
+    gsap.utils.toArray('.step-card').forEach((el: any) => {
+      ScrollTrigger.create({
+        trigger: el, start: 'top 85%',
+        onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }),
+      });
+    });
+
+    // Feature + testi reveal cards
+    gsap.utils.toArray('.reveal-card').forEach((el: any) => {
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%',
+        onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: .5, ease: 'power3.out' }),
+      });
+    });
+
+    // Reveal headings
+    gsap.utils.toArray('.reveal-heading').forEach((el: any) => {
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%',
+        onEnter: () => gsap.fromTo(el,
+          { opacity: 0, y: 22 },
+          { opacity: 1, y: 0, duration: .5, ease: 'power2.out' }
+        ),
+      });
+    });
   }
 
   ngOnDestroy(): void {
     clearInterval(this.feedTimer);
-    this.sts.forEach(s=>s.kill());
-    ScrollTrigger?.getAll().forEach((t:any)=>t.kill());
+    this.subs.forEach(s => s.unsubscribe());
     if (this.map) this.map.remove();
-    this.subs.forEach(s=>s.unsubscribe());
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (!this.progRef?.nativeElement) return;
-    const pct = window.scrollY/(document.body.scrollHeight-window.innerHeight);
-    gsap.set(this.progRef.nativeElement,{scaleX:pct});
-  }
+    if (!this.progRef) return;
 
-  private initHero(): void {
-    const tl = gsap.timeline({ defaults:{ ease:'power4.out' } });
-    tl
-      .fromTo('.hero-eyebrow',    {opacity:0,y:16},       {opacity:1,y:0,duration:.6},       .4)
-      .fromTo('.hero-title-word', {y:'110%',skewY:3},     {y:'0%',skewY:0,duration:.9,stagger:.07}, .55)
-      .fromTo('.hero-desc',       {opacity:0,y:20},       {opacity:1,y:0,duration:.7},       .95)
-      .fromTo('.hero-buttons',    {opacity:0,y:16},       {opacity:1,y:0,duration:.6},       1.1)
-      .fromTo('.hero-trust',      {opacity:0},            {opacity:1,duration:.5},           1.3)
-      .fromTo('.live-panel',      {opacity:0,x:50,scale:.96},{opacity:1,x:0,scale:1,duration:1,ease:'power3.out'}, .65)
-      .fromTo('.live-stat-card',  {opacity:0,y:20},       {opacity:1,y:0,duration:.5,stagger:.08,ease:'back.out(1.5)'}, 1.05)
-      .fromTo('.live-item',       {opacity:0,x:16},       {opacity:1,x:0,duration:.4,stagger:.07}, 1.25);
+    const pct =
+      window.scrollY /
+      (document.body.scrollHeight - window.innerHeight);
 
-    gsap.to('.btn-pulse', {boxShadow:'0 10px 36px rgba(232,83,42,.52)',scale:1.025,duration:1.4,yoyo:true,repeat:-1,ease:'sine.inOut'});
-    gsap.to('.live-dot',  {scale:1.5,opacity:.4,duration:1,yoyo:true,repeat:-1,ease:'sine.inOut'});
-  }
-
-  private initScrollAnimations(): void {
-    if (typeof ScrollTrigger==='undefined') return;
-
-    gsap.utils.toArray('.reveal-heading').forEach((el:Element) => {
-      const st = ScrollTrigger.create({trigger:el,start:'top 85%',
-        onEnter:()=>gsap.fromTo(el,{opacity:0,y:30,clipPath:'inset(0 0 80% 0)'},{opacity:1,y:0,clipPath:'inset(0 0 0% 0)',duration:.8,ease:'power3.out'})
-      });
-      this.sts.push(st);
-    });
-
-    gsap.utils.toArray('.step-card').forEach((el:Element,i:number) => {
-      const st = ScrollTrigger.create({trigger:el,start:'top 82%',
-        onEnter:()=>gsap.to(el,{opacity:1,y:0,duration:.7,delay:i*.12,ease:'power3.out'})
-      });
-      this.sts.push(st);
-    });
-
-    const s1 = ScrollTrigger.create({trigger:'.stats-section',start:'top 72%',
-      onEnter:()=>{
-        if(this.statsDone)return; this.statsDone=true;
-        gsap.utils.toArray('.stat-cell').forEach((el:Element,i:number)=>gsap.to(el,{opacity:1,y:0,duration:.7,delay:i*.1,ease:'power3.out'}));
-        this.stats.forEach((s,i)=>{const o={v:0};gsap.to(o,{v:s.val,duration:2.4,ease:'power2.out',onUpdate:()=>{this.statCurrents[i]=Math.round(o.v);}});});
-      }
-    });
-    this.sts.push(s1);
-
-    gsap.utils.toArray('.testi-card').forEach((el:Element,i:number) => {
-      const st = ScrollTrigger.create({trigger:el,start:'top 85%',
-        onEnter:()=>gsap.to(el,{opacity:1,y:0,duration:.7,delay:i*.12,ease:'power3.out'})
-      });
-      this.sts.push(st);
-    });
-
-    const s2 = ScrollTrigger.create({trigger:'.cta-section',start:'top 75%',
-      onEnter:()=>{
-        if(this.ctaDone)return; this.ctaDone=true;
-        this.ctaStats.forEach((s,i)=>{const o={v:0};gsap.to(o,{v:s.val,duration:2.2,ease:'power2.out',onUpdate:()=>{this.ctaCurrents[i]=Math.round(o.v);}});});
-      }
-    });
-    this.sts.push(s2);
+    gsap.set(this.progRef.nativeElement, { scaleX: pct });
   }
 
   private initMap(): void {
@@ -552,6 +632,13 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   getTestiText(t:any):string { return this.lang.current==='fr'?t.text_fr:t.text_en; }
   trackItem(_:number,item:LiveItem):number{return item.id;}
   statusLabel(s:string):string { return ({resolved:'Résolu','in-progress':'En cours',pending:'En attente'} as any)[s]??s; }
-}
 
-// Appended patch
+  statusLabel2(s: string): string {
+    return {
+      resolved: 'Résolu',
+      'in-progress': 'En cours',
+      pending: 'En attente'
+    }[s] || s;
+  }
+
+}

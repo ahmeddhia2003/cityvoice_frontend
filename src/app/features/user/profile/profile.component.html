@@ -684,6 +684,63 @@
           </div>
         </div>
 
+        <!-- ── Notifications SMS (canal alternatif) ────────────── -->
+        <div class="form-section notif-section" *ngIf="isCitoyen()">
+          <div class="fs-header">
+            <div class="fs-icon" style="background:rgba(59,130,246,.1);color:#3B82F6">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <line x1="7"  y1="9"  x2="17" y2="9"/>
+                <line x1="7"  y1="13" x2="14" y2="13"/>
+              </svg>
+            </div>
+            <div>
+              <div class="fs-title">Notifications SMS</div>
+              <div class="fs-sub">
+                Recevez un SMS si vous n'avez pas WhatsApp — utile en cas de faible connexion Internet
+              </div>
+            </div>
+          </div>
+
+          <!-- Alerte si pas de numéro -->
+          <div class="whatsapp-no-phone" *ngIf="!user?.telephone">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Ajoutez d'abord un numéro de téléphone dans l'onglet <strong>Informations</strong>.</span>
+          </div>
+
+          <!-- Toggle principal -->
+          <div class="whatsapp-toggle-row" *ngIf="user?.telephone">
+            <div class="wt-info">
+              <div class="wt-phone">{{ user?.telephone }}</div>
+              <div class="wt-desc">
+                {{ smsNotifs
+                    ? '✅ Activé — vous recevrez un SMS à chaque mise à jour'
+                    : '💤 Désactivé — aucun SMS ne sera envoyé' }}
+              </div>
+            </div>
+            <button class="wt-toggle sms-toggle" [class.on]="smsNotifs"
+                    [disabled]="savingSms"
+                    (click)="toggleSms()">
+              <span class="wt-thumb"></span>
+            </button>
+          </div>
+
+          <div class="wt-status" *ngIf="smsMsg"
+               [class.success]="smsSuccess"
+               [class.error]="!smsSuccess">
+            {{ smsMsg }}
+          </div>
+
+          <!-- Note si les deux canaux sont actifs -->
+          <div class="notif-hint" *ngIf="whatsappNotifs && smsNotifs">
+            <span>💡</span>
+            <span>WhatsApp <strong>et</strong> SMS sont actifs : vous recevrez les mises à jour sur les deux canaux.</span>
+          </div>
+        </div>
+
       </div>
 
       <!-- ── Tab Activité ──────────────────────────────── -->

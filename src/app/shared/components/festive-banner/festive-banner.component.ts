@@ -62,8 +62,26 @@ export class FestiveBannerComponent implements OnInit, AfterViewInit, OnDestroy 
   ) {}
 
   ngOnInit(): void {
-    this.holiday = this.holidayService.getTodayHoliday();
-    this.cdr.detectChanges();
+    // Démo synchro (URL ?demo=…) — pour pouvoir tester même hors-ligne
+    const demo = this.holidayService.getTodayHoliday();
+    if (demo) {
+      this.holiday = demo;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // Sinon on appelle l'API date.nager.at (async)
+    this.holidayService.getTodayHoliday$().subscribe(h => {
+      this.holiday = h;
+      this.cdr.detectChanges();
+      if (h) {
+        this._emitHeight();
+        setTimeout(() => {
+          this._animateBanner();
+          this._startConfetti();
+        }, 120);
+      }
+    });
   }
 
   ngAfterViewInit(): void {

@@ -103,6 +103,7 @@ export class ProfileComponent implements OnInit {
         this.photoPreview   = u.photo || null;
         this.photoError     = '';
         this.whatsappNotifs = u.whatsappNotifs ?? false;
+        this.smsNotifs      = u.smsNotifs      ?? false;
         this.selectedAgentStatus = u.agentStatus || 'DISPONIBLE';
         this.infoForm.patchValue({
           nom:         u.nom,
@@ -581,6 +582,12 @@ Utilise des emojis. Sois direct et authentique.`;
   whatsappMsg       = '';
   whatsappSuccess   = true;
 
+  // ── SMS notifications (canal alternatif) ────────────────────
+  smsNotifs         = false;
+  savingSms         = false;
+  smsMsg            = '';
+  smsSuccess        = true;
+
 
   getAgentStatusInfo(key: string) {
     return this.agentStatusOptions.find(o => o.key === key)
@@ -635,6 +642,41 @@ Utilise des emojis. Sois direct et authentique.`;
           this.whatsappMsg = 'Ajoutez un numéro de téléphone dans l\'onglet Informations.';
         } else {
           this.whatsappMsg = 'Erreur lors de la mise à jour. Réessayez.';
+        }
+      }
+    });
+  }
+
+  // ── Toggle SMS ─────────────────────────────────────────────
+  toggleSms(): void {
+    if (!this.user?.telephone) return;
+    if (this.savingSms) return;
+
+    this.savingSms = true;
+    this.smsMsg    = '';
+
+    const newVal = !this.smsNotifs;
+
+    this.http.patch<{ smsNotifs: boolean; message: string }>(
+      `${environment.apiUrl}/api/users/${this.user.id}/sms-notifs`,
+      { smsNotifs: newVal }
+    ).subscribe({
+      next: (res) => {
+        this.smsNotifs  = res.smsNotifs;
+        this.smsMsg     = res.message ||
+          (res.smsNotifs ? 'Notifications SMS activées ✓' : 'Notifications SMS désactivées');
+        this.smsSuccess = true;
+        this.savingSms  = false;
+        if (this.user) this.user.smsNotifs = res.smsNotifs;
+      },
+      error: (err) => {
+        this.savingSms  = false;
+        this.smsSuccess = false;
+        const errData = err?.error;
+        if (errData?.error === 'PHONE_REQUIRED') {
+          this.smsMsg = 'Ajoutez un numéro de téléphone dans l\'onglet Informations.';
+        } else {
+          this.smsMsg = 'Erreur lors de la mise à jour. Réessayez.';
         }
       }
     });

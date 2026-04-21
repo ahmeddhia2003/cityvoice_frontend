@@ -28,6 +28,7 @@ export interface UserDto {
 
   // ── Notifications ────────────────────────────────────
   whatsappNotifs:   boolean;
+  smsNotifs:        boolean;   // canal alternatif si pas de WhatsApp / préférence utilisateur
   callmebotApiKey:  string;
 
   // ── Champs calculés ──────────────────────────────────
@@ -222,5 +223,9 @@ export class UserService {
 
   updateAgentStatus(userId: string, status: string): Observable<any> {
     return this.http.patch(`${this.URL}/${userId}/agent-status`, { status });
+  }
+
+  getUserId(): string {
+    return localStorage.getItem('userId') ?? '';
   }
 }

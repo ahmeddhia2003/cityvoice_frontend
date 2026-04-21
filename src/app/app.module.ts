@@ -10,11 +10,15 @@ import {SharedModule} from './shared/shared.module';
 import { LandingComponent } from './features/landing/landing.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {UserModule} from './features/user/user.module';
+import { EquipesListComponent } from './features/equipes/equipes-list/equipes-list.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     LandingComponent,
+    EquipesListComponent
+    
   ],
   imports: [
     BrowserModule,

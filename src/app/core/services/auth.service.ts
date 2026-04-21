@@ -111,6 +111,8 @@ export class AuthService {
             setTimeout(() => {
               if (res.role === 'ADMIN_VILLE') {
                 this.router.navigate(['/admin']);
+              } else if (res.role === 'CHEF_EQUIPE') {
+                this.router.navigate(['/chef']);
               } else {
                 this.router.navigate(['/landing']);
               }
@@ -239,6 +241,15 @@ export class AuthService {
     setTimeout(() => {
       this.authStateSubject.next();
       this.setLoading(false, undefined, 'Bienvenue sur CityVoice 🎉', 'success');
+      setTimeout(() => {
+        if (role === 'ADMIN_VILLE') {
+          this.router.navigate(['/admin']);
+        } else if (role === 'CHEF_EQUIPE') {
+          this.router.navigate(['/chef']);
+        } else {
+          this.router.navigate(['/landing']);
+        }
+      }, 800);
     }, 1200);
   }
 
@@ -259,4 +270,14 @@ export class AuthService {
   isCitoyen(): boolean {
     return this.getRole() === 'CITOYEN';
   }
+  canViewCv(): boolean {
+  const role = this.getRole();
+
+  return role !== 'CITOYEN' && role !== 'MEMBRE_EQUIPE';
+}
+getUserId(): string | null {
+  return this.getCurrentUser()?.userId ?? null;
+}
+
+
 }

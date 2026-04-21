@@ -586,3 +586,64 @@
 :host-context(html.dark) .ms-progress-steps span.done .prog-dot {
   background: #E2EAF8;
 }
+
+/* ── Results row ─────────────────────────────────────────── */
+.ms-results-row {
+  font-size: 12.5px;
+  color: var(--ink-3, #8A95A3);
+  margin: 0 0 12px;
+}
+
+/* ── Pagination ─────────────────────────────────────────── */
+.ms-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 20px 0 8px;
+}
+
+.ms-page-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1.5px solid rgba(12,31,63,.12);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--navy, #0C1F3F);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.ms-page-btn:hover:not(:disabled):not(.ms-page-btn--active) {
+  background: #F0F3FA;
+  border-color: rgba(12,31,63,.25);
+}
+
+.ms-page-btn--active {
+  background: var(--navy, #0C1F3F);
+  color: #fff;
+  border-color: var(--navy, #0C1F3F);
+}
+
+.ms-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+:host-context(html.dark) .ms-page-btn {
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+  color: #E2EAF8;
+}
+
+:host-context(html.dark) .ms-page-btn--active {
+  background: #4A90D9;
+  border-color: #4A90D9;
+  color: #fff;
+}

@@ -16,6 +16,8 @@ export class AppComponent implements OnInit {
   isAuthRoute    = false;   // hide banners on signin/signup/etc.
   showAuthLoader = false;
   authLoaderMsg  = '';
+  showFooter = true;
+
 
   // Banner heights — fed by the two banner components in the template
   private _weatherBannerHeight = 0;

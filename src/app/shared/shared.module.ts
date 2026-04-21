@@ -10,6 +10,7 @@ import { SignalementDetailPopupComponent } from './components/signalement-detail
 import { WeatherAlertBannerComponent } from './components/weather-alert-banner/weather-alert-banner.component';
 import { FestiveBannerComponent } from './components/festive-banner/festive-banner.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { ChefResolutionModalComponent } from './components/chef-resolution-modal/chef-resolution-modal.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
     WeatherAlertBannerComponent,
     FestiveBannerComponent,
     ChatbotComponent,
+    ChefResolutionModalComponent,
   ],
   imports: [
     CommonModule,
@@ -37,6 +39,7 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
     WeatherAlertBannerComponent,
     FestiveBannerComponent,
     ChatbotComponent,
+    ChefResolutionModalComponent,
   ],
 })
 export class SharedModule { }

@@ -680,7 +680,7 @@ export class SignalerFormComponent implements OnInit, AfterViewInit, OnDestroy {
             priorite:       sig.prioriteCitoyen?.toLowerCase() ?? 'moyenne',
             priorite_score: 2,
             equipe:         sig.equipeIA ?? '',
-            equipe_label:   sig.equipeIALabel ?? 'Affectation en cours',
+            equipe_label:   sig.equipeIALabel ?? this._labelFromType(sig.type) ?? 'Affectation en cours',
             delai_heures:   sig.delaiEstimeHeures ?? 48,
             confidences:    { categorie: sig.confidenceIA ?? 0.85 },
             processing_ms:  0,
@@ -827,6 +827,22 @@ if (auth?.userId) {
     if (c >= 0.75) return 'conf-high';
     if (c >= 0.45) return 'conf-med';
     return 'conf-low';
+  }
+
+  /** Dérive le label d'équipe depuis le type citoyen si equipeIALabel est null */
+  _labelFromType(type: string | null | undefined): string | null {
+    const map: Record<string, string> = {
+      DECHETS_NON_COLLECTES:   'Équipe Propreté',
+      TROU_CHAUSSEE:           'Équipe Voirie',
+      SIGNALISATION_MANQUANTE: 'Équipe Voirie',
+      CANIVEAU_BOUCHE:         'Équipe Assainissement',
+      FUITE_EAU:               'Équipe Plomberie',
+      LAMPADAIRE_CASSE:        'Équipe Éclairage',
+      ECLAIRAGE_DEFAILLANT:    'Équipe Éclairage',
+      POTEAU_ENDOMMAGE:        'Équipe Éclairage',
+      ESPACE_VERT_DEGRADE:     'Équipe Espaces Verts',
+    };
+    return type ? (map[type.toUpperCase()] ?? null) : null;
   }
 
   prioriteLabel(p: string): string {

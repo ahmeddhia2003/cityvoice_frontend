@@ -1,0 +1,1196 @@
+<!-- ══════════════════════════════════════════════════════
+     CHEF D'ÉQUIPE — Espace Premium v3
+     ══════════════════════════════════════════════════════ -->
+<div class="ce-page">
+
+  <!-- ════════════════════════════════════════════
+       SIDEBAR
+       ════════════════════════════════════════════ -->
+  <aside class="ce-sidebar">
+
+    <!-- Brand -->
+    <div class="ce-brand">
+      <div class="ce-brand-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <span class="ce-brand-name">CityVoice</span>
+    </div>
+
+    <!-- Chef profile card -->
+    <div class="ce-profile-card">
+      <div class="ce-avatar">{{ (chefNom || 'C').charAt(0).toUpperCase() }}</div>
+      <div class="ce-profile-info">
+        <div class="ce-profile-name">{{ chefNom || 'Chef d\'équipe' }}</div>
+        <div class="ce-profile-role">Chef d'équipe</div>
+      </div>
+    </div>
+
+    <!-- Team badge -->
+    <div class="ce-team-badge" *ngIf="equipeCode">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="7" r="4"/>
+        <path d="M6 21v-2a6 6 0 0112 0v2"/>
+      </svg>
+      <span>{{ equipeLabel || equipeCode }}</span>
+    </div>
+
+    <!-- Nav -->
+    <nav class="ce-nav">
+      <button class="ce-nav-btn" [class.active]="activeView==='dashboard'" (click)="setView('dashboard')">
+        <span class="ce-nav-icon">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </span>
+        <span>Tableau de bord</span>
+      </button>
+
+      <button class="ce-nav-btn" [class.active]="activeView==='contrats'" (click)="setView('contrats')">
+        <span class="ce-nav-icon">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>
+          </svg>
+        </span>
+        <span>Contrats</span>
+        <span class="ce-nav-count" *ngIf="contratsEnAttente.length">{{ contratsEnAttente.length }}</span>
+      </button>
+
+      <button class="ce-nav-btn" [class.active]="activeView==='signalements'" (click)="setView('signalements')">
+        <span class="ce-nav-icon">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </span>
+        <span>Signalements</span>
+        <span class="ce-nav-count ce-nav-count--orange" *ngIf="sigEnCours.length">{{ sigEnCours.length }}</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar footer -->
+    <div class="ce-sidebar-footer">
+      <a routerLink="/" class="ce-sidebar-link">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Déconnexion
+      </a>
+    </div>
+  </aside>
+
+  <!-- ════════════════════════════════════════════
+       MAIN
+       ════════════════════════════════════════════ -->
+  <main class="ce-main">
+
+    <!-- ═══════════════════════════════════════════════════════
+         DASHBOARD VIEW
+         ═══════════════════════════════════════════════════════ -->
+    <div class="ce-view" *ngIf="activeView==='dashboard'">
+
+      <!-- Hero -->
+      <div class="ce-hero">
+        <div class="ce-hero-text">
+          <div class="ce-hero-greeting">Bonjour,</div>
+          <h1 class="ce-hero-name">{{ chefNom || 'Chef d\'équipe' }}</h1>
+          <div class="ce-hero-team" *ngIf="equipeLabel || equipeCode">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0112 0v2"/>
+            </svg>
+            Équipe {{ equipeLabel || equipeCode }}
+          </div>
+        </div>
+        <div class="ce-hero-orb" aria-hidden="true"></div>
+      </div>
+
+      <!-- KPI grid -->
+      <div class="ce-kpi-grid">
+        <div class="ce-kpi" (click)="setView('contrats')" role="button" tabindex="0">
+          <div class="ce-kpi-top">
+            <div class="ce-kpi-icon-wrap" style="--c:#E8532A;--cbg:rgba(232,83,42,.1)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <svg class="ce-kpi-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <div class="ce-kpi-val">{{ contratsEnAttente.length }}</div>
+          <div class="ce-kpi-lbl">Contrats à signer</div>
+          <div class="ce-kpi-pulse" *ngIf="contratsEnAttente.length > 0"></div>
+        </div>
+
+        <div class="ce-kpi" (click)="setView('signalements')" role="button" tabindex="0">
+          <div class="ce-kpi-top">
+            <div class="ce-kpi-icon-wrap" style="--c:#3B82F6;--cbg:rgba(59,130,246,.1)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <svg class="ce-kpi-arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </div>
+          <div class="ce-kpi-val">{{ sigEnCours.length }}</div>
+          <div class="ce-kpi-lbl">En cours</div>
+        </div>
+
+        <div class="ce-kpi">
+          <div class="ce-kpi-top">
+            <div class="ce-kpi-icon-wrap" style="--c:#0D9B76;--cbg:rgba(13,155,118,.1)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ce-kpi-val">{{ sigResolus.length }}</div>
+          <div class="ce-kpi-lbl">Résolus</div>
+        </div>
+
+        <div class="ce-kpi" *ngIf="sigUrgents > 0" style="--kpi-accent:#EF4444">
+          <div class="ce-kpi-top">
+            <div class="ce-kpi-icon-wrap" style="--c:#EF4444;--cbg:rgba(239,68,68,.1)">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ce-kpi-val" style="color:#EF4444">{{ sigUrgents }}</div>
+          <div class="ce-kpi-lbl">Urgents</div>
+          <div class="ce-kpi-pulse ce-kpi-pulse--red"></div>
+        </div>
+      </div>
+
+      <!-- Contrats en attente — quick list -->
+      <div class="ce-section" *ngIf="contratsEnAttente.length > 0">
+        <div class="ce-section-head">
+          <h2 class="ce-section-title">
+            <span class="ce-section-dot" style="background:#E8532A"></span>
+            Contrats à signer
+          </h2>
+          <button class="ce-section-link" (click)="setView('contrats')" *ngIf="contratsEnAttente.length > 2">
+            Voir tous ({{ contratsEnAttente.length }})
+          </button>
+        </div>
+        <div class="ce-quick-list">
+          <div class="ce-quick-card" *ngFor="let c of contratsEnAttente.slice(0,2)">
+            <div class="ce-qc-left">
+              <div class="ce-qc-num">{{ c.numeroContrat }}</div>
+              <div class="ce-qc-equipe">{{ c.equipeLabel }}</div>
+              <div class="ce-qc-desc" *ngIf="c.signalement?.description">
+                {{ c.signalement.description | slice:0:80 }}{{ (c.signalement.description?.length ?? 0) > 80 ? '…' : '' }}
+              </div>
+            </div>
+            <div class="ce-qc-actions">
+              <button class="ce-btn-sign" (click)="setView('contrats'); openContrat(c)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                </svg>
+                Voir &amp; Signer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signalements récents -->
+      <div class="ce-section" *ngIf="sigEnCours.length > 0">
+        <div class="ce-section-head">
+          <h2 class="ce-section-title">
+            <span class="ce-section-dot" style="background:#3B82F6"></span>
+            Interventions en cours
+          </h2>
+          <button class="ce-section-link" (click)="setView('signalements')" *ngIf="sigEnCours.length > 3">
+            Voir tous ({{ sigEnCours.length }})
+          </button>
+        </div>
+        <div class="sig-grid sig-grid--compact">
+          <div class="sig-card" *ngFor="let s of sigEnCours.slice(0,3)"
+            [class.sig-card--urgente]="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'">
+            <div class="sig-card-accent"
+              [class.accent--urgente]="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'"
+              [class.accent--haute]="s.prioriteIA==='HAUTE'||s.prioriteCitoyen==='HAUTE'"
+              [class.accent--moyenne]="s.prioriteIA==='MOYENNE'||s.prioriteCitoyen==='MOYENNE'"
+              [class.accent--faible]="!s.prioriteIA&&!s.prioriteCitoyen"></div>
+            <div class="sig-card-top">
+              <span class="sig-type-chip">{{ typeLabel(s.type) }}</span>
+              <span class="sig-statut-pill sstat--en-cours">En cours</span>
+            </div>
+            <p class="sig-card-desc">{{ s.description | slice:0:80 }}{{ (s.description?.length>80)?'…':'' }}</p>
+            <div class="sig-card-footer">
+              <span class="sig-card-date">{{ timeAgo(s.dateSignalement) }}</span>
+              <button class="sig-resolve-btn" (click)="openResolution(s)">Résoudre</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state full dashboard -->
+      <div class="ce-empty-dashboard" *ngIf="contratsEnAttente.length===0 && sigEnCours.length===0 && !contratsLoading && !sigLoading">
+        <div class="ce-empty-illus">
+          <svg width="60" height="60" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" opacity=".25">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <p class="ce-empty-text">Tout est en ordre — aucune action requise pour le moment.</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         CONTRATS VIEW
+         ═══════════════════════════════════════════════════════ -->
+    <div class="ce-view" *ngIf="activeView==='contrats'">
+
+      <!-- ══ LISTE (quand aucun contrat ouvert) ══════════════════════ -->
+      <ng-container *ngIf="!selectedContrat">
+        <div class="ce-page-header">
+          <div>
+            <h1 class="ce-page-title">Mes contrats</h1>
+            <p class="ce-page-sub">Cliquez sur un contrat pour voir tous les détails et signer</p>
+          </div>
+          <button class="ce-refresh-btn" (click)="loadContrats()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+            Actualiser
+          </button>
+        </div>
+
+        <!-- ── Barre recherche + filtres statut ── -->
+        <div class="sig-toolbar" *ngIf="!contratsLoading && contrats.length > 0">
+          <div class="sig-search-wrap">
+            <svg class="sig-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input class="sig-search-input" type="text" placeholder="Rechercher par numéro, équipe, type, adresse…"
+              [value]="contratSearch" (input)="setContratSearch($any($event.target).value)" />
+            <button class="sig-search-clear" *ngIf="contratSearch" (click)="setContratSearch('')">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="sig-filter-tabs" *ngIf="!contratsLoading && contrats.length > 0">
+          <button class="sig-tab" [class.sig-tab--active]="contratFilter==='TOUS'" (click)="setContratFilter('TOUS')">
+            Tous <span class="sig-tab-badge sig-tab-badge--muted">{{ contrats.length }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="contratFilter==='EN_ATTENTE_SIGNATURE'" (click)="setContratFilter('EN_ATTENTE_SIGNATURE')">
+            <span class="sig-tab-dot" style="background:#F59E0B"></span>
+            En attente <span class="sig-tab-badge" *ngIf="contratsEnAttente.length">{{ contratsEnAttente.length }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="contratFilter==='ACCEPTE'" (click)="setContratFilter('ACCEPTE')">
+            <span class="sig-tab-dot" style="background:#10B981"></span>
+            Acceptés <span class="sig-tab-badge sig-tab-badge--green" *ngIf="contratsAcceptes.length">{{ contratsAcceptes.length }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="contratFilter==='REFUSE'" (click)="setContratFilter('REFUSE')">
+            <span class="sig-tab-dot" style="background:#EF4444"></span>
+            Refusés
+          </button>
+        </div>
+
+        <div class="sig-results-row" *ngIf="!contratsLoading && contrats.length > 0">
+          <span class="sig-results-count">{{ contratsFiltered.length }} contrat{{ contratsFiltered.length!==1?'s':'' }}</span>
+          <span class="sig-results-hint" *ngIf="contratSearch"> pour « {{ contratSearch }} »</span>
+        </div>
+
+        <div class="ce-loading-wrap" *ngIf="contratsLoading">
+          <div class="ce-spin"></div>
+        </div>
+
+        <div class="ce-error-card" *ngIf="contratsError && !contratsLoading">
+          ⚠️ {{ contratsError }}
+        </div>
+
+        <div class="ce-empty-card" *ngIf="!contratsLoading && !contratsError && contratsFiltered.length === 0">
+          <div class="ce-empty-icon-wrap">📋</div>
+          <p>{{ contrats.length === 0 ? 'Aucun contrat assigné à votre équipe.' : 'Aucun résultat pour ces critères.' }}</p>
+          <button class="sig-empty-reset" *ngIf="contratSearch || contratFilter!=='TOUS'" (click)="setContratFilter('TOUS'); setContratSearch('')">Réinitialiser les filtres</button>
+        </div>
+
+        <div class="ce-contrat-stack" *ngIf="!contratsLoading && contratsPaged.length > 0">
+          <div class="ce-contrat-item" *ngFor="let c of contratsPaged"
+            [class.ce-contrat-item--pending]="c.statut==='EN_ATTENTE_SIGNATURE'"
+            [class.ce-contrat-item--accepted]="c.statut==='ACCEPTE'"
+            [class.ce-contrat-item--refused]="c.statut==='REFUSE'"
+            (click)="openContrat(c)"
+            style="cursor:pointer">
+
+            <div class="ce-ci-stripe"></div>
+
+            <div class="ce-ci-body">
+              <div class="ce-ci-head">
+                <div class="ce-ci-id-col">
+                  <span class="ce-ci-num">{{ c.numeroContrat }}</span>
+                  <span class="ce-ci-tentative" *ngIf="c.tentative > 1">Tentative {{ c.tentative }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="ce-ci-badge" [class]="statutClass(c.statut)">{{ statutLabel(c.statut) }}</span>
+                  <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="ce-ci-meta">
+                <span class="ce-ci-meta-item">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  </svg>
+                  {{ c.equipeLabel }}
+                </span>
+                <span class="ce-ci-meta-item" *ngIf="c.delaiEstimeHeures">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  {{ c.delaiEstimeHeures }}h estimées
+                </span>
+                <span class="ce-ci-meta-item">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  {{ c.dateCreation | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+
+              <div class="ce-ci-sig-embed" *ngIf="c.signalement">
+                <div class="ce-ci-sig-type">{{ typeLabel(c.signalement.type) }}</div>
+                <p class="ce-ci-sig-desc">{{ c.signalement.description | slice:0:100 }}{{ (c.signalement.description?.length??0) > 100 ? '…' : '' }}</p>
+                <div class="ce-ci-sig-addr" *ngIf="c.signalement.adresse">📍 {{ c.signalement.adresse }}</div>
+              </div>
+
+              <div class="ce-ci-hint" *ngIf="c.statut==='EN_ATTENTE_SIGNATURE'">
+                👆 Cliquez pour ouvrir le contrat complet et signer
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Pagination contrats ── -->
+        <div class="cv-pagination" *ngIf="contratsPageCount > 1">
+          <button class="cv-page-btn" [disabled]="contratPage === 0" (click)="contratPage = contratPage - 1">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="cv-page-btn" *ngFor="let p of [].constructor(contratsPageCount); let i = index"
+            [class.cv-page-btn--active]="contratPage === i" (click)="contratPage = i">
+            {{ i + 1 }}
+          </button>
+          <button class="cv-page-btn" [disabled]="contratPage === contratsPageCount - 1" (click)="contratPage = contratPage + 1">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+      </ng-container>
+
+      <!-- ══ DÉTAIL CONTRAT (pleine page comme l'admin) ═════════════ -->
+      <div class="cd-wrapper" *ngIf="selectedContrat">
+
+        <!-- Barre de navigation -->
+        <div class="cd-topbar">
+          <button class="cd-back-btn" (click)="closeContrat()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Mes contrats
+          </button>
+          <div class="cd-topbar-right">
+            <button class="cd-pdf-btn" (click)="exportPdf()">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Exporter PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Document -->
+        <div class="cd-doc">
+
+          <!-- En-tête document (style officiel) -->
+          <div class="cd-doc-header">
+            <div class="cd-doc-brand">
+              <div class="cd-doc-city">MADINA</div>
+              <div class="cd-doc-subtitle">Municipalité de Madina — Système de Gestion Urbaine</div>
+            </div>
+            <div class="cd-doc-ref">
+              <div class="cd-doc-num">N° {{ selectedContrat.numeroContrat }}</div>
+              <div class="cd-doc-date">Émis le {{ selectedContrat.dateCreation | date:'dd/MM/yyyy' }}</div>
+              <div class="cd-doc-tent" *ngIf="selectedContrat.tentative > 1">Tentative {{ selectedContrat.tentative }}</div>
+            </div>
+          </div>
+
+          <!-- Titre + statut -->
+          <div class="cd-title-row">
+            <h2 class="cd-title">CONTRAT DE MISSION DE TRAVAUX</h2>
+            <span class="ce-ci-badge" [class]="statutClass(selectedContrat.statut)">
+              {{ selectedContrat.statut === 'EN_ATTENTE_SIGNATURE' ? '⏳ En attente de signature' :
+                 selectedContrat.statut === 'ACCEPTE' ? '✅ Accepté' :
+                 selectedContrat.statut === 'REFUSE'  ? '❌ Refusé' : selectedContrat.statut }}
+            </span>
+          </div>
+
+          <!-- Préambule -->
+          <p class="cd-preambule">
+            La Municipalité de Madina, agissant dans le cadre de sa mission de service public,
+            confie par le présent contrat la réalisation des travaux décrits ci-dessous à
+            l'équipe désignée.
+          </p>
+
+          <!-- ── Section 1 : Équipe ─────────────────────────────── -->
+          <div class="cd-section">
+            <div class="cd-section-header">1. ÉQUIPE ASSIGNÉE</div>
+            <div class="cd-rows">
+              <div class="cd-row">
+                <span class="cd-row-label">Équipe</span>
+                <span class="cd-row-value">{{ selectedContrat.equipeLabel }}</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Code équipe</span>
+                <span class="cd-row-value">{{ selectedContrat.equipeCode?.toUpperCase() }}</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Délai estimé</span>
+                <span class="cd-row-value">{{ selectedContrat.delaiEstimeHeures ? selectedContrat.delaiEstimeHeures + 'h' : '—' }}</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Chef assigné</span>
+                <span class="cd-row-value">{{ selectedContrat.chefEquipeId ? 'Vous' : 'En attente d\'attribution' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Section 2 : Signalement ────────────────────────── -->
+          <div class="cd-section" *ngIf="selectedContrat.signalement">
+            <div class="cd-section-header">2. DÉTAILS DU SIGNALEMENT</div>
+            <div class="cd-rows">
+              <div class="cd-row">
+                <span class="cd-row-label">Référence</span>
+                <span class="cd-row-value">#{{ selectedContrat.signalement.id }}</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Type</span>
+                <span class="cd-row-value cd-type-chip">{{ typeLabel(selectedContrat.signalement.type) }}</span>
+              </div>
+              <div class="cd-row" *ngIf="selectedContrat.signalement.adresse">
+                <span class="cd-row-label">Adresse</span>
+                <span class="cd-row-value">📍 {{ selectedContrat.signalement.adresse }}</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Priorité citoyen</span>
+                <span class="cd-row-value cd-prio-badge" [ngClass]="prioClass(selectedContrat.signalement.prioriteCitoyen)">
+                  {{ prioLabel(selectedContrat.signalement.prioriteCitoyen) }}
+                </span>
+              </div>
+              <div class="cd-row" *ngIf="selectedContrat.signalement.prioriteIA">
+                <span class="cd-row-label">Priorité IA</span>
+                <span class="cd-row-value cd-prio-badge" [ngClass]="prioClass(selectedContrat.signalement.prioriteIA)">
+                  {{ prioLabel(selectedContrat.signalement.prioriteIA) }}
+                </span>
+              </div>
+              <div class="cd-row" *ngIf="selectedContrat.signalement.confidenceIA != null">
+                <span class="cd-row-label">Confiance IA</span>
+                <span class="cd-row-value">{{ (selectedContrat.signalement.confidenceIA * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="cd-row">
+                <span class="cd-row-label">Date signalement</span>
+                <span class="cd-row-value">{{ timeAgo(selectedContrat.signalement.dateSignalement) }}</span>
+              </div>
+            </div>
+
+            <!-- Description complète -->
+            <div class="cd-desc-block">
+              <div class="cd-desc-label">Description complète :</div>
+              <p class="cd-desc-text">{{ selectedContrat.signalement.description }}</p>
+            </div>
+
+            <!-- Photo (si disponible) -->
+            <div class="cd-photo-row" *ngIf="selectedContrat.signalement.mediaUrls?.length">
+              <img [src]="selectedContrat.signalement.mediaUrls[0]" alt="Photo du signalement" class="cd-photo" />
+              <span class="cd-photo-count" *ngIf="selectedContrat.signalement.mediaUrls.length > 1">
+                +{{ selectedContrat.signalement.mediaUrls.length - 1 }} photo(s)
+              </span>
+            </div>
+          </div>
+
+          <!-- ── Section 3 : Obligations ─────────────────────────── -->
+          <div class="cd-section">
+            <div class="cd-section-header">3. OBLIGATIONS DE L'ÉQUIPE</div>
+            <ul class="cd-obligations">
+              <li>Prendre en charge l'intervention dans un délai de <strong>{{ selectedContrat.delaiEstimeHeures || 48 }}h</strong> à compter de l'acceptation.</li>
+              <li>Signaler tout obstacle imprévu à la direction technique dans les 24h.</li>
+              <li>Fournir un rapport d'intervention à la clôture du chantier.</li>
+              <li>Respecter les normes de sécurité et les réglementations en vigueur.</li>
+            </ul>
+          </div>
+
+          <!-- ── Section 4 : Actions (si EN_ATTENTE) ─────────────── -->
+          <div class="cd-section" *ngIf="selectedContrat.statut === 'EN_ATTENTE_SIGNATURE'">
+            <div class="cd-section-header">4. SIGNATURES</div>
+
+            <!-- Choix action -->
+            <div class="cd-sign-choices" *ngIf="!inlineSignMode && !inlineRefusMode">
+              <div class="cd-sign-choice-desc">En signant ce contrat, vous acceptez la mission et vous engagez à respecter les obligations ci-dessus.</div>
+              <div class="cd-sign-btns">
+                <button class="ce-btn-sign cd-sign-main-btn" (click)="inlineSignMode=true; initInlineCanvas()">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                  Signer et accepter
+                </button>
+                <button class="ce-btn-refuse cd-sign-main-btn" (click)="inlineRefusMode=true">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Refuser la mission
+                </button>
+              </div>
+            </div>
+
+            <!-- Panneau signature inline -->
+            <div class="cd-sign-panel" *ngIf="inlineSignMode">
+              <div class="cd-sign-grid">
+                <div class="cd-sign-left">
+                  <div class="cd-sign-label-box">Pour la Municipalité de Madina</div>
+                  <div class="cd-sign-cachet">
+                    <svg width="90" height="90" viewBox="0 0 90 90">
+                      <circle cx="45" cy="45" r="42" fill="none" stroke="#0C1F3F" stroke-width="3"/>
+                      <circle cx="45" cy="45" r="34" fill="none" stroke="#0C1F3F" stroke-width="1"/>
+                      <text x="45" y="32" text-anchor="middle" font-size="6" font-family="Arial" fill="#0C1F3F" font-weight="bold">• MUNICIPALITÉ DE MADINA •</text>
+                      <text x="45" y="46" text-anchor="middle" font-size="11" font-family="Arial" fill="#0C1F3F" font-weight="bold">MADINA</text>
+                      <text x="45" y="56" text-anchor="middle" font-size="7" font-family="Arial" fill="#0C1F3F">OFFICIEL</text>
+                      <text x="45" y="64" text-anchor="middle" font-size="6" font-family="Arial" fill="#0C1F3F">• TUNISIE • CITYVOICE •</text>
+                      <text x="45" y="51" text-anchor="middle" font-size="12" font-family="Arial" fill="#E8532A">★</text>
+                    </svg>
+                  </div>
+                </div>
+                <div class="cd-sign-right">
+                  <div class="cd-sign-label-box">Pour le Chef d'Équipe — {{ chefNom }}</div>
+                  <p class="ce-sign-hint">Dessinez votre signature dans le cadre ci-dessous :</p>
+                  <div class="ce-canvas-wrap cd-canvas-wrap">
+                    <canvas class="sign-canvas" width="440" height="160"></canvas>
+                    <button class="ce-canvas-clear" (click)="clearSignature()">Effacer</button>
+                  </div>
+                </div>
+              </div>
+              <div class="cd-sign-actions">
+                <button class="ce-btn-cancel" (click)="inlineSignMode=false; clearSignature()">Annuler</button>
+                <button class="ce-btn-sign" [disabled]="!signatureData || actionLoading" (click)="accepterContratDetail()">
+                  <span *ngIf="!actionLoading">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Confirmer la signature
+                  </span>
+                  <span *ngIf="actionLoading" class="ce-loading-row"><span class="ce-spin ce-spin--sm"></span></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Panneau refus inline -->
+            <div class="cd-refus-panel" *ngIf="inlineRefusMode">
+              <div class="cd-refus-warn">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                En cas de refus, l'IA réaffectera automatiquement ce signalement à une autre équipe disponible.
+              </div>
+              <textarea class="ce-textarea cd-refus-textarea" [(ngModel)]="motifRefus" rows="4"
+                placeholder="Précisez le motif : équipe indisponible, travaux spécialisés requis, manque de matériel…"></textarea>
+              <div class="cd-sign-actions">
+                <button class="ce-btn-cancel" (click)="inlineRefusMode=false; motifRefus=''">Annuler</button>
+                <button class="ce-btn-refuse" [disabled]="!motifRefus.trim() || actionLoading" (click)="refuserContratDetail()">
+                  <span *ngIf="!actionLoading">Confirmer le refus</span>
+                  <span *ngIf="actionLoading" class="ce-loading-row"><span class="ce-spin ce-spin--sm"></span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Résultat si déjà traité ─────────────────────────── -->
+          <div class="cd-done-banner cd-done-banner--ok" *ngIf="selectedContrat.statut === 'ACCEPTE'">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Contrat accepté — Intervention EN COURS
+          </div>
+          <div class="cd-done-banner cd-done-banner--refused" *ngIf="selectedContrat.statut === 'REFUSE'">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Contrat refusé
+            <span *ngIf="selectedContrat.motifRefus"> — {{ selectedContrat.motifRefus }}</span>
+          </div>
+
+          <!-- Pied de page -->
+          <div class="cd-doc-footer">
+            Madina — Plateforme CityVoice © 2025 — Document généré automatiquement par intelligence artificielle<br>
+            Contrat N° {{ selectedContrat.numeroContrat }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         SIGNALEMENTS VIEW
+         ═══════════════════════════════════════════════════════ -->
+    <div class="ce-view" *ngIf="activeView==='signalements'">
+
+      <!-- ── LIST MODE ─────────────────────────────────────── -->
+      <ng-container *ngIf="!selectedSignalement">
+
+        <!-- Header -->
+        <div class="ce-page-header">
+          <div>
+            <h1 class="ce-page-title">Signalements</h1>
+            <p class="ce-page-sub">Interventions assignées à votre équipe</p>
+          </div>
+          <button class="ce-refresh-btn" (click)="loadSignalements()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+            Actualiser
+          </button>
+        </div>
+
+        <!-- ── Stats dashboard ── -->
+        <div class="sig-dashboard">
+          <div class="sig-kpi sig-kpi--blue">
+            <div class="sig-kpi-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="sig-kpi-body">
+              <span class="sig-kpi-num">{{ sigEnCours.length }}</span>
+              <span class="sig-kpi-lbl">En cours</span>
+            </div>
+          </div>
+          <div class="sig-kpi sig-kpi--green">
+            <div class="sig-kpi-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="sig-kpi-body">
+              <span class="sig-kpi-num">{{ sigResolus.length }}</span>
+              <span class="sig-kpi-lbl">Résolus</span>
+            </div>
+          </div>
+          <div class="sig-kpi sig-kpi--orange">
+            <div class="sig-kpi-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="sig-kpi-body">
+              <span class="sig-kpi-num">{{ sigUrgents }}</span>
+              <span class="sig-kpi-lbl">Urgents</span>
+            </div>
+          </div>
+          <div class="sig-kpi sig-kpi--muted">
+            <div class="sig-kpi-icon">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <div class="sig-kpi-body">
+              <span class="sig-kpi-num">{{ signalements.length }}</span>
+              <span class="sig-kpi-lbl">Total</span>
+            </div>
+            <!-- Resolution progress bar -->
+            <div class="sig-kpi-progress" *ngIf="signalements.length">
+              <div class="sig-kpi-progress-track">
+                <div class="sig-kpi-progress-fill" [style.width.%]="sigResolutionRate"></div>
+              </div>
+              <span class="sig-kpi-progress-lbl">{{ sigResolutionRate }}% résolu</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Toolbar: search + sort + tabs ── -->
+        <div class="sig-toolbar">
+          <div class="sig-search-wrap">
+            <svg class="sig-search-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input class="sig-search-input" type="text" placeholder="Rechercher par type, adresse, description…"
+              [value]="sigSearch" (input)="setSigSearch($any($event.target).value)" />
+            <button class="sig-search-clear" *ngIf="sigSearch" (click)="setSigSearch('')">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="sig-sort-wrap">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="9" y2="18"/>
+            </svg>
+            <select class="sig-sort-select" [(ngModel)]="sigSortBy">
+              <option value="date">Par date</option>
+              <option value="priorite">Par priorité</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sig-filter-tabs">
+          <button class="sig-tab" [class.sig-tab--active]="sigFilter==='EN_COURS'" (click)="setSigFilter('EN_COURS')">
+            <span class="sig-tab-dot" style="background:#3B82F6"></span>
+            En cours
+            <span class="sig-tab-badge" *ngIf="sigEnCours.length">{{ sigEnCours.length }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="sigFilter==='RESOLU'" (click)="setSigFilter('RESOLU')">
+            <span class="sig-tab-dot" style="background:#0D9B76"></span>
+            Résolus
+            <span class="sig-tab-badge sig-tab-badge--green" *ngIf="sigResolus.length">{{ sigResolus.length }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="sigFilter==='URGENTS'" (click)="setSigFilter('URGENTS')">
+            <span class="sig-tab-dot" style="background:#DC2626"></span>
+            Urgents
+            <span class="sig-tab-badge sig-tab-badge--red" *ngIf="sigUrgents">{{ sigUrgents }}</span>
+          </button>
+          <button class="sig-tab" [class.sig-tab--active]="sigFilter==='TOUS'" (click)="setSigFilter('TOUS')">
+            Tous
+            <span class="sig-tab-badge sig-tab-badge--muted">{{ signalements.length }}</span>
+          </button>
+        </div>
+
+        <!-- Results count -->
+        <div class="sig-results-row" *ngIf="!sigLoading && signalements.length">
+          <span class="sig-results-count">{{ sigFiltered.length }} résultat{{ sigFiltered.length!==1?'s':'' }}</span>
+          <span class="sig-results-hint" *ngIf="sigSearch">pour « {{ sigSearch }} »</span>
+        </div>
+
+        <div class="ce-loading-wrap" *ngIf="sigLoading">
+          <div class="ce-spin"></div>
+        </div>
+
+        <div class="sig-empty-state" *ngIf="!sigLoading && sigFiltered.length === 0">
+          <div class="sig-empty-icon">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24" opacity=".25">
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/>
+            </svg>
+          </div>
+          <p class="sig-empty-text">
+            {{ sigSearch ? 'Aucun résultat pour « ' + sigSearch + ' »' :
+               sigFilter==='EN_COURS'  ? 'Aucun signalement en cours' :
+               sigFilter==='RESOLU'    ? 'Aucun signalement résolu' :
+               sigFilter==='URGENTS'   ? 'Aucun signalement urgent' :
+               'Aucun signalement assigné à votre équipe.' }}
+          </p>
+          <button class="sig-empty-reset" *ngIf="sigSearch" (click)="sigSearch=''">Effacer la recherche</button>
+        </div>
+
+        <div class="sig-grid" *ngIf="!sigLoading && sigFiltered.length > 0">
+          <div class="sig-card" *ngFor="let s of sigPaged"
+            [class.sig-card--urgente]="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'"
+            [class.sig-card--haute]="(s.prioriteIA==='HAUTE'||s.prioriteCitoyen==='HAUTE')&&s.prioriteIA!=='URGENTE'"
+            [class.sig-card--resolu]="s.statut==='RESOLU'"
+            (click)="openSignalement(s)">
+
+            <!-- Priority accent bar -->
+            <div class="sig-card-accent"
+              [class.accent--urgente]="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'"
+              [class.accent--haute]="s.prioriteIA==='HAUTE'||s.prioriteCitoyen==='HAUTE'"
+              [class.accent--moyenne]="s.prioriteIA==='MOYENNE'||s.prioriteCitoyen==='MOYENNE'"
+              [class.accent--faible]="!s.prioriteIA&&!s.prioriteCitoyen"
+              [class.accent--resolu]="s.statut==='RESOLU'">
+            </div>
+
+            <!-- Top row: ID badge + type chip + status -->
+            <div class="sig-card-toprow">
+              <span class="sig-id-badge">#{{ s.id }}</span>
+              <span class="sig-type-chip">{{ typeFullLabel(s.type) }}</span>
+              <span class="sig-statut-pill" [ngClass]="sigStatutClass(s.statut)">{{ sigStatutLabel(s.statut) }}</span>
+            </div>
+
+            <!-- Priority -->
+            <div class="sig-prio-row" *ngIf="s.prioriteIA||s.prioriteCitoyen">
+              <span class="sig-prio-badge" [ngClass]="prioClass(s.prioriteIA||s.prioriteCitoyen)">
+                {{ prioLabel(s.prioriteIA||s.prioriteCitoyen) }}
+              </span>
+              <span class="sig-prio-pulse" *ngIf="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'"></span>
+              <span class="sig-ia-conf" *ngIf="s.confidenceIA != null">
+                IA {{ (s.confidenceIA * 100).toFixed(0) }}%
+              </span>
+            </div>
+
+            <!-- Description -->
+            <p class="sig-card-desc">{{ s.description | slice:0:130 }}{{ (s.description?.length>130)?'…':'' }}</p>
+
+            <!-- Address -->
+            <div class="sig-card-addr" *ngIf="s.adresse">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+              </svg>
+              {{ s.adresse }}
+            </div>
+
+            <!-- Photo strip -->
+            <div class="sig-card-photos" *ngIf="s.mediaUrls?.length">
+              <div class="sig-photo-thumb" *ngFor="let url of s.mediaUrls | slice:0:3; let i=index"
+                [class.sig-photo-thumb--more]="i===2 && s.mediaUrls.length>3">
+                <img [src]="url" alt="Photo {{ i+1 }}" />
+                <span class="sig-photo-overlay" *ngIf="i===2 && s.mediaUrls.length>3">+{{ s.mediaUrls.length-3 }}</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="sig-card-footer">
+              <span class="sig-card-date">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                {{ timeAgo(s.dateSignalement) }}
+              </span>
+              <span class="sig-card-arrow">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Pagination signalements ── -->
+        <div class="cv-pagination" *ngIf="sigPageCount > 1">
+          <button class="cv-page-btn" [disabled]="sigPage === 0" (click)="sigPage = sigPage - 1">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="cv-page-btn" *ngFor="let p of [].constructor(sigPageCount); let i = index"
+            [class.cv-page-btn--active]="sigPage === i" (click)="sigPage = i">
+            {{ i + 1 }}
+          </button>
+          <button class="cv-page-btn" [disabled]="sigPage === sigPageCount - 1" (click)="sigPage = sigPage + 1">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+      </ng-container>
+
+      <!-- ── DETAIL MODE ───────────────────────────────────── -->
+      <ng-container *ngIf="selectedSignalement">
+        <div class="sd-wrapper">
+
+          <!-- Top bar -->
+          <div class="sd-topbar">
+            <button class="sd-back-btn" (click)="closeSignalement()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+              Retour aux signalements
+            </button>
+            <div class="sd-topbar-actions">
+              <button class="sd-resolve-btn"
+                *ngIf="selectedSignalement.statut==='EN_COURS'"
+                (click)="openResolutionFromDetail()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Marquer résolu
+              </button>
+            </div>
+          </div>
+
+          <!-- Document -->
+          <div class="sd-doc">
+
+            <!-- Document header -->
+            <div class="sd-doc-header">
+              <div class="sd-doc-brand">
+                <span class="sd-doc-logo">M</span>
+                <div>
+                  <div class="sd-doc-city">MADINA</div>
+                  <div class="sd-doc-subtitle">Municipalité — Plateforme CityVoice</div>
+                </div>
+              </div>
+              <div class="sd-doc-ref">
+                <div class="sd-doc-ref-num">Signalement #{{ selectedSignalement.id }}</div>
+                <div class="sd-doc-ref-date">{{ selectedSignalement.dateSignalement | date:'dd/MM/yyyy' }}</div>
+              </div>
+            </div>
+
+            <!-- Title + status -->
+            <div class="sd-title-row">
+              <h2 class="sd-title">{{ typeFullLabel(selectedSignalement.type) }}</h2>
+              <span class="sd-statut-badge" [ngClass]="sigStatutClass(selectedSignalement.statut)">
+                {{ sigStatutLabel(selectedSignalement.statut) }}
+              </span>
+            </div>
+
+            <!-- Priority banner (urgente only) -->
+            <div class="sd-urgent-banner" *ngIf="selectedSignalement.prioriteIA==='URGENTE'||selectedSignalement.prioriteCitoyen==='URGENTE'">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Signalement URGENT — Intervention prioritaire requise
+            </div>
+
+            <!-- ── Section 1: Informations générales ── -->
+            <div class="sd-section">
+              <div class="sd-section-header">1. Informations générales</div>
+              <div class="sd-rows">
+                <div class="sd-row">
+                  <span class="sd-row-label">Référence</span>
+                  <span class="sd-row-value">#{{ selectedSignalement.id }}</span>
+                </div>
+                <div class="sd-row">
+                  <span class="sd-row-label">Type</span>
+                  <span class="sd-row-value">
+                    <span class="sd-type-chip">{{ typeFullLabel(selectedSignalement.type) }}</span>
+                  </span>
+                </div>
+                <div class="sd-row">
+                  <span class="sd-row-label">Statut</span>
+                  <span class="sd-row-value">
+                    <span class="sig-statut-pill" [ngClass]="sigStatutClass(selectedSignalement.statut)">
+                      {{ sigStatutLabel(selectedSignalement.statut) }}
+                    </span>
+                  </span>
+                </div>
+                <div class="sd-row">
+                  <span class="sd-row-label">Date de signalement</span>
+                  <span class="sd-row-value">{{ selectedSignalement.dateSignalement | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.dateResolution">
+                  <span class="sd-row-label">Date de résolution</span>
+                  <span class="sd-row-value">{{ selectedSignalement.dateResolution | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Section 2: Localisation ── -->
+            <div class="sd-section">
+              <div class="sd-section-header">2. Localisation</div>
+              <div class="sd-rows">
+                <div class="sd-row" *ngIf="selectedSignalement.adresse">
+                  <span class="sd-row-label">Adresse</span>
+                  <span class="sd-row-value">{{ selectedSignalement.adresse }}</span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.quartier">
+                  <span class="sd-row-label">Quartier</span>
+                  <span class="sd-row-value">{{ selectedSignalement.quartier }}</span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.latitude && selectedSignalement.longitude">
+                  <span class="sd-row-label">Coordonnées GPS</span>
+                  <span class="sd-row-value sd-row-value--mono">
+                    {{ selectedSignalement.latitude | number:'1.4-6' }}, {{ selectedSignalement.longitude | number:'1.4-6' }}
+                  </span>
+                </div>
+                <div class="sd-map-hint" *ngIf="selectedSignalement.latitude && selectedSignalement.longitude">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+                  </svg>
+                  <a [href]="'https://maps.google.com/?q='+selectedSignalement.latitude+','+selectedSignalement.longitude"
+                    target="_blank" rel="noopener" class="sd-map-link">Ouvrir dans Google Maps</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Section 3: Analyse IA ── -->
+            <div class="sd-section">
+              <div class="sd-section-header">3. Analyse par intelligence artificielle</div>
+              <div class="sd-rows">
+                <div class="sd-row">
+                  <span class="sd-row-label">Priorité IA</span>
+                  <span class="sd-row-value">
+                    <span class="sig-prio-badge" [ngClass]="prioClass(selectedSignalement.prioriteIA)">
+                      {{ prioLabel(selectedSignalement.prioriteIA) }}
+                    </span>
+                  </span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.prioriteCitoyen">
+                  <span class="sd-row-label">Priorité citoyen</span>
+                  <span class="sd-row-value">
+                    <span class="sig-prio-badge" [ngClass]="prioClass(selectedSignalement.prioriteCitoyen)">
+                      {{ prioLabel(selectedSignalement.prioriteCitoyen) }}
+                    </span>
+                  </span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.confidenceIA != null">
+                  <span class="sd-row-label">Confiance IA</span>
+                  <span class="sd-row-value">
+                    <div class="sd-conf-bar-wrap">
+                      <div class="sd-conf-bar">
+                        <div class="sd-conf-bar-fill"
+                          [style.width.%]="selectedSignalement.confidenceIA * 100"
+                          [class.sd-conf-bar-fill--high]="selectedSignalement.confidenceIA >= .7"
+                          [class.sd-conf-bar-fill--med]="selectedSignalement.confidenceIA >= .4 && selectedSignalement.confidenceIA < .7"
+                          [class.sd-conf-bar-fill--low]="selectedSignalement.confidenceIA < .4">
+                        </div>
+                      </div>
+                      <span class="sd-conf-pct">{{ (selectedSignalement.confidenceIA * 100).toFixed(0) }}%</span>
+                    </div>
+                  </span>
+                </div>
+                <div class="sd-row" *ngIf="selectedSignalement.equipeAssignee">
+                  <span class="sd-row-label">Équipe assignée</span>
+                  <span class="sd-row-value">{{ selectedSignalement.equipeAssignee }}</span>
+                </div>
+              </div>
+              <!-- Description -->
+              <div class="sd-desc-block">
+                <div class="sd-desc-label">Description du signalement</div>
+                <div class="sd-desc-text">{{ selectedSignalement.description || '—' }}</div>
+              </div>
+            </div>
+
+            <!-- ── Section 4: Photos ── -->
+            <div class="sd-section" *ngIf="selectedSignalement.mediaUrls?.length">
+              <div class="sd-section-header">4. Photos jointes</div>
+              <div class="sd-photo-gallery">
+                <div class="sd-photo-item" *ngFor="let url of selectedSignalement.mediaUrls">
+                  <a [href]="url" target="_blank" rel="noopener">
+                    <img [src]="url" alt="Photo du signalement" />
+                    <div class="sd-photo-overlay">
+                      <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0119 12.55M5 19.11a10.94 10.94 0 01-2.94-3.54m-.07-8.32A11 11 0 0112 2c2.42 0 4.67.78 6.5 2.1M9 9a3 3 0 015.12 2.12M15 15a3 3 0 01-5.94.83"/></svg>
+                      Voir en grand
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Action section (if EN_COURS) ── -->
+            <div class="sd-action-section" *ngIf="selectedSignalement.statut==='EN_COURS'">
+              <div class="sd-section-header">5. Action</div>
+              <div class="sd-action-body">
+                <p class="sd-action-hint">
+                  Ce signalement vous a été assigné. Lorsque votre équipe a terminé l'intervention,
+                  marquez-le comme résolu avec un rapport de clôture.
+                </p>
+                <button class="sd-resolve-big-btn" (click)="openResolutionFromDetail()">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Marquer ce signalement comme résolu
+                </button>
+              </div>
+            </div>
+
+            <!-- Résolu banner -->
+            <div class="sd-done-banner" *ngIf="selectedSignalement.statut==='RESOLU'">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Signalement résolu — Intervention terminée
+              <span *ngIf="selectedSignalement.dateResolution"> le {{ selectedSignalement.dateResolution | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="sd-doc-footer">
+              Madina — Plateforme CityVoice © 2025 — Signalement #{{ selectedSignalement.id }}
+            </div>
+          </div>
+
+        </div>
+      </ng-container>
+
+    </div>
+
+  </main>
+</div>
+
+<app-chef-resolution-modal
+  *ngIf="resolutionSig"
+  [signalement]="resolutionSig"
+  (closed)="onResolutionModalClosed()"
+  (resolved)="onResolutionModalResolved()"
+  (notifyError)="showToast($event, 'error')">
+</app-chef-resolution-modal>
+
+<!-- ══ MODAL SIGNATURE ══════════════════════════════════════════ -->
+<div class="ce-modal-overlay" *ngIf="signatureMode" (click)="closeSignature()">
+  <div class="ce-modal" (click)="$event.stopPropagation()">
+    <div class="ce-modal-header">
+      <div>
+        <h3 class="ce-modal-title">Signer le contrat</h3>
+        <div class="ce-modal-num">{{ signatureMode?.numeroContrat }}</div>
+      </div>
+      <button class="ce-modal-close" (click)="closeSignature()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ce-modal-body">
+      <p class="ce-sign-hint">Dessinez votre signature dans le cadre ci-dessous :</p>
+      <div class="ce-canvas-wrap">
+        <canvas class="sign-canvas" width="480" height="160"></canvas>
+        <button class="ce-canvas-clear" (click)="clearSignature()">Effacer</button>
+      </div>
+    </div>
+    <div class="ce-modal-footer">
+      <button class="ce-btn-cancel" (click)="closeSignature()">Annuler</button>
+      <button class="ce-btn-sign" [disabled]="!signatureData || actionLoading" (click)="accepterContrat()">
+        <span *ngIf="!actionLoading">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-right:5px">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Confirmer la signature
+        </span>
+        <span *ngIf="actionLoading" class="ce-loading-row"><span class="ce-spin ce-spin--sm"></span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL REFUS ══════════════════════════════════════════════ -->
+<div class="ce-modal-overlay" *ngIf="refusMode" (click)="closeRefus()">
+  <div class="ce-modal" (click)="$event.stopPropagation()">
+    <div class="ce-modal-header">
+      <div>
+        <h3 class="ce-modal-title">Refuser le contrat</h3>
+        <div class="ce-modal-num">{{ refusMode?.numeroContrat }}</div>
+      </div>
+      <button class="ce-modal-close" (click)="closeRefus()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ce-modal-body">
+      <p class="ce-sign-hint">En cas de refus, l'IA réaffectera automatiquement ce signalement à une autre équipe disponible.</p>
+      <textarea class="ce-textarea" [(ngModel)]="motifRefus" rows="4"
+        placeholder="Précisez le motif : équipe indisponible, travaux spécialisés requis…"></textarea>
+    </div>
+    <div class="ce-modal-footer">
+      <button class="ce-btn-cancel" (click)="closeRefus()">Annuler</button>
+      <button class="ce-btn-refuse" [disabled]="!motifRefus.trim() || actionLoading" (click)="refuserContrat()">
+        <span *ngIf="!actionLoading">Confirmer le refus</span>
+        <span *ngIf="actionLoading" class="ce-loading-row"><span class="ce-spin ce-spin--sm"></span></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════════════════ -->
+<div class="ce-toast" *ngIf="toast" [class.ce-toast--error]="toastType==='error'">
+  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <polyline *ngIf="toastType!=='error'" points="20 6 9 17 4 12"/>
+    <line *ngIf="toastType==='error'" x1="18" y1="6" x2="6" y2="18"/>
+    <line *ngIf="toastType==='error'" x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+  {{ toastMsg }}
+</div>

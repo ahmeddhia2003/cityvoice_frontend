@@ -72,6 +72,13 @@ const routes: Routes = [
     loadChildren: () => import('./features/user/user.module').then(m => m.UserModule)
   },
   {
+    path: 'chef',
+    canActivate: [AuthGuard],
+    data: { role: 'CHEF_EQUIPE' },
+    loadChildren: () =>
+      import('./features/chef-equipe/chef-equipe.module').then(m => m.ChefEquipeModule),
+  },
+  {
     path: 'mes-signalements',
     redirectTo: 'signaler/mes-signalements',
     pathMatch: 'full'
