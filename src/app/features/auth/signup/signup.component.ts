@@ -10,11 +10,19 @@ import { TunisiaLocationService } from '../../../core/services/tunisia-location.
 import { debounceTime } from 'rxjs';
 declare const gsap: any;
 
+// ============================================================
+// VALIDATORS
+// ============================================================
+
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const pwd     = group.get('password')?.value;
   const confirm = group.get('confirmPassword')?.value;
   return pwd && confirm && pwd !== confirm ? { passwordMismatch: true } : null;
 }
+
+// ============================================================
+// COMPONENT
+// ============================================================
 
 @Component({
   selector: 'app-signup',
@@ -23,20 +31,68 @@ function passwordMatchValidator(group: AbstractControl): ValidationErrors | null
 })
 export class SignupComponent implements OnInit, AfterViewInit {
 
+  // ============================================================
+  // 1. PROPRIÉTÉS PUBLIQUES - VIEW CHILD & RÉFÉRENCES
+  // ============================================================
+
   @ViewChild('photoInput') photoInputRef!: ElementRef<HTMLInputElement>;
+
+  // ============================================================
+  // 2. PROPRIÉTÉS PUBLIQUES - ÉTAT DU COMPOSANT
+  // ============================================================
 
   step = 0;
   userType: 'CITOYEN' | 'AGENT' | null = null;
   selectedRole: string | null = null;
+  loading = false;
+  success = false;
+  toast = false;
+  toastMsg = '';
+  toastType = '';
 
-  // ── Location data ──────────────────────────────────────
+  // ============================================================
+  // 3. PROPRIÉTÉS PUBLIQUES - UI (AFFICHAGE, TOGGLES, ETC.)
+  // ============================================================
+
+  showPwd = false;
+  showConfirmPwd = false;
+  photoHover = false;
+  photoPreview: string | null = null;
+  photoName = '';
+  photoError = '';
+  photoChecking = false;
+  photoOk = false;
+
+  // ============================================================
+  // 4. PROPRIÉTÉS PUBLIQUES - VALIDATION TEMPS RÉEL
+  // ============================================================
+
+  nameChecking = false;
+  nameError = '';
+  nameOk = false;
+  private nameRequestId = 0;
+
+  emailChecking = false;
+  emailError = '';
+  emailOk = false;
+
+  pwdScore = 0;
+  pwdLabel = 'Force du mot de passe';
+  pwdColor = '#8888A8';
+
+  // ============================================================
+  // 5. PROPRIÉTÉS PUBLIQUES - LOCALISATION
+  // ============================================================
+
   governorates: string[] = [];
-  delegations:  string[] = [];
-
+  delegations: string[] = [];
   loadingGouvernorats = true;
-  loadingVilles       = false;
+  loadingVilles = false;
+  selectedGouvernorat = '';
 
-  selectedGouvernorat: string = '';
+  // ============================================================
+  // 6. PROPRIÉTÉS PUBLIQUES - CONFIGURATION (READONLY)
+  // ============================================================
 
   readonly agentRoles = [
     { key: 'CHEF_EQUIPE',   label: 'Chef d\'équipe',  desc: 'Planification et supervision des interventions terrain', color: '#3B82F6', bg: 'rgba(59,130,246,.08)',  border: 'rgba(59,130,246,.2)'  },
@@ -51,33 +107,25 @@ export class SignupComponent implements OnInit, AfterViewInit {
     'Sousse','Tataouine','Tozeur','Tunis','Zaghouan',
   ];
 
-  form!:         FormGroup;
-  showPwd        = false;
-  showConfirmPwd = false;
-  loading        = false;
-  success        = false;
-  toast          = false;
-  toastMsg       = '';
-  toastType      = '';
+  // ============================================================
+  // 7. PROPRIÉTÉS PUBLIQUES - FORMULAIRE
+  // ============================================================
 
-  photoPreview: string | null = null;
-  photoHover   = false;
-  photoName    = '';
-  photoError   = '';
+  form!: FormGroup;
 
-  // ── Validation temps réel ────────────────────────────────
-  nameChecking  = false;
-  nameError     = '';
-  nameOk        = false;
+  // ============================================================
+  // 8. GETTERS - STYLES & COULEURS
+  // ============================================================
 
-  emailChecking = false;
-  emailError    = '';
+  get selectedRoleColor(): string {
+    if (this.userType === 'CITOYEN') return '#0D9B76';
+    return this.agentRoles.find(r => r.key === this.selectedRole)?.color ?? '#8888A8';
+  }
 
-  photoChecking = false;
-
-  pwdScore = 0;
-  pwdLabel = 'Force du mot de passe';
-  pwdColor = '#8888A8';
+  get selectedRoleLabel(): string {
+    if (this.userType === 'CITOYEN') return 'Citoyen';
+    return this.agentRoles.find(r => r.key === this.selectedRole)?.label ?? '';
+  }
 
   get pwdBars(): string[] {
     const map = ['', 'weak', 'fair', 'good', 'good'];
@@ -90,6 +138,10 @@ export class SignupComponent implements OnInit, AfterViewInit {
     return ((fn[0] || '') + (ln[0] || '')).toUpperCase() || '?';
   }
 
+  // ============================================================
+  // 9. GETTERS - LOGIQUE DE NAVIGATION
+  // ============================================================
+
   get stepsForRole(): { title: string; subtitle: string }[] {
     return [
       { title: 'Identité',     subtitle: 'Vos informations personnelles' },
@@ -100,19 +152,12 @@ export class SignupComponent implements OnInit, AfterViewInit {
   }
 
   get currentStepInfo() { return this.stepsForRole[this.step - 1]; }
-  get isLastStep():   boolean { return this.step === this.stepsForRole.length; }
+  get isLastStep(): boolean { return this.step === this.stepsForRole.length; }
 
-  get selectedRoleColor(): string {
-    if (this.userType === 'CITOYEN') return '#0D9B76';
-    return this.agentRoles.find(r => r.key === this.selectedRole)?.color ?? '#8888A8';
-  }
+  // ============================================================
+  // 10. GETTERS - VALIDATION PAR ÉTAPE (CAN PROCEED)
+  // ============================================================
 
-  get selectedRoleLabel(): string {
-    if (this.userType === 'CITOYEN') return 'Citoyen';
-    return this.agentRoles.find(r => r.key === this.selectedRole)?.label ?? '';
-  }
-
-  // ── Contrôles canProceed par step ───────────────────────
   get canProceedStep1(): boolean {
     return this.form.get('firstName')!.valid &&
       this.form.get('lastName')!.valid  &&
@@ -140,52 +185,26 @@ export class SignupComponent implements OnInit, AfterViewInit {
     return this.form.get('terms')!.valid && !this.photoError && !this.photoChecking;
   }
 
+  // ============================================================
+  // 11. CONSTRUCTEUR
+  // ============================================================
+
   constructor(
-    private fb:        FormBuilder,
-    private router:    Router,
-    public  sound:     SoundService,
+    private fb: FormBuilder,
+    private router: Router,
+    public sound: SoundService,
     private authService: AuthService,
-    private ngZone:    NgZone,
+    private ngZone: NgZone,
     private locationService: TunisiaLocationService,
   ) {}
 
+  // ============================================================
+  // 12. LIFECYCLE HOOKS
+  // ============================================================
+
   ngOnInit(): void {
-    this.form = this.fb.group({
-      firstName:       ['', Validators.required],
-      lastName:        ['', Validators.required],
-      telephone:       ['', [Validators.required, Validators.pattern(/^[0-9+\s]{8,15}$/)]],
-      email:           ['', [Validators.required, Validators.email]],
-      password:        ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', Validators.required],
-      invitationCode:  [''],
-      gouvernorat:     ['', Validators.required],
-      ville:           ['', Validators.required],  // ← Délégation = Ville
-      codePostal:      ['', [Validators.pattern(/^[0-9]{4}$/)]],
-      terms:           [false, Validators.requiredTrue],
-    }, { validators: passwordMatchValidator });
-
-    // Disable ville until gouvernorat is selected
-    this.form.get('ville')?.disable();
-
-    this.form.get('password')?.valueChanges.subscribe(v => this.checkPwd(v));
-
-    // Watcher nom — debounce 600ms
-    this.form.get('firstName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
-    this.form.get('lastName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
-
-    // Watcher email — debounce 700ms
-    this.form.get('email')?.valueChanges.subscribe(() => {
-      this.emailError = '';
-      this.emailChecking = false;
-    });
-
-// Debounced check for API call
-    this.form.get('email')?.valueChanges.pipe(debounceTime(700)).subscribe(email => {
-      if (!email || !email.includes('@') || this.form.get('email')?.invalid) return;
-      this.checkEmail(email);
-    });
-
-    // ── Charger les gouvernorats ─────────────────────────
+    this.initForm();
+    this.initFormSubscriptions();
     this.loadGovernorates();
   }
 
@@ -193,6 +212,59 @@ export class SignupComponent implements OnInit, AfterViewInit {
     if (typeof gsap === 'undefined') return;
     this.animateEntrance();
   }
+
+  // ============================================================
+  // 13. MÉTHODES PRIVÉES - INITIALISATION
+  // ============================================================
+
+  private initForm(): void {
+    this.form = this.fb.group({
+      firstName: ['', [Validators.required, Validators.minLength(3)]],
+      lastName:  ['', [Validators.required, Validators.minLength(3)]],
+      telephone:       ['', [Validators.required, Validators.pattern(/^[0-9+\s]{8,15}$/)]],
+      email:           ['', [Validators.required, Validators.email]],
+      password:        ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+      invitationCode:  [''],
+      gouvernorat:     ['', Validators.required],
+      ville:           ['', Validators.required],
+      codePostal:      ['', [Validators.pattern(/^[0-9]{4}$/)]],
+      terms:           [false, Validators.requiredTrue],
+    }, { validators: passwordMatchValidator });
+
+    this.form.get('ville')?.disable();
+  }
+
+  private initFormSubscriptions(): void {
+    this.form.get('password')?.valueChanges.subscribe(v => this.checkPwd(v));
+
+    // Watcher nom — debounce 600ms
+    this.form.get('firstName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
+    this.form.get('lastName')?.valueChanges.pipe(debounceTime(600)).subscribe(() => this.checkName());
+
+    // Watcher email
+    this.form.get('email')?.valueChanges.subscribe(() => {
+      this.emailError = '';
+      this.emailChecking = false;
+    });
+
+    this.form.get('email')?.valueChanges
+      .pipe(debounceTime(700))
+      .subscribe(email => {
+        const ctrl = this.form.get('email');
+        if (!email || !ctrl?.valid) {
+          this.emailChecking = false;
+          this.emailError = '';
+          this.emailOk = false;
+          return;
+        }
+        this.checkEmail(email);
+      });
+  }
+
+  // ============================================================
+  // 14. MÉTHODES PRIVÉES - ANIMATIONS
+  // ============================================================
 
   private animateEntrance(): void {
     const tl = gsap.timeline();
@@ -213,99 +285,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
     gsap.to('.auth-orb-2', { x:-15, y:15,  duration:6, yoyo:true, repeat:-1, ease:'sine.inOut', delay:1 });
   }
 
-  // ── Step 0 ───────────────────────────────────────────────
-  selectUserType(type: 'CITOYEN' | 'AGENT'): void {
-    this.sound.click();
-    this.userType = type;
-    if (type === 'CITOYEN') {
-      this.selectedRole = 'CITOYEN';
-      this.animateStepOut(() => { this.step = 1; this.animateStepIn(); });
-    } else {
-      this.animateStepOut(() => { this.step = -1; this.animateStepIn(); });
-    }
-  }
-
-  // ── Step -1 ──────────────────────────────────────────────
-  selectAgentRole(key: string): void { this.sound.click(); this.selectedRole = key; }
-
-  confirmAgentRole(): void {
-    if (!this.selectedRole) return;
-    this.sound.click();
-    this.animateStepOut(() => { this.step = 1; this.animateStepIn(); });
-  }
-
-  prevStepAgent(): void {
-    this.sound.nav();
-    this.animateStepOut(() => {
-      this.step = 0; this.userType = null; this.selectedRole = null;
-      this.animateStepIn();
-    }, 'back');
-  }
-
-  // ── Navigation ───────────────────────────────────────────
-  nextStep(): void {
-    this.touchCurrentStep();
-
-    if (!this.canProceed()) {
-      this.sound.toggle2(false);
-      if (typeof gsap !== 'undefined') {
-        gsap.to('.step-section', { x:[-6,6,-4,4,0], duration:.35, ease:'none' });
-      }
-      return;
-    }
-
-    this.sound.click();
-    if (this.step < this.stepsForRole.length) {
-      this.animateStepOut(() => { this.step++; this.animateStepIn(); });
-    } else {
-      this.onSubmit();
-    }
-  }
-
-  private touchCurrentStep(): void {
-    const fieldsPerStep: Record<number, string[]> = {
-      1: ['firstName', 'lastName', 'telephone'],
-      2: ['email', 'password', 'confirmPassword', 'invitationCode'],
-      3: ['gouvernorat', 'ville', 'codePostal'],
-      4: ['terms'],
-    };
-    (fieldsPerStep[this.step] ?? []).forEach(f => {
-      const ctrl = this.form.get(f);
-      if (ctrl) {
-        ctrl.markAsTouched();
-        // Temporarily enable to validate, then re-disable if needed
-        if (ctrl.disabled && !ctrl.value) {
-          ctrl.enable();
-          ctrl.markAsTouched();
-        }
-      }
-    });
-  }
-
-  prevStep(): void {
-    this.sound.nav();
-    if (this.step > 1) {
-      this.animateStepOut(() => { this.step--; this.animateStepIn(); }, 'back');
-    } else if (this.step === 1 && this.userType === 'AGENT') {
-      this.animateStepOut(() => { this.step = -1; this.animateStepIn(); }, 'back');
-    } else {
-      this.animateStepOut(() => {
-        this.step = 0; this.userType = null; this.selectedRole = null;
-        this.animateStepIn();
-      }, 'back');
-    }
-  }
-
-  canProceed(): boolean {
-    switch (this.step) {
-      case 1:  return this.canProceedStep1;
-      case 2:  return this.canProceedStep2;
-      case 3:  return this.canProceedStep3;
-      case 4:  return this.canProceedStep4;
-      default: return true;
-    }
-  }
-
   private animateStepOut(cb: () => void, dir: 'forward' | 'back' = 'forward'): void {
     if (typeof gsap === 'undefined') { this.ngZone.run(cb); return; }
     const x = dir === 'forward' ? -30 : 30;
@@ -319,98 +298,14 @@ export class SignupComponent implements OnInit, AfterViewInit {
     if (typeof gsap === 'undefined') return;
     gsap.fromTo('.step-section',
       { opacity: 0, x: 30 },
-      { opacity: 1, x: 0,  duration: .32, ease: 'power3.out' }
+      { opacity: 1, x: 0, duration: .32, ease: 'power3.out' }
     );
   }
 
-  // ── Photo ────────────────────────────────────────────────
-  triggerPhoto(): void { this.sound.click(); this.photoInputRef?.nativeElement.click(); }
+  // ============================================================
+  // 15. MÉTHODES PRIVÉES - VALIDATION (PASSWORD, NAME, EMAIL)
+  // ============================================================
 
-  onPhotoChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.photoError = '';
-
-    if (!file.type.startsWith('image/')) {
-      this.photoError = 'Fichier non valide.';
-      this.sound.toggle2(false);
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      this.photoError = 'Image trop lourde. Max 5 Mo.';
-      this.sound.toggle2(false);
-      return;
-    }
-
-    this.compressImage(file, 200, 0.7).then(b64 => {
-      this.photoPreview  = b64;
-      this.photoName     = file.name;
-      this.photoChecking = true;
-
-      this.authService.moderatePhoto(b64).subscribe({
-        next: (res) => {
-          this.photoChecking = false;
-          if (!res.safe) {
-            this.photoError   = res.reason || 'Photo inappropriée pour la plateforme ❌';
-            this.photoPreview = null;
-            this.photoName    = '';
-            this.sound.toggle2(false);
-            return;
-          }
-          this.sound.success();
-          if (typeof gsap !== 'undefined') {
-            gsap.fromTo('.photo-preview',
-              { scale: .6, opacity: 0 },
-              { scale: 1,  opacity: 1, duration: .5, ease: 'back.out(1.8)' }
-            );
-          }
-        },
-        error: () => {
-          this.photoChecking = false;
-          this.sound.success();
-          if (typeof gsap !== 'undefined') {
-            gsap.fromTo('.photo-preview',
-              { scale: .6, opacity: 0 },
-              { scale: 1,  opacity: 1, duration: .5, ease: 'back.out(1.8)' }
-            );
-          }
-        }
-      });
-    });
-  }
-
-  private compressImage(file: File, maxSize: number, quality: number): Promise<string> {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx    = canvas.getContext('2d')!;
-      const img    = new Image();
-      const url    = URL.createObjectURL(file);
-
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
-        else        { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
-        canvas.width  = Math.round(w);
-        canvas.height = Math.round(h);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = url;
-    });
-  }
-
-  removePhoto(): void {
-    this.sound.nav();
-    this.photoPreview = null;
-    this.photoName    = '';
-    this.photoError   = '';
-    if (this.photoInputRef?.nativeElement) {
-      this.photoInputRef.nativeElement.value = '';
-    }
-  }
-
-  // ── Password ─────────────────────────────────────────────
   private checkPwd(val: string): void {
     let score = 0;
     if (val.length >= 8)          score++;
@@ -424,87 +319,153 @@ export class SignupComponent implements OnInit, AfterViewInit {
     this.pwdColor = colors[score];
   }
 
-  // ── Validations temps réel ───────────────────────────────
-  checkName(): void {
-    const first = this.form.get('firstName')?.value ?? '';
-    const last  = this.form.get('lastName')?.value  ?? '';
-    const nom   = `${first} ${last}`.trim();
+  private checkName(): void {
+    const firstCtrl = this.form.get('firstName');
+    const lastCtrl  = this.form.get('lastName');
 
-    if (nom.length < 3) {
+    const first = firstCtrl?.value ?? '';
+    const last  = lastCtrl?.value ?? '';
+
+    if (!firstCtrl?.valid || !lastCtrl?.valid || !first || !last) {
+      this.nameChecking = false;
       this.nameError = '';
-      this.nameOk    = false;
+      this.nameOk = false;
       return;
     }
 
+    const nom = `${first} ${last}`.trim();
+
     this.nameChecking = true;
-    this.nameError    = '';
-    this.nameOk       = false;
+    this.nameError = '';
+    this.nameOk = false;
+
+    const startTime = Date.now();
+    const currentRequestId = ++this.nameRequestId;
 
     this.authService.screenName(nom).subscribe({
       next: (res) => {
-        this.nameChecking = false;
-        if (res.appropriate) {
-          this.nameOk    = true;
-          this.nameError = '';
-        } else {
-          this.nameOk    = false;
-          this.nameError = res.reason ?? 'Nom inapproprié pour la plateforme';
-        }
+        if (currentRequestId !== this.nameRequestId) return;
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          if (currentRequestId !== this.nameRequestId) return;
+          this.nameChecking = false;
+          if (res.appropriate) {
+            this.nameOk = true;
+            this.nameError = '';
+          } else {
+            this.nameOk = false;
+            this.nameError = res.reason ?? 'Nom inapproprié';
+          }
+        }, delay);
       },
       error: () => {
-        this.nameChecking = false;
-        this.nameOk       = true; // Fail open
+        if (currentRequestId !== this.nameRequestId) return;
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          if (currentRequestId !== this.nameRequestId) return;
+          this.nameChecking = false;
+          this.nameOk = true;
+        }, delay);
       }
     });
   }
 
-  checkEmail(email: string): void {
+  private checkEmail(email: string): void {
+    const ctrl = this.form.get('email');
+    const value = ctrl?.value ?? '';
+
+    if (!ctrl?.valid || !value) {
+      this.emailChecking = false;
+      this.emailError = '';
+      this.emailOk = false;
+      return;
+    }
+
     this.emailChecking = true;
-    this.emailError    = '';
+    this.emailError = '';
+    this.emailOk = false;
+
+    const startTime = Date.now();
 
     this.authService.checkEmail(email).subscribe({
       next: (res) => {
-        this.emailChecking = false;
-        this.emailError    = res.exists ? 'Cet email est déjà utilisé' : '';
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          this.emailChecking = false;
+          if (res.exists) {
+            this.emailError = 'Cet email est déjà utilisé';
+            this.emailOk = false;
+          } else {
+            this.emailError = '';
+            this.emailOk = true;
+          }
+        }, delay);
       },
-      error: () => { this.emailChecking = false; }
+      error: () => {
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          this.emailChecking = false;
+          this.emailOk = true;
+        }, delay);
+      }
     });
   }
 
-  togglePwd():          void { this.sound.nav(); this.showPwd = !this.showPwd; }
-  toggleConfirmPwd():   void { this.sound.nav(); this.showConfirmPwd = !this.showConfirmPwd; }
-  onInput():            void { this.sound.nav(); }
-  onToggle(v: boolean): void { this.sound.toggle2(v); }
+  // ============================================================
+  // 16. MÉTHODES PRIVÉES - PHOTO (COMPRESSION, MODÉRATION)
+  // ============================================================
 
-  // ── Submit ───────────────────────────────────────────────
-  onSubmit(): void {
-    this.form.markAllAsTouched();
-    if (this.form.invalid) { this.sound.toggle2(false); return; }
+  private compressImage(file: File, maxSize: number, quality: number): Promise<string> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      const url = URL.createObjectURL(file);
 
-    this.sound.click();
-    this.loading = true;
-
-    const { firstName, lastName, email, password, telephone,
-      invitationCode, gouvernorat, ville, codePostal } = this.form.value;
-
-    const nom = `${firstName} ${lastName}`.trim();
-
-    // Screening final (double check avant envoi)
-    this.authService.screenName(nom).subscribe({
-      next: (result) => {
-        if (!result.appropriate) {
-          this.loading = false;
-          this.sound.toggle2(false);
-          this.showToast(result.reason ?? 'Nom inapproprié pour la plateforme ❌', 'error');
-          return;
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h) {
+          if (w > maxSize) { h = h * maxSize / w; w = maxSize; }
+        } else {
+          if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
         }
-        this.doRegister(nom, email, password, telephone,
-          invitationCode, gouvernorat, ville, codePostal);
-      },
-      error: () => {
-        // Fail open
-        this.doRegister(nom, email, password, telephone,
-          invitationCode, gouvernorat, ville, codePostal);
+        canvas.width = Math.round(w);
+        canvas.height = Math.round(h);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = url;
+    });
+  }
+
+  // ============================================================
+  // 17. MÉTHODES PRIVÉES - SUBMISSION & REGISTRATION
+  // ============================================================
+
+  private touchCurrentStep(): void {
+    const fieldsPerStep: Record<number, string[]> = {
+      1: ['firstName', 'lastName', 'telephone'],
+      2: ['email', 'password', 'confirmPassword', 'invitationCode'],
+      3: ['gouvernorat', 'ville', 'codePostal'],
+      4: ['terms'],
+    };
+    (fieldsPerStep[this.step] ?? []).forEach(f => {
+      const ctrl = this.form.get(f);
+      if (ctrl) {
+        ctrl.markAsTouched();
+        if (ctrl.disabled && !ctrl.value) {
+          ctrl.enable();
+          ctrl.markAsTouched();
+        }
       }
     });
   }
@@ -515,11 +476,11 @@ export class SignupComponent implements OnInit, AfterViewInit {
   ): void {
     this.authService.register({
       nom, email, password, telephone,
-      role:           this.selectedRole!,
+      role: this.selectedRole!,
       invitationCode: this.userType === 'AGENT' ? invitationCode : undefined,
       gouvernorat, ville,
       codePostal: codePostal || undefined,
-      photo:          this.photoPreview || undefined,
+      photo: this.photoPreview || undefined,
     }).subscribe({
       next: () => {
         this.loading = false;
@@ -547,6 +508,176 @@ export class SignupComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  // ============================================================
+  // 18. MÉTHODES PUBLIQUES - SÉLECTION DES RÔLES & NAVIGATION
+  // ============================================================
+
+  selectUserType(type: 'CITOYEN' | 'AGENT'): void {
+    this.sound.click();
+    this.userType = type;
+    if (type === 'CITOYEN') {
+      this.selectedRole = 'CITOYEN';
+      this.animateStepOut(() => { this.step = 1; this.animateStepIn(); });
+    } else {
+      this.animateStepOut(() => { this.step = -1; this.animateStepIn(); });
+    }
+  }
+
+  selectAgentRole(key: string): void {
+    this.sound.click();
+    this.selectedRole = key;
+  }
+
+  confirmAgentRole(): void {
+    if (!this.selectedRole) return;
+    this.sound.click();
+    this.animateStepOut(() => { this.step = 1; this.animateStepIn(); });
+  }
+
+  prevStepAgent(): void {
+    this.sound.nav();
+    this.animateStepOut(() => {
+      this.step = 0;
+      this.userType = null;
+      this.selectedRole = null;
+      this.animateStepIn();
+    }, 'back');
+  }
+
+  nextStep(): void {
+    this.touchCurrentStep();
+
+    if (!this.canProceed()) {
+      this.sound.toggle2(false);
+      if (typeof gsap !== 'undefined') {
+        gsap.to('.step-section', { x:[-6,6,-4,4,0], duration:.35, ease:'none' });
+      }
+      return;
+    }
+
+    this.sound.click();
+    if (this.step < this.stepsForRole.length) {
+      this.animateStepOut(() => { this.step++; this.animateStepIn(); });
+    } else {
+      this.onSubmit();
+    }
+  }
+
+  prevStep(): void {
+    this.sound.nav();
+    if (this.step > 1) {
+      this.animateStepOut(() => { this.step--; this.animateStepIn(); }, 'back');
+    } else if (this.step === 1 && this.userType === 'AGENT') {
+      this.animateStepOut(() => { this.step = -1; this.animateStepIn(); }, 'back');
+    } else {
+      this.animateStepOut(() => {
+        this.step = 0;
+        this.userType = null;
+        this.selectedRole = null;
+        this.animateStepIn();
+      }, 'back');
+    }
+  }
+
+  canProceed(): boolean {
+    switch (this.step) {
+      case 1:  return this.canProceedStep1;
+      case 2:  return this.canProceedStep2;
+      case 3:  return this.canProceedStep3;
+      case 4:  return this.canProceedStep4;
+      default: return true;
+    }
+  }
+
+  // ============================================================
+  // 19. MÉTHODES PUBLIQUES - PHOTO (UPLOAD, SUPPRESSION)
+  // ============================================================
+
+  triggerPhoto(): void {
+    this.sound.click();
+    this.photoInputRef?.nativeElement.click();
+  }
+
+  onPhotoChange(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.photoError = '';
+    this.photoOk = false;
+
+    if (!file.type.startsWith('image/')) {
+      this.photoError = 'Fichier non valide (JPG, PNG uniquement)';
+      this.sound.toggle2(false);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.photoError = 'Image trop lourde (max 5 Mo)';
+      this.sound.toggle2(false);
+      return;
+    }
+
+    this.compressImage(file, 200, 0.7).then(b64 => {
+      this.photoPreview = b64;
+      this.photoName = file.name;
+      this.photoChecking = true;
+      this.photoOk = false;
+
+      const startTime = Date.now();
+
+      this.authService.moderatePhoto(b64).subscribe({
+        next: (res) => {
+          const elapsed = Date.now() - startTime;
+          const delay = Math.max(1000 - elapsed, 0);
+
+          setTimeout(() => {
+            this.photoChecking = false;
+            if (!res.safe) {
+              this.photoError = res.reason || 'Photo inappropriée pour la plateforme';
+              this.photoPreview = null;
+              this.photoName = '';
+              this.photoOk = false;
+              this.sound.toggle2(false);
+            } else {
+              this.photoOk = true;
+              this.sound.success();
+              if (typeof gsap !== 'undefined') {
+                gsap.fromTo('.photo-preview',
+                  { scale: .6, opacity: 0 },
+                  { scale: 1, opacity: 1, duration: .5, ease: 'back.out(1.8)' }
+                );
+              }
+            }
+          }, delay);
+        },
+        error: () => {
+          const elapsed = Date.now() - startTime;
+          const delay = Math.max(1000 - elapsed, 0);
+
+          setTimeout(() => {
+            this.photoChecking = false;
+            this.photoOk = true;
+            this.sound.success();
+          }, delay);
+        }
+      });
+    });
+  }
+
+  removePhoto(): void {
+    this.sound.nav();
+    this.photoPreview = null;
+    this.photoName = '';
+    this.photoError = '';
+    this.photoOk = false;
+    if (this.photoInputRef?.nativeElement) {
+      this.photoInputRef.nativeElement.value = '';
+    }
+  }
+
+  // ============================================================
+  // 20. MÉTHODES PUBLIQUES - LOCALISATION
+  // ============================================================
 
   loadGovernorates(): void {
     this.loadingGouvernorats = true;
@@ -599,7 +730,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
     const ville = this.form.get('ville')?.value;
 
     if (gouvernorat && ville) {
-      // Auto-fill postal code if available
       this.locationService.getPostalCode(gouvernorat, ville).subscribe({
         next: (postalCode) => {
           if (postalCode) {
@@ -612,14 +742,49 @@ export class SignupComponent implements OnInit, AfterViewInit {
     this.sound.nav();
   }
 
-  goSignin(): void { this.sound.nav(); this.router.navigate(['/auth/signin']); }
+  // ============================================================
+  // 21. MÉTHODES PUBLIQUES - SUBMISSION & TOAST
+  // ============================================================
+
+  onSubmit(): void {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      this.sound.toggle2(false);
+      return;
+    }
+
+    this.sound.click();
+    this.loading = true;
+
+    const { firstName, lastName, email, password, telephone,
+      invitationCode, gouvernorat, ville, codePostal } = this.form.value;
+
+    const nom = `${firstName} ${lastName}`.trim();
+
+    this.authService.screenName(nom).subscribe({
+      next: (result) => {
+        if (!result.appropriate) {
+          this.loading = false;
+          this.sound.toggle2(false);
+          this.showToast(result.reason ?? 'Nom inapproprié pour la plateforme ❌', 'error');
+          return;
+        }
+        this.doRegister(nom, email, password, telephone,
+          invitationCode, gouvernorat, ville, codePostal);
+      },
+      error: () => {
+        this.doRegister(nom, email, password, telephone,
+          invitationCode, gouvernorat, ville, codePostal);
+      }
+    });
+  }
 
   showToast(msg: string, type: 'success' | 'error' = 'success'): void {
     this.toast = false;
     setTimeout(() => {
-      this.toastMsg  = msg;
+      this.toastMsg = msg;
       this.toastType = type;
-      this.toast     = true;
+      this.toast = true;
       setTimeout(() => {
         if (typeof gsap === 'undefined') {
           setTimeout(() => { this.toast = false; }, 3000);
@@ -628,16 +793,43 @@ export class SignupComponent implements OnInit, AfterViewInit {
         const el = document.querySelector('.auth-toast');
         if (!el) return;
         gsap.killTweensOf(el);
-        gsap.fromTo(el, { opacity:0, y:30 }, { opacity:1, y:0, duration:.4, ease:'back.out(1.6)' });
+        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: .4, ease: 'back.out(1.6)' });
         setTimeout(() => {
           const toastEl = document.querySelector('.auth-toast');
           if (!toastEl) return;
           gsap.to(toastEl, {
-            opacity:0, y:30, duration:.35, ease:'power2.in',
+            opacity: 0, y: 30, duration: .35, ease: 'power2.in',
             onComplete: () => { this.ngZone.run(() => { this.toast = false; }); }
           });
         }, 3000);
       }, 50);
     }, 50);
+  }
+
+  // ============================================================
+  // 22. MÉTHODES PUBLIQUES - UTILITAIRES (TOGGLES, NAVIGATION)
+  // ============================================================
+
+  togglePwd(): void {
+    this.sound.nav();
+    this.showPwd = !this.showPwd;
+  }
+
+  toggleConfirmPwd(): void {
+    this.sound.nav();
+    this.showConfirmPwd = !this.showConfirmPwd;
+  }
+
+  onInput(): void {
+    this.sound.nav();
+  }
+
+  onToggle(v: boolean): void {
+    this.sound.toggle2(v);
+  }
+
+  goSignin(): void {
+    this.sound.nav();
+    this.router.navigate(['/auth/signin']);
   }
 }

@@ -1,0 +1,275 @@
+.sp-card {
+  background: var(--surface, #fff);
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.sp-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy, #0C1F3F);
+  margin: 0 0 4px;
+}
+
+.sp-header p {
+  font-size: 13px;
+  color: #8888A8;
+  margin: 0 0 20px;
+}
+
+.sp-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.sp-field {
+  flex: 1;
+}
+
+.sp-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4a6a;
+  margin-bottom: 6px;
+}
+
+.sp-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.sp-field input:focus {
+  border-color: var(--teal, #0D9B76);
+}
+
+.sp-btn {
+  padding: 10px 20px;
+  background: var(--teal, #0D9B76);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity .2s;
+}
+
+.sp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.sp-error {
+  color: #E8532A;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* ── Résultat ── */
+.sp-result { display: flex; flex-direction: column; gap: 16px; }
+
+.sp-niveau-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid;
+  background: #f9fafb;
+}
+
+.sp-niveau-icon { font-size: 36px; }
+
+.sp-niveau-info { flex: 1; }
+.sp-niveau-label { font-size: 11px; color: #8888A8; text-transform: uppercase; }
+.sp-niveau-value { font-size: 22px; font-weight: 800; }
+
+.sp-montant, .sp-proba {
+  text-align: center;
+  padding: 0 16px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.sp-montant-label, .sp-proba-label {
+  font-size: 11px;
+  color: #8888A8;
+  text-transform: uppercase;
+}
+
+.sp-montant-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy, #0C1F3F);
+}
+
+.sp-proba-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--teal, #0D9B76);
+}
+
+/* ── Barres probabilités ── */
+.sp-probas {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sp-probas-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a4a6a;
+  margin-bottom: 12px;
+}
+
+.sp-proba-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.sp-proba-row .sp-proba-label {
+  width: 80px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sp-proba-bar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sp-proba-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width .6s ease;
+}
+
+.sp-proba-pct {
+  width: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  color: #4a4a6a;
+}
+
+/* ── Explication ── */
+.sp-explication {
+  background: #E6F7F2;
+  border-left: 4px solid var(--teal, #0D9B76);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.sp-explication-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal, #0D9B76);
+  margin-bottom: 8px;
+}
+
+.sp-explication p {
+  font-size: 13px;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Email ── */
+.sp-email {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sp-email-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.sp-email-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a4a6a;
+}
+
+.sp-copy-btn {
+  padding: 6px 12px;
+  background: var(--navy, #0C1F3F);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+
+.sp-copy-btn:hover { opacity: 0.8; }
+
+.sp-email-body {
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #1a1a2e;
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 0;
+  background: white;
+}
+.sp-facteurs {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+}
+.sp-facteurs-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a4a6a;
+  margin-bottom: 12px;
+}
+.sp-facteurs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.sp-facteur-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+.sp-facteur-label {
+  font-size: 12px;
+  color: #8888A8;
+}
+.sp-facteur-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8888A8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f3f4f6;
+}
+.sp-facteur-value.fort {
+  color: #0D9B76;
+  background: #E6F7F2;
+}

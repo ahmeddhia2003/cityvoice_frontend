@@ -125,4 +125,35 @@ export class PublicProfileComponent implements OnInit {
       day: '2-digit', month: 'long', year: 'numeric'
     });
   }
+
+  // Ajouter les helpers dans le composant
+  getCivicIndexColor(index: number): string {
+    if (index >= 80) return '#0D9B76';
+    if (index >= 60) return '#3B82F6';
+    if (index >= 40) return '#C9973E';
+    return '#E8532A';
+  }
+
+  getCivicIndexLabel(index: number): string {
+    if (index >= 80) return 'Excellent';
+    if (index >= 60) return 'Bon';
+    if (index >= 40) return 'Moyen';
+    return 'À améliorer';
+  }
+
+  getTrustIcon(points: number): string {
+    if (points >= 1000) return '👑';
+    if (points >= 500)  return '💎';
+    if (points >= 200)  return '🔥';
+    if (points >= 50)   return '⭐';
+    return '🌱';
+  }
+
+  getTrustLabel(points: number): string {
+    if (points >= 1000) return 'Ambassadeur';
+    if (points >= 500)  return 'Vétéran';
+    if (points >= 200)  return 'Habitué';
+    if (points >= 50)   return 'Membre';
+    return 'Nouveau';
+  }
 }

@@ -1,0 +1,420 @@
+
+<!-- ── TOAST GLOBAL ──────────────────────────────────────────── -->
+<div class="global-toast"
+     *ngIf="toast"
+     [class.toast--success]="toast.type === 'success'"
+     [class.toast--error]="toast.type === 'error'">
+  <svg *ngIf="toast.type === 'success'" width="16" height="16" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <svg *ngIf="toast.type === 'error'" width="16" height="16" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/>
+  </svg>
+  {{ toast.msg }}
+</div>
+
+<!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="page-header__inner">
+
+      <div class="page-header__left">
+        <h1 class="page-header__title">
+          <span *ngIf="viewScope === 'proximite'">📍 Autour de moi</span>
+          <span *ngIf="viewScope === 'tous'">🗺️ Signalements</span>
+        </h1>
+        <p class="page-header__sub" *ngIf="!loading">
+          <span *ngIf="viewScope === 'proximite' && userLat">
+            {{ signalements.length }} signalement{{ signalements.length !== 1 ? 's' : '' }}
+            dans un rayon de {{ proximiteKm }} km
+          </span>
+          <span *ngIf="viewScope === 'tous'">
+            {{ signalements.length }} signalement{{ signalements.length !== 1 ? 's' : '' }}
+            sur l'ensemble du territoire
+          </span>
+          <span *ngIf="geoLoading">Localisation en cours…</span>
+        </p>
+        <p class="page-header__sub geo-error" *ngIf="geoError">
+          ⚠️ Localisation indisponible — affichage de tous les signalements
+        </p>
+      </div>
+
+      <div class="page-header__actions">
+        <div class="view-switcher">
+          <button [class.active]="viewMode === 'list'" (click)="setView('list')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="8" y1="6" x2="21" y2="6"/>
+              <line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Liste
+          </button>
+          <button [class.active]="viewMode === 'map'" (click)="setView('map')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-10l6-3m0 13l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4"/>
+            </svg>
+            Carte
+          </button>
+        </div>
+
+        <a routerLink="/signaler/choix" class="btn btn--primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+          Signaler
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENU ──────────────────────────────────────────────── -->
+<div class="container" style="padding-top:24px;padding-bottom:80px">
+
+  <!-- Scope switcher -->
+  <div class="scope-switcher">
+    <button class="scope-btn"
+            [class.active]="viewScope === 'proximite'"
+            (click)="switchScope('proximite')"
+            [disabled]="!userLat && !geoLoading">
+      <span class="scope-btn__icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+        </svg>
+      </span>
+      Autour de moi
+      <span class="scope-pulse" *ngIf="viewScope === 'proximite'"></span>
+    </button>
+
+    <button class="scope-btn"
+            [class.active]="viewScope === 'tous'"
+            (click)="switchScope('tous')">
+      <span class="scope-btn__icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+        </svg>
+      </span>
+      Tous les signalements
+    </button>
+
+    <div class="radius-selector" *ngIf="viewScope === 'proximite' && userLat">
+      <span class="radius-label">Rayon :</span>
+      <div class="radius-pills">
+        <button class="radius-pill"
+                *ngFor="let km of kmOptions"
+                [class.active]="proximiteKm === km"
+                (click)="changeRadius(km)">
+          {{ km }} km
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtre + Recherche -->
+  <div class="filter-bar">
+    <div class="filter-tabs">
+      <button class="filter-tab"
+              *ngFor="let f of filters"
+              [class.active]="activeFilter === f.key"
+              (click)="setFilter(f.key)">
+        {{ f.icon }} {{ f.label }}
+        <span class="filter-tab__count">{{ f.count }}</span>
+      </button>
+    </div>
+    <div class="search-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+             placeholder="Type, adresse, description…"
+             [(ngModel)]="searchQuery"
+             (ngModelChange)="onSearchChanged()"/>
+    </div>
+  </div>
+
+  <!-- ── SKELETON ─────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="skeleton-grid">
+    <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]">
+      <div class="sk-img"></div>
+      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div class="sk-line sk-title"></div>
+        <div class="sk-line sk-body"></div>
+        <div class="sk-line sk-body sk-short"></div>
+        <div class="sk-line sk-addr"></div>
+        <div class="sk-footer">
+          <div class="sk-line sk-badge"></div>
+          <div class="sk-line sk-badge"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ERREUR ──────────────────────────────────────────────── -->
+  <div class="err-banner" *ngIf="error && !loading">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error }}
+    <button class="err-retry" (click)="switchScope(viewScope)">Réessayer</button>
+  </div>
+
+  <!-- ── VUE LISTE ────────────────────────────────────────────── -->
+  <ng-container *ngIf="!loading && !error && viewMode === 'list'">
+
+    <p class="results-meta">
+      <span class="results-count">
+        {{ filtered.length }} résultat{{ filtered.length !== 1 ? 's' : '' }}
+      </span>
+      <span class="results-hint" *ngIf="viewScope === 'proximite' && userLat">
+        · dans un rayon de {{ proximiteKm }} km autour de vous
+      </span>
+      <span class="results-hint results-range" *ngIf="filtered.length > pageSize">
+        · affichage {{ pageRangeStart }}–{{ pageRangeEnd }}
+      </span>
+    </p>
+
+    <!-- ── GRILLE CARTES ENRICHIES ─────────────────────────── -->
+    <div class="signalements-grid">
+      <article class="sig-card" *ngFor="let s of paginated; let i = index">
+
+        <!-- ── ZONE IMAGE / GRADIENT ─── -->
+        <div class="sig-card__media"
+             [class.has-photo]="s.mediaUrls && s.mediaUrls.length > 0"
+             [style.background]="cardGradient(s.statut)">
+
+          <!-- Photo si disponible -->
+          <img *ngIf="s.mediaUrls && s.mediaUrls.length > 0"
+               [src]="s.mediaUrls[0]"
+               class="sig-card__photo"
+               alt="Photo du signalement"
+               loading="lazy"/>
+
+          <!-- Illustration SVG si pas de photo -->
+          <div class="sig-card__illus" *ngIf="!s.mediaUrls || s.mediaUrls.length === 0">
+            {{ typeEmoji(s.type) }}
+          </div>
+
+          <!-- Badge distance en haut à droite -->
+          <div class="sig-card__dist-tag" *ngIf="viewScope === 'proximite' && userLat">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+            </svg>
+            {{ distanceLabel(s.latitude, s.longitude) }}
+          </div>
+
+          <!-- Statut en haut à gauche -->
+          <span class="sig-card__status-tag"
+                [class.stag--RESOLU]="s.statut === 'RESOLU'"
+                [class.stag--EN_COURS]="s.statut === 'EN_COURS'"
+                [class.stag--EN_ATTENTE]="s.statut === 'EN_ATTENTE'"
+                [class.stag--REJETE]="s.statut === 'REJETE'">
+            {{ statutLabel(s.statut) }}
+          </span>
+        </div>
+
+        <!-- ── CORPS DE LA CARTE ───── -->
+        <div class="sig-card__body">
+
+          <!-- Type + Priorité -->
+          <div class="sig-card__header">
+            <h3 class="sig-card__type">{{ typeLabel(s.type) }}</h3>
+            <!-- Afficher la priorité choisie par le citoyen — jamais la valeur IA -->
+            <span class="sig-card__prio"
+                  [class.priorite--URGENTE]="s.prioriteCitoyen === 'URGENTE'"
+                  [class.priorite--HAUTE]="s.prioriteCitoyen === 'HAUTE'"
+                  [class.priorite--MOYENNE]="s.prioriteCitoyen === 'MOYENNE'"
+                  [class.priorite--FAIBLE]="s.prioriteCitoyen === 'FAIBLE'">
+              {{ prioriteLabel(s.prioriteCitoyen) }}
+            </span>
+          </div>
+
+          <!-- Description -->
+          <p class="sig-card__description">
+            {{ s.description | slice:0:120 }}{{ (s.description?.length ?? 0) > 120 ? '…' : '' }}
+          </p>
+
+          <!-- Équipe IA si disponible -->
+          <div class="sig-card__equipe" *ngIf="s.equipeIALabel">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            {{ s.equipeIALabel }}
+            <span class="equipe-delay" *ngIf="s.delaiEstimeHeures">
+              · {{ s.delaiEstimeHeures }}h estimées
+            </span>
+          </div>
+
+          <!-- Adresse -->
+          <div class="sig-card__location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+            </svg>
+            {{ s.adresse ?? '–' }}
+          </div>
+
+          <!-- Footer -->
+          <div class="sig-card__footer">
+            <span class="sig-card__date">{{ formatDate(s.dateSignalement) }}</span>
+
+            <button class="btn-details-pub" (click)="openPopup(s); $event.stopPropagation()" title="Voir les détails">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Détails
+            </button>
+
+            <button class="btn-vote"
+                    [id]="'vote-btn-' + s.id"
+                    [class.voted]="votedIds.has(s.id)"
+                    [class.voting]="votingIds.has(s.id)"
+                    [disabled]="votedIds.has(s.id)"
+                    (click)="voter(s); $event.stopPropagation()">
+              <svg [id]="'vote-icon-' + s.id"
+                   width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round">
+                <polyline *ngIf="!votedIds.has(s.id)" points="18 15 12 9 6 15"/>
+                <polyline *ngIf="votedIds.has(s.id)"  points="20 6 9 17 4 12"/>
+              </svg>
+              <span [id]="'vote-count-' + s.id">{{ s.votes || 0 }}</span>
+              <span class="vote-label">{{ votedIds.has(s.id) ? 'Voté' : 'Voter' }}</span>
+            </button>
+          </div>
+
+        </div><!-- /body -->
+      </article>
+    </div>
+
+    <!-- ── PAGINATION ─────────────────────────────────────── -->
+    <nav class="pagination-bar"
+         *ngIf="filtered.length > pageSize"
+         aria-label="Pagination des signalements">
+
+      <button class="page-btn page-btn--nav"
+              (click)="prevPage()"
+              [disabled]="currentPage === 0"
+              aria-label="Page précédente">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <ng-container *ngFor="let p of pageNumbers">
+        <button *ngIf="p !== '…'"
+                class="page-btn"
+                [class.active]="p === currentPage"
+                [attr.aria-current]="p === currentPage ? 'page' : null"
+                (click)="goToPage(p)">
+          {{ +p + 1 }}
+        </button>
+        <span *ngIf="p === '…'" class="page-ellipsis" aria-hidden="true">…</span>
+      </ng-container>
+
+      <button class="page-btn page-btn--nav"
+              (click)="nextPage()"
+              [disabled]="currentPage >= totalPages - 1"
+              aria-label="Page suivante">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+
+      <div class="page-size-selector">
+        <label for="pageSizeSel">Par page&nbsp;:</label>
+        <select id="pageSizeSel"
+                [ngModel]="pageSize"
+                (ngModelChange)="changePageSize($event)">
+          <option *ngFor="let n of pageSizeOptions" [ngValue]="n">{{ n }}</option>
+        </select>
+      </div>
+    </nav>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="filtered.length === 0">
+      <div class="empty-icon">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.2">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <p class="empty-title">Aucun signalement trouvé</p>
+      <p class="empty-sub" *ngIf="viewScope === 'proximite'">
+        Pas encore de signalements dans votre zone. Soyez le premier !
+      </p>
+      <p class="empty-sub" *ngIf="viewScope === 'tous' && searchQuery">
+        Aucun résultat pour « {{ searchQuery }} »
+      </p>
+      <div class="empty-actions">
+        <button class="btn btn--outline"
+                *ngIf="searchQuery || activeFilter !== 'TOUS'"
+                (click)="searchQuery=''; setFilter('TOUS')">
+          Réinitialiser les filtres
+        </button>
+        <a routerLink="/signaler/choix" class="btn btn--primary">
+          Faire un signalement
+        </a>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ── VUE CARTE ─────────────────────────────────────────────── -->
+  <!-- DETAIL POPUP -->
+  <app-signalement-detail-popup
+    [sig]="selectedSig"
+    (closed)="closePopup()">
+  </app-signalement-detail-popup>
+
+  <div *ngIf="!loading && !error && viewMode === 'map'">
+    <div class="map-legend">
+      <span class="legend-item">
+        <span class="legend-dot" style="background:#FF6B35"></span> En attente
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot" style="background:#1A56DB"></span> En cours
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot" style="background:#00C9A7"></span> Résolu
+      </span>
+      <span class="legend-item" *ngIf="userLat">
+        <span class="legend-dot me"></span> Vous
+      </span>
+    </div>
+    <div class="full-map" #mapEl></div>
+  </div>
+
+</div>

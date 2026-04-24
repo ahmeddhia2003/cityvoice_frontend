@@ -1,0 +1,1064 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     ADMIN SIGNALEMENTS — Dashboard avancé
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="page-wrap" [class.drawer-open]="detailItem">
+
+  <!-- ── HEADER ──────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="header-left">
+      <div class="header-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Signalements</h1>
+        <p class="page-sub">{{ totalCount }} signalement{{ totalCount !== 1 ? 's' : '' }} au total</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Toggle vue table / carte -->
+      <div class="view-toggle">
+        <button class="view-btn" [class.view-btn-active]="viewMode === 'table'" (click)="setView('table')" title="Vue tableau">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Tableau
+        </button>
+        <button class="view-btn" [class.view-btn-active]="viewMode === 'map'" (click)="setView('map')" title="Vue carte">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+          Carte
+        </button>
+      </div>
+      <button class="btn-export" (click)="exportCsv()" title="Exporter en CSV">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Exporter CSV
+      </button>
+      <button class="btn-rapport-pdf" (click)="telechargerRapport()" [disabled]="rapportLoading" title="Générer rapport PDF mensuel">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        {{ rapportLoading ? 'Génération...' : 'Rapport PDF' }}
+      </button>
+      <button class="btn-refresh" (click)="load()" title="Rafraîchir">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── KPI STRIP ───────────────────────────────────────────── -->
+  <div class="kpi-strip">
+    <div class="kpi-card kpi-total" (click)="setStatut('TOUS')" [class.active]="filterStatut === 'TOUS'">
+      <span class="kpi-value">{{ totalCount }}</span>
+      <span class="kpi-label">Total</span>
+    </div>
+    <div class="kpi-card kpi-attente" (click)="setStatut('EN_ATTENTE')" [class.active]="filterStatut === 'EN_ATTENTE'">
+      <span class="kpi-value">{{ enAttenteCount }}</span>
+      <span class="kpi-label">En attente</span>
+    </div>
+    <div class="kpi-card kpi-cours" (click)="setStatut('EN_COURS')" [class.active]="filterStatut === 'EN_COURS'">
+      <span class="kpi-value">{{ enCoursCount }}</span>
+      <span class="kpi-label">En cours</span>
+    </div>
+    <div class="kpi-card kpi-resolu" (click)="setStatut('RESOLU')" [class.active]="filterStatut === 'RESOLU'">
+      <span class="kpi-value">{{ resoluCount }}</span>
+      <span class="kpi-label">Résolus</span>
+    </div>
+  </div>
+
+  <!-- ── KPIs AVANCÉS ────────────────────────────────────────── -->
+  <div class="advanced-kpis">
+    <!-- Taux de résolution -->
+    <div class="adv-kpi-card">
+      <div class="adv-kpi-icon adv-kpi-icon--green">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 11.08 12 2 2 11.08"/><path d="M7 22V12h10v10"/>
+        </svg>
+      </div>
+      <div class="adv-kpi-body">
+        <div class="adv-kpi-value">{{ resolutionRate }}%</div>
+        <div class="adv-kpi-label">Taux de résolution</div>
+        <div class="adv-kpi-bar-bg">
+          <div class="adv-kpi-bar-fill adv-kpi-bar--green" [style.width.%]="resolutionRate"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgents en attente -->
+    <div class="adv-kpi-card" (click)="setStatut('EN_ATTENTE'); setPriorite('URGENTE')" style="cursor:pointer">
+      <div class="adv-kpi-icon adv-kpi-icon--red">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="adv-kpi-body">
+        <div class="adv-kpi-value" [class.adv-kpi-value--alert]="urgentPendingCount > 0">{{ urgentPendingCount }}</div>
+        <div class="adv-kpi-label">Urgents en attente</div>
+        <div class="adv-kpi-sub" *ngIf="urgentPendingCount > 0">Cliquer pour filtrer</div>
+        <div class="adv-kpi-sub" *ngIf="urgentPendingCount === 0" style="color:#0D9B76">Aucun cas urgent</div>
+      </div>
+    </div>
+
+    <!-- Total votes citoyens -->
+    <div class="adv-kpi-card">
+      <div class="adv-kpi-icon adv-kpi-icon--blue">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/>
+          <path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
+        </svg>
+      </div>
+      <div class="adv-kpi-body">
+        <div class="adv-kpi-value">{{ totalVotes }}</div>
+        <div class="adv-kpi-label">Votes citoyens</div>
+        <div class="adv-kpi-sub">Engagement communautaire</div>
+      </div>
+    </div>
+
+    <!-- Confiance IA moyenne -->
+    <div class="adv-kpi-card">
+      <div class="adv-kpi-icon adv-kpi-icon--purple">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14"/>
+          <path d="M4.93 4.93a10 10 0 000 14.14"/>
+          <path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M8.46 8.46a5 5 0 000 7.07"/>
+        </svg>
+      </div>
+      <div class="adv-kpi-body">
+        <div class="adv-kpi-value">{{ avgConfidenceIA > 0 ? avgConfidenceIA + '%' : '—' }}</div>
+        <div class="adv-kpi-label">Confiance IA moy.</div>
+        <div class="adv-kpi-bar-bg" *ngIf="avgConfidenceIA > 0">
+          <div class="adv-kpi-bar-fill adv-kpi-bar--purple" [style.width.%]="avgConfidenceIA"></div>
+        </div>
+        <div class="adv-kpi-sub" *ngIf="avgConfidenceIA === 0">IA non activée</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANALYTICS SECTION ───────────────────────────────────── -->
+  <div class="analytics-section">
+
+    <!-- Breakdown statut -->
+    <div class="stats-card">
+      <div class="stats-card-title">Répartition par statut</div>
+      <div class="breakdown-list">
+        <div class="breakdown-item" *ngFor="let s of statutStats">
+          <div class="breakdown-row">
+            <span class="breakdown-dot" [style.background]="s.color"></span>
+            <span class="breakdown-label">{{ s.label }}</span>
+            <span class="breakdown-count">{{ s.count }}</span>
+            <span class="breakdown-pct">{{ s.pct }}%</span>
+          </div>
+          <div class="breakdown-bar-bg">
+            <div class="breakdown-bar-fill animated-bar" [style.width.%]="s.pct" [style.background]="s.color"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown type -->
+    <div class="stats-card">
+      <div class="stats-card-title">Répartition par catégorie</div>
+      <div class="breakdown-list">
+        <div class="breakdown-item" *ngFor="let t of typeStats">
+          <div class="breakdown-row">
+            <span class="breakdown-dot" [style.background]="t.color"></span>
+            <span class="breakdown-label">{{ t.label }}</span>
+            <span class="breakdown-count">{{ t.count }}</span>
+            <span class="breakdown-pct">{{ t.pct }}%</span>
+          </div>
+          <div class="breakdown-bar-bg">
+            <div class="breakdown-bar-fill animated-bar" [style.width.%]="t.pct" [style.background]="t.color"></div>
+          </div>
+        </div>
+        <div *ngIf="typeStats.length === 0" class="breakdown-empty">Chargement…</div>
+      </div>
+    </div>
+
+    <!-- Graphique évolution temporelle -->
+    <div class="stats-card chart-card">
+      <div class="chart-header">
+        <div class="stats-card-title">Évolution des signalements</div>
+        <div class="chart-period-btns">
+          <button class="period-btn" [class.period-btn-active]="chartPeriod === '7d'"
+                  (click)="setChartPeriod('7d')">7 jours</button>
+          <button class="period-btn" [class.period-btn-active]="chartPeriod === '30d'"
+                  (click)="setChartPeriod('30d')">30 jours</button>
+        </div>
+      </div>
+
+      <!-- SVG Bar Chart -->
+      <div class="chart-wrap">
+        <div class="chart-bars">
+          <ng-container *ngFor="let bar of evolutionBars">
+            <div class="chart-bar-col">
+              <div class="chart-bar-count" *ngIf="bar.count > 0">{{ bar.count }}</div>
+              <div class="chart-bar-count chart-bar-count--zero" *ngIf="bar.count === 0"></div>
+              <div class="chart-bar-track">
+                <div class="chart-bar-fill"
+                     [style.height.%]="bar.height"
+                     [title]="bar.dateStr + ' : ' + bar.count + ' signalement(s)'">
+                </div>
+              </div>
+              <div class="chart-bar-label">{{ bar.label }}</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Compteur total période -->
+      <div class="chart-footer">
+        <span class="chart-total-label">Total période :</span>
+        <span class="chart-total-value">{{ evolutionPeriodTotal }} signalements</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FILTER BAR ──────────────────────────────────────────── -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input class="search-input" type="text" placeholder="Rechercher par ID, type, adresse…"
+             [(ngModel)]="search" (input)="onSearch()"/>
+      <button *ngIf="search" class="search-clear" (click)="search=''; onSearch()">✕</button>
+    </div>
+
+    <div class="filter-chips">
+      <div class="chip-group">
+        <button *ngFor="let s of statutOptions"
+                class="chip"
+                [class.chip-active]="filterStatut === s"
+                (click)="setStatut(s)">
+          {{ s === 'TOUS' ? 'Tous statuts' : statutLabel(s) }}
+        </button>
+      </div>
+      <div class="chip-group">
+        <button *ngFor="let p of prioriteOptions"
+                class="chip"
+                [class.chip-active]="filterPriorite === p"
+                (click)="setPriorite(p)">
+          {{ p === 'TOUS' ? 'Toutes priorités' : prioriteLabel(p) }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FILTRES AVANCÉS ─────────────────────────────────────── -->
+  <div class="advanced-filters">
+    <!-- Date range -->
+    <div class="date-range-group">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:#6b7280;flex-shrink:0">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      <input class="date-input" type="date" [(ngModel)]="filterDateFrom" (change)="onDateFilter()" placeholder="Du"/>
+      <span class="date-sep">→</span>
+      <input class="date-input" type="date" [(ngModel)]="filterDateTo" (change)="onDateFilter()" placeholder="Au"/>
+      <button *ngIf="filterDateFrom || filterDateTo" class="date-clear-btn" (click)="clearDateFilter()">✕</button>
+    </div>
+
+    <!-- Filtre équipe IA -->
+    <div class="chip-group equipe-chips">
+      <span class="chips-label">Équipe IA :</span>
+      <button *ngFor="let e of equipeOptions"
+              class="chip chip-sm"
+              [class.chip-active]="filterEquipe === e"
+              (click)="setEquipe(e)">
+        {{ e === 'TOUS' ? 'Toutes' : e === 'AUCUNE' ? 'Non affectée' : e }}
+      </button>
+    </div>
+
+    <!-- Reset filtres avancés -->
+    <button *ngIf="hasActiveAdvancedFilters" class="btn-reset-filters" (click)="resetAllFilters()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+      </svg>
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- ── RÉSULTATS FILTRÉS ─────────────────────────────────── -->
+  <div class="results-bar" *ngIf="!loading">
+    <span class="results-count">
+      <strong>{{ filtered.length }}</strong> résultat{{ filtered.length !== 1 ? 's' : '' }}
+      <span *ngIf="filtered.length !== totalCount" class="results-filtered">
+        sur {{ totalCount }} total
+      </span>
+    </span>
+    <button *ngIf="filtered.length !== totalCount" class="btn-clear-all" (click)="resetAllFilters()">
+      Tout afficher
+    </button>
+  </div>
+
+  <!-- ── BULK ACTION BAR ─────────────────────────────────────── -->
+  <div class="bulk-bar" *ngIf="selectedIds.size > 0">
+    <span class="bulk-count">{{ selectedIds.size }} sélectionné(s)</span>
+    <button class="bulk-btn-delete" (click)="openBulkDelete()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+      Supprimer la sélection
+    </button>
+    <button class="bulk-btn-clear" (click)="clearSelection()">Annuler</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       VUE TABLEAU
+  ══════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="viewMode === 'table'">
+    <div class="table-container">
+
+      <!-- Loading -->
+      <div class="state-overlay" *ngIf="loading">
+        <div class="loader-ring"></div>
+        <p>Chargement…</p>
+      </div>
+
+      <!-- Error -->
+      <div class="state-overlay error-state" *ngIf="!loading && error">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>{{ error }}</p>
+        <button class="btn-refresh" (click)="load()">Réessayer</button>
+      </div>
+
+      <!-- Empty -->
+      <div class="state-overlay" *ngIf="!loading && !error && filtered.length === 0">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <p>Aucun signalement trouvé</p>
+      </div>
+
+      <!-- Table -->
+      <table class="sig-table" *ngIf="!loading && !error && filtered.length > 0">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <label class="custom-check">
+                <input type="checkbox" [checked]="allPageSelected" (change)="toggleSelectAll()"/>
+                <span class="checkmark"></span>
+              </label>
+            </th>
+            <th class="col-id sortable" (click)="sortBy('id')">
+              <span>ID</span>
+              <span class="sort-arrow" [class.active]="sortField === 'id'">{{ sortField === 'id' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-type sortable" (click)="sortBy('type')">
+              <span>Type</span>
+              <span class="sort-arrow" [class.active]="sortField === 'type'">{{ sortField === 'type' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-adresse">Adresse</th>
+            <th class="col-priorite sortable" (click)="sortBy('priorite')">
+              <span>Priorité</span>
+              <span class="sort-arrow" [class.active]="sortField === 'priorite'">{{ sortField === 'priorite' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-statut sortable" (click)="sortBy('statut')">
+              <span>Statut</span>
+              <span class="sort-arrow" [class.active]="sortField === 'statut'">{{ sortField === 'statut' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-equipe">Équipe IA</th>
+            <th class="col-confiance">IA %</th>
+            <th class="col-votes sortable" (click)="sortBy('votes')">
+              <span>Votes</span>
+              <span class="sort-arrow" [class.active]="sortField === 'votes'">{{ sortField === 'votes' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-date sortable" (click)="sortBy('dateSignalement')">
+              <span>Date</span>
+              <span class="sort-arrow" [class.active]="sortField === 'dateSignalement'">{{ sortField === 'dateSignalement' ? (sortDir === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of paginated; trackBy: trackById"
+              class="sig-row"
+              [class.row-selected]="selectedIds.has(s.id)"
+              [class.row-urgent]="s.prioriteCitoyen === 'URGENTE' && s.statut === 'EN_ATTENTE'"
+              (click)="openDetail(s)">
+
+            <!-- Checkbox -->
+            <td class="col-check" (click)="$event.stopPropagation()">
+              <label class="custom-check">
+                <input type="checkbox" [checked]="selectedIds.has(s.id)" (change)="toggleSelect(s.id, $event)"/>
+                <span class="checkmark"></span>
+              </label>
+            </td>
+
+            <!-- ID -->
+            <td class="col-id">
+              <span class="id-badge">#{{ s.id }}</span>
+            </td>
+
+            <!-- Type -->
+            <td class="col-type">
+              <div class="type-badge"
+                   [style.background]="typeColor(s.type) + '18'"
+                   [style.color]="typeColor(s.type)"
+                   [style.borderColor]="typeColor(s.type) + '40'">
+                <span class="type-letter">{{ typeIcon(s.type) }}</span>
+                <span class="type-text">{{ typeLabel(s.type) }}</span>
+              </div>
+            </td>
+
+            <!-- Adresse -->
+            <td class="col-adresse">
+              <span class="addr-text" [title]="s.adresse">{{ s.adresse || '—' }}</span>
+            </td>
+
+            <!-- Priorité -->
+            <td class="col-priorite">
+              <div class="prio-row">
+                <span class="prio-dot prio-{{ s.prioriteCitoyen?.toLowerCase() }}"></span>
+                <span class="prio-label">{{ prioriteLabel(s.prioriteCitoyen) }}</span>
+              </div>
+            </td>
+
+            <!-- Statut -->
+            <td class="col-statut">
+              <span class="statut-pill statut-{{ s.statut?.toLowerCase() }}">{{ statutLabel(s.statut) }}</span>
+            </td>
+
+            <!-- Équipe IA -->
+            <td class="col-equipe">
+              <span class="equipe-tag" *ngIf="s.equipeIALabel">{{ s.equipeIALabel }}</span>
+              <span class="na-text" *ngIf="!s.equipeIALabel">—</span>
+            </td>
+
+            <!-- Confiance IA -->
+            <td class="col-confiance">
+              <ng-container *ngIf="s.confidenceIA != null && s.confidenceIA > 0">
+                <div class="conf-bar-wrap" [title]="(s.confidenceIA * 100 | number:'1.0-0') + '%'">
+                  <div class="conf-bar-track">
+                    <div class="conf-bar-fill"
+                         [style.width.%]="s.confidenceIA * 100"
+                         [class.conf-high]="s.confidenceIA >= 0.8"
+                         [class.conf-med]="s.confidenceIA >= 0.5 && s.confidenceIA < 0.8"
+                         [class.conf-low]="s.confidenceIA < 0.5">
+                    </div>
+                  </div>
+                  <span class="conf-pct">{{ s.confidenceIA * 100 | number:'1.0-0' }}%</span>
+                </div>
+              </ng-container>
+              <span class="na-text" *ngIf="!s.confidenceIA || s.confidenceIA === 0">—</span>
+            </td>
+
+            <!-- Votes -->
+            <td class="col-votes">
+              <div class="votes-wrap">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="18 15 12 9 6 15"/>
+                </svg>
+                <span>{{ s.votes || 0 }}</span>
+              </div>
+            </td>
+
+            <!-- Date -->
+            <td class="col-date">
+              <span class="date-text">{{ formatDateShort(s.dateSignalement) }}</span>
+            </td>
+
+            <!-- Actions -->
+            <td class="col-actions" (click)="$event.stopPropagation()">
+              <div class="action-btns">
+<button class="action-btn btn-statut" (click)="openEditStatut(s, $event)" title="Changer le statut">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="action-btn btn-delete" (click)="openDelete(s, $event)" title="Supprimer">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── PAGINATION ──────────────────────────────────────── -->
+    <div class="pagination-bar" *ngIf="!loading && !error && filtered.length > 0">
+      <div class="pagination-info">
+        Affichage {{ startIndex }}–{{ endIndex }} sur {{ filtered.length }}
+      </div>
+      <div class="pagination-controls">
+        <button class="pg-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <ng-container *ngFor="let p of pageNumbers">
+          <button *ngIf="p !== -1" class="pg-btn pg-num" [class.pg-current]="p === currentPage" (click)="goPage(p)">{{ p }}</button>
+          <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+        </ng-container>
+        <button class="pg-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="pagination-size">
+        <span>Lignes&nbsp;:</span>
+        <button *ngFor="let sz of pageSizes" class="pg-size-btn" [class.pg-size-active]="pageSize === sz" (click)="onPageSize(sz)">{{ sz }}</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══════════════════════════════════════════════════════════
+       VUE CARTE
+  ══════════════════════════════════════════════════════════ -->
+  <ng-container *ngIf="viewMode === 'map'">
+    <!-- Légende carte -->
+    <div class="map-legend">
+      <span class="map-legend-title">Légende</span>
+      <div class="map-legend-items">
+        <div class="map-legend-item"><span class="map-dot" style="background:#E8532A"></span>En attente</div>
+        <div class="map-legend-item"><span class="map-dot" style="background:#3B82F6"></span>En cours</div>
+        <div class="map-legend-item"><span class="map-dot" style="background:#0D9B76"></span>Résolu</div>
+        <div class="map-legend-item"><span class="map-dot" style="background:#9CA3AF"></span>Rejeté</div>
+      </div>
+      <span class="map-count">{{ filtered.length }} marqueur{{ filtered.length !== 1 ? 's' : '' }}</span>
+    </div>
+    <!-- Conteneur carte -->
+    <div id="sig-map" class="sig-map-container"></div>
+  </ng-container>
+
+</div><!-- /.page-wrap -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     DETAIL DRAWER
+══════════════════════════════════════════════════════════════ -->
+<div class="drawer-overlay" *ngIf="detailItem" (click)="closeDetail()"></div>
+<aside class="detail-drawer" id="detail-drawer" *ngIf="detailItem">
+  <div class="drawer-header">
+    <div class="drawer-title-wrap">
+      <div class="drawer-type-badge"
+           [style.background]="typeColor(detailItem.type) + '20'"
+           [style.color]="typeColor(detailItem.type)">
+        {{ typeLabel(detailItem.type) }}
+      </div>
+      <span class="drawer-id">#{{ detailItem.id }}</span>
+    </div>
+    <button class="drawer-close" (click)="closeDetail()">✕</button>
+  </div>
+
+  <div class="drawer-body">
+
+    <!-- Statut + Priorité citoyen -->
+    <div class="drawer-row-pair">
+      <div class="drawer-field">
+        <label>Statut</label>
+        <span class="statut-pill statut-{{ detailItem.statut?.toLowerCase() }}">{{ statutLabel(detailItem.statut) }}</span>
+      </div>
+      <div class="drawer-field">
+        <label>Priorité citoyen</label>
+        <div class="prio-row">
+          <span class="prio-dot prio-{{ detailItem.prioriteCitoyen?.toLowerCase() }}"></span>
+          {{ prioriteLabel(detailItem.prioriteCitoyen) }}
+        </div>
+      </div>
+      <div class="drawer-field" *ngIf="detailItem.prioriteIA">
+        <label>Priorité IA</label>
+        <div class="prio-row">
+          <span class="prio-dot prio-{{ detailItem.prioriteIA.toLowerCase() }}"></span>
+          {{ prioriteLabel(detailItem.prioriteIA) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="drawer-field drawer-field-full">
+      <label>Description</label>
+      <p class="drawer-desc">{{ detailItem.description || 'Aucune description' }}</p>
+    </div>
+
+    <!-- Adresse -->
+    <div class="drawer-field drawer-field-full">
+      <label>Adresse</label>
+      <p class="drawer-value">{{ detailItem.adresse || '—' }}</p>
+    </div>
+
+    <!-- Coordonnées + édition localisation -->
+    <div class="drawer-row-pair" *ngIf="!editingLocation">
+      <div class="drawer-field">
+        <label>Latitude</label>
+        <p class="drawer-value mono">{{ detailItem.latitude }}</p>
+      </div>
+      <div class="drawer-field">
+        <label>Longitude</label>
+        <p class="drawer-value mono">{{ detailItem.longitude }}</p>
+      </div>
+    </div>
+
+    <!-- Bouton corriger localisation -->
+    <div class="loc-edit-trigger">
+      <button class="loc-btn-edit" (click)="openLocMap(detailItem)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="10" r="3"/>
+          <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+        </svg>
+        Corriger la localisation sur la carte
+      </button>
+    </div>
+
+    <!-- IA — équipe + délai + confiance -->
+    <div class="drawer-ia-block" *ngIf="detailItem.equipeIALabel || detailItem.delaiEstimeHeures || (detailItem.confidenceIA && detailItem.confidenceIA > 0)">
+      <div class="drawer-ia-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M4.93 4.93a10 10 0 000 14.14"/>
+        </svg>
+        Analyse IA
+      </div>
+      <div class="drawer-row-pair">
+        <div class="drawer-field" *ngIf="detailItem.equipeIALabel">
+          <label>Équipe affectée</label>
+          <span class="equipe-tag">{{ detailItem.equipeIALabel }}</span>
+        </div>
+        <div class="drawer-field" *ngIf="detailItem.delaiEstimeHeures">
+          <label>Délai estimé</label>
+          <p class="drawer-value">{{ detailItem.delaiEstimeHeures }}h</p>
+        </div>
+      </div>
+      <!-- Barre de confiance IA -->
+      <div class="drawer-field drawer-field-full" *ngIf="detailItem.confidenceIA && detailItem.confidenceIA > 0">
+        <label>Confiance IA</label>
+        <div class="conf-drawer-wrap">
+          <div class="conf-drawer-track">
+            <div class="conf-drawer-fill"
+                 [style.width.%]="detailItem.confidenceIA * 100"
+                 [class.conf-high]="detailItem.confidenceIA >= 0.8"
+                 [class.conf-med]="detailItem.confidenceIA >= 0.5 && detailItem.confidenceIA < 0.8"
+                 [class.conf-low]="detailItem.confidenceIA < 0.5">
+            </div>
+          </div>
+          <span class="conf-drawer-pct"
+                [class.conf-high]="detailItem.confidenceIA >= 0.8"
+                [class.conf-med]="detailItem.confidenceIA >= 0.5 && detailItem.confidenceIA < 0.8"
+                [class.conf-low]="detailItem.confidenceIA < 0.5">
+            {{ detailItem.confidenceIA * 100 | number:'1.0-0' }}%
+          </span>
+        </div>
+      </div>
+      <div class="drawer-field drawer-field-full" *ngIf="!detailItem.equipeIALabel && !detailItem.confidenceIA">
+        <p class="na-text" style="font-size:12px">IA non activée pour ce signalement.</p>
+      </div>
+    </div>
+
+    <!-- Votes + Date -->
+    <div class="drawer-row-pair">
+      <div class="drawer-field">
+        <label>Votes</label>
+        <div class="votes-wrap" style="gap:5px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+          <span style="font-weight:700;color:#111827">{{ detailItem.votes || 0 }}</span>
+        </div>
+      </div>
+      <div class="drawer-field">
+        <label>Date signalement</label>
+        <p class="drawer-value">{{ formatDate(detailItem.dateSignalement) }}</p>
+      </div>
+    </div>
+
+    <!-- Anonyme -->
+    <div class="drawer-field" *ngIf="detailItem.estAnonyme">
+      <label>Anonymat</label>
+      <span class="anon-badge">Anonyme</span>
+    </div>
+
+    <!-- Commentaire IA -->
+    <div class="drawer-field drawer-field-full" *ngIf="detailItem.commentaireIA">
+      <label>Commentaire IA</label>
+      <p class="drawer-desc italic">{{ detailItem.commentaireIA }}</p>
+    </div>
+
+    <!-- Audio vocal (signalement par voix) -->
+    <div class="drawer-field drawer-field-full" *ngIf="detailItem.voiceSessionId">
+      <label>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+             style="vertical-align:middle;margin-right:4px">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        Enregistrement vocal
+      </label>
+      <div class="voice-tracks">
+        <div class="voice-track">
+          <span class="voice-track-label">Description</span>
+          <audio controls preload="metadata" style="width:100%;height:32px"
+                 [src]="voiceAudioUrl(detailItem, 'description')">
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        </div>
+        <div class="voice-track">
+          <span class="voice-track-label">Localisation</span>
+          <audio controls preload="metadata" style="width:100%;height:32px"
+                 [src]="voiceAudioUrl(detailItem, 'location')">
+            Votre navigateur ne supporte pas l'audio.
+          </audio>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photos -->
+    <div class="drawer-field drawer-field-full"
+         *ngIf="detailItem.mediaUrls && detailItem.mediaUrls.length > 0">
+      <label>Photos ({{ detailItem.mediaUrls.length }})</label>
+      <div class="media-grid">
+        <button *ngFor="let url of detailItem.mediaUrls; let i = index"
+                class="media-thumb-btn"
+                (click)="openLightbox(detailItem.mediaUrls, i)"
+                [title]="'Photo ' + (i + 1)">
+          <img [src]="url" [alt]="'Photo ' + (i + 1)" class="media-thumb"
+               loading="lazy" (error)="$any($event.target).style.display='none'"/>
+          <div class="media-thumb-overlay">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="drawer-field drawer-field-full"
+         *ngIf="!detailItem.mediaUrls || detailItem.mediaUrls.length === 0">
+      <label>Photos</label>
+      <p class="na-text" style="font-size:13px;color:#9ca3af;">Aucune photo jointe</p>
+    </div>
+
+  </div>
+
+  <!-- Contrat de travail -->
+  <div class="drawer-section-title">Contrat de travail IA</div>
+  <div class="contrat-block" *ngIf="contratMap[detailItem.id]; else noContrat">
+    <ng-container [ngSwitch]="contratMap[detailItem.id].statut">
+      <div class="contrat-status contrat-status--pending" *ngSwitchCase="'EN_ATTENTE_SIGNATURE'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        En attente de signature
+      </div>
+      <div class="contrat-status contrat-status--accepted" *ngSwitchCase="'ACCEPTE'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Accepté — {{ contratMap[detailItem.id].equipeLabel }}
+      </div>
+      <div class="contrat-status contrat-status--refused" *ngSwitchCase="'REFUSE'">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Refusé — réaffectation en cours…
+      </div>
+    </ng-container>
+    <div class="contrat-meta">
+      <span>N° {{ contratMap[detailItem.id].numeroContrat }}</span>
+      <span>Tentative {{ contratMap[detailItem.id].tentative }}</span>
+    </div>
+    <a class="contrat-open-btn" [routerLink]="['/admin/contrats', contratMap[detailItem.id].id]">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Voir / Signer le contrat
+    </a>
+  </div>
+  <ng-template #noContrat>
+    <div class="contrat-block contrat-block--empty">
+      <span>Aucun contrat généré</span>
+      <span class="na-text" style="font-size:11px">L'IA doit affecter une équipe pour générer un contrat.</span>
+    </div>
+  </ng-template>
+
+  <div class="drawer-footer">
+    <button class="drawer-btn-delete" (click)="openDelete(detailItem, $event)">Supprimer</button>
+  </div>
+</aside>
+
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL — SUPPRESSION UNIQUE
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="deleteTarget" (click)="closeDelete()"></div>
+<div class="modal-card modal-danger" id="delete-modal" *ngIf="deleteTarget" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div class="modal-danger-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <h3>Supprimer le signalement</h3>
+    <button class="modal-close" (click)="closeDelete()">✕</button>
+  </div>
+  <div class="modal-body">
+    <p>Vous allez supprimer le signalement <strong>#{{ deleteTarget.id }}</strong> ({{ typeLabel(deleteTarget.type) }}).</p>
+    <p class="modal-warn">Cette action est irréversible.</p>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-btn-cancel" (click)="closeDelete()">Annuler</button>
+    <button class="modal-btn-delete" [disabled]="deleteLoading" (click)="confirmDelete()">
+      <span *ngIf="!deleteLoading">Supprimer</span>
+      <span *ngIf="deleteLoading" class="btn-spin"></span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL — SUPPRESSION MULTIPLE
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="bulkDeleteMode" (click)="closeBulkDelete()"></div>
+<div class="modal-card modal-danger" *ngIf="bulkDeleteMode" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div class="modal-danger-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <h3>Suppression multiple</h3>
+    <button class="modal-close" (click)="closeBulkDelete()">✕</button>
+  </div>
+  <div class="modal-body">
+    <p>Vous allez supprimer <strong>{{ selectedIds.size }} signalement(s)</strong>.</p>
+    <p class="modal-warn">Cette action est irréversible.</p>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-btn-cancel" (click)="closeBulkDelete()">Annuler</button>
+    <button class="modal-btn-delete" [disabled]="bulkLoading" (click)="confirmBulkDelete()">
+      <span *ngIf="!bulkLoading">Supprimer tout</span>
+      <span *ngIf="bulkLoading" class="btn-spin"></span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL — CHANGEMENT DE STATUT
+     (éléments gardés dans le DOM, déplacés vers <body> via ngAfterViewInit
+      pour échapper au containing block du grid layout admin)
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay statut-modal-layer" id="statut-modal-overlay"
+     [class.statut-modal-visible]="editingStatut"
+     (click)="closeEditStatut()"></div>
+<div class="modal-card statut-modal-layer" id="statut-modal"
+     [class.statut-modal-visible]="editingStatut"
+     (click)="$event.stopPropagation()">
+  <ng-container *ngIf="editingStatut">
+  <div class="modal-header">
+    <div class="modal-info-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </div>
+    <h3>Changer le statut — <span class="modal-id-ref">#{{ editingStatut.id }}</span></h3>
+    <button class="modal-close" (click)="closeEditStatut()">✕</button>
+  </div>
+  <div class="modal-body">
+    <p style="margin-bottom:12px;color:#6b7280;font-size:13px">
+      Statut actuel :
+      <span class="statut-pill statut-{{ editingStatut.statut?.toLowerCase() }}">{{ statutLabel(editingStatut.statut) }}</span>
+    </p>
+
+    <!-- ── Chemin IA : seul REJETE est possible ── -->
+    <div class="modal-ai-notice" *ngIf="editingStatut.equipeIALabel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14"/><path d="M4.93 4.93a10 10 0 000 14.14"/>
+      </svg>
+      Ce signalement est géré par l'IA (équipe <strong>{{ editingStatut.equipeIALabel }}</strong>).
+      Le passage en cours et la résolution sont gérés automatiquement.
+      Seul le rejet admin est disponible ici.
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label" for="statut-select">Nouveau statut</label>
+      <select id="statut-select" class="modal-select" [(ngModel)]="nouveauStatutChoix">
+        <!-- Chemin sans IA : toutes les transitions -->
+        <ng-container *ngIf="!editingStatut.equipeIALabel">
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="EN_COURS">En cours de traitement</option>
+          <option value="RESOLU">Résolu</option>
+        </ng-container>
+        <!-- Toujours disponible (les 2 chemins) -->
+        <option value="REJETE">Rejeté</option>
+      </select>
+    </div>
+    <!-- ── Choix équipe (chemin sans IA, seulement quand EN_COURS) ── -->
+    <div class="modal-field modal-equipe-field"
+         *ngIf="!editingStatut.equipeIALabel && nouveauStatutChoix === 'EN_COURS'"
+         style="margin-top:12px">
+      <label class="modal-label" for="equipe-select">
+        Assigner une équipe
+        <span class="modal-label-required">requis</span>
+      </label>
+      <select id="equipe-select" class="modal-select" [(ngModel)]="equipeChoix">
+        <option value="" disabled>— Sélectionner une équipe —</option>
+        <option *ngFor="let e of equipesList" [value]="e.id">{{ e.label }}</option>
+      </select>
+      <p class="modal-field-hint">
+        L'équipe sera notifiée et un contrat de travail sera généré.
+      </p>
+    </div>
+
+    <div class="modal-field" style="margin-top:12px">
+      <label class="modal-label" for="statut-comment">Commentaire (optionnel)</label>
+      <textarea id="statut-comment" class="modal-textarea" rows="3"
+                placeholder="Ex : Intervention programmée le 10/04…"
+                [(ngModel)]="statutComment"></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="modal-btn-cancel" (click)="closeEditStatut()">Annuler</button>
+    <button class="modal-btn-confirm"
+            [disabled]="statutPending || (!editingStatut.equipeIALabel && nouveauStatutChoix === 'EN_COURS' && !equipeChoix)"
+            (click)="confirmStatut()">
+      <span *ngIf="!statutPending">Confirmer</span>
+      <span *ngIf="statutPending" class="btn-spin"></span>
+    </button>
+  </div>
+  </ng-container>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MODAL CARTE CORRECTION LOCALISATION
+══════════════════════════════════════════════════════════════ -->
+<div class="locmap-overlay" id="locmap-overlay" *ngIf="showLocMap" (click)="onLocMapOverlayClick($event)">
+  <div class="locmap-modal" id="locmap-modal">
+
+    <!-- Header -->
+    <div class="locmap-header" id="locmap-header">
+      <div class="locmap-header__left">
+        <div class="locmap-header__icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="locmap-header__title">Corriger la localisation</h3>
+          <p class="locmap-header__sub">Déplacez le pin à l'emplacement exact du problème</p>
+        </div>
+      </div>
+      <button class="locmap-close" (click)="closeLocMap()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Map -->
+    <div class="locmap-body">
+      <div id="loc-correction-map" class="locmap-canvas"></div>
+
+      <!-- Floating coords + adresse -->
+      <div class="locmap-info-panel" id="locmap-info">
+        <div class="locmap-info__coords">
+          <span class="locmap-info__coord">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            {{ locEditLat | number:'1.5-6' }}
+          </span>
+          <span class="locmap-info__sep">·</span>
+          <span class="locmap-info__coord">{{ locEditLon | number:'1.5-6' }}</span>
+        </div>
+        <div class="locmap-info__addr">
+          <span *ngIf="locMapGeocoding" class="locmap-info__geocoding">
+            <span class="locmap-spin"></span> Identification…
+          </span>
+          <span *ngIf="!locMapGeocoding && locEditAdresse">{{ locEditAdresse }}</span>
+          <span *ngIf="!locMapGeocoding && !locEditAdresse" class="locmap-info__noaddr">Adresse non trouvée</span>
+        </div>
+      </div>
+
+      <!-- Hint -->
+      <div class="locmap-hint" id="locmap-hint">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Cliquez sur la carte ou faites glisser le marqueur
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="locmap-footer" id="locmap-footer">
+      <div class="locmap-footer__addr-edit">
+        <label class="locmap-footer__label">Adresse (modifiable)</label>
+        <input class="locmap-footer__input" type="text"
+               placeholder="Rue, quartier, point de repère…"
+               [(ngModel)]="locEditAdresse"/>
+      </div>
+      <div class="locmap-footer__actions">
+        <button class="locmap-btn-cancel" (click)="closeLocMap()">Annuler</button>
+        <button class="locmap-btn-confirm" (click)="confirmLocMap()" [disabled]="locSaving">
+          <svg *ngIf="!locSaving" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span *ngIf="locSaving" class="locmap-spin locmap-spin--white"></span>
+          {{ locSaving ? 'Enregistrement…' : 'Confirmer la localisation' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     LIGHTBOX
+══════════════════════════════════════════════════════════════ -->
+<div class="lightbox-overlay" *ngIf="lightboxUrl" (click)="closeLightbox()">
+  <div class="lightbox-box" (click)="$event.stopPropagation()">
+    <button class="lightbox-close" (click)="closeLightbox()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <img [src]="lightboxUrl" class="lightbox-img" alt="Photo signalement"/>
+    <ng-container *ngIf="detailItem && detailItem.mediaUrls && detailItem.mediaUrls.length > 1">
+      <button class="lightbox-nav lightbox-prev" (click)="lightboxPrev(detailItem.mediaUrls)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="lightbox-nav lightbox-next" (click)="lightboxNext(detailItem.mediaUrls)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="lightbox-counter">{{ lightboxIndex + 1 }} / {{ detailItem.mediaUrls.length }}</div>
+    </ng-container>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════════════════════════ -->
+<div class="toast" *ngIf="toast" [class.toast-error]="toast.type === 'error'">
+  <svg *ngIf="toast.type === 'success'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <svg *ngIf="toast.type === 'error'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  {{ toast.msg }}
+</div>

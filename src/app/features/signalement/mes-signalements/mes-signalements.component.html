@@ -1,0 +1,258 @@
+
+<!-- ── TOAST ───────────────────────────────────────────────── -->
+<div class="ms-toast" *ngIf="toast"
+  [class.ms-toast--success]="toast.type === 'success'"
+  [class.ms-toast--error]="toast.type === 'error'">
+  <svg *ngIf="toast.type === 'success'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <svg *ngIf="toast.type === 'error'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+  </svg>
+  {{ toast.msg }}
+</div>
+
+<div class="ms-page">
+  <div class="container">
+
+    <!-- ══ HEADER ══════════════════════════════════════════ -->
+    <div class="ms-header">
+      <div class="ms-header-left">
+        <h1 class="ms-title">Mes signalements</h1>
+        <p class="ms-sub">Suivez l'avancement de vos signalements en temps réel</p>
+      </div>
+      <button class="btn-new" (click)="goNew()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouveau signalement
+      </button>
+    </div>
+
+    <!-- ══ LOADING ══════════════════════════════════════════ -->
+    <div class="ms-loading" *ngIf="loading">
+      <div class="ms-loading-ring"></div>
+      <p>Chargement de vos signalements…</p>
+    </div>
+
+    <!-- ══ ERREUR ══════════════════════════════════════════ -->
+    <div class="ms-error" *ngIf="error">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+
+    <ng-container *ngIf="!loading && !error">
+
+      <!-- ══ STATS ════════════════════════════════════════ -->
+      <div class="ms-stats">
+        <div class="ms-stat" *ngFor="let f of filters">
+          <span class="ms-stat-count" [class]="'stat-count-' + f.key.toLowerCase()">
+            {{ f.count }}
+          </span>
+          <span class="ms-stat-icon">{{ f.icon }}</span>
+          <span class="ms-stat-label">{{ f.label }}</span>
+          <div class="ms-stat-bar">
+            <div class="ms-stat-bar-fill"
+                 [style.width.%]="signalements.length > 0 ? (f.count / signalements.length) * 100 : 0"
+                 [class]="'sbar-' + f.key.toLowerCase()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FILTRES + RECHERCHE ══════════════════════════ -->
+      <div class="ms-toolbar">
+        <div class="ms-filter-tabs">
+          <button class="ms-filter-tab"
+                  *ngFor="let f of filters"
+                  [class.active]="activeFilter === f.key"
+                  (click)="setFilter(f.key)">
+            {{ f.icon }} {{ f.label }}
+            <span class="ms-filter-count">{{ f.count }}</span>
+          </button>
+        </div>
+        <div class="ms-search">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" placeholder="Rechercher…"
+                 [(ngModel)]="searchQuery" (input)="applyFilter()"/>
+        </div>
+      </div>
+
+      <!-- ══ LISTE ════════════════════════════════════════ -->
+      <div class="ms-results-row" *ngIf="filtered.length > 0">
+        {{ filtered.length }} signalement{{ filtered.length > 1 ? 's' : '' }}
+        <span *ngIf="pageCount > 1"> — page {{ currentPage + 1 }}/{{ pageCount }}</span>
+      </div>
+      <div class="ms-list" *ngIf="filtered.length > 0">
+        <div class="ms-card" *ngFor="let sig of paged; let i = index"
+             [attr.data-statut]="sig.statut">
+
+          <!-- Header -->
+          <div class="ms-card-header" style="cursor:pointer" (click)="openPopup(sig)">
+            <div class="ms-card-type">{{ typeLabel(sig.type) }}</div>
+            <span class="ms-statut" [class]="'statut-' + sig.statut">
+              {{ statutLabel(sig.statut) }}
+            </span>
+          </div>
+
+          <!-- Description -->
+          <p class="ms-card-desc">
+            {{ sig.description | slice:0:100 }}{{ (sig.description?.length ?? 0) > 100 ? '…' : '' }}
+          </p>
+
+          <!-- Adresse -->
+          <div class="ms-card-addr" *ngIf="sig.adresse">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+              <path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/>
+              <circle cx="12" cy="9" r="3"/>
+            </svg>
+            {{ sig.adresse }}
+          </div>
+
+          <!-- Barre de progression -->
+          <div class="ms-progress-wrap">
+            <div class="ms-progress-track">
+              <div class="ms-progress-fill"
+                   [class]="'prog-' + sig.statut"
+                   [style.width.%]="progressPct(sig)"></div>
+            </div>
+            <div class="ms-progress-steps">
+              <span [class.done]="progressPct(sig) >= 10">
+                <span class="prog-dot"></span>Soumis
+              </span>
+              <span [class.done]="progressPct(sig) >= 55">
+                <span class="prog-dot"></span>En cours
+              </span>
+              <span [class.done]="progressPct(sig) >= 100">
+                <span class="prog-dot"></span>Résolu
+              </span>
+            </div>
+          </div>
+
+          <!-- IA résultat -->
+          <div class="ms-ia-row" *ngIf="sig.equipeIALabel">
+            <div class="ms-ia-item">
+              <span class="ms-ia-label">Équipe assignée</span>
+              <span class="ms-ia-val teal">{{ sig.equipeIALabel }}</span>
+            </div>
+            <div class="ms-ia-item" *ngIf="sig.delaiEstimeHeures">
+              <span class="ms-ia-label">Délai estimé</span>
+              <span class="ms-ia-val gold">{{ sig.delaiEstimeHeures }}h</span>
+            </div>
+            <div class="ms-ia-item">
+              <span class="ms-ia-label">Priorité IA</span>
+              <!-- Uniquement la valeur IA — ne jamais afficher la priorité citoyen ici -->
+              <span *ngIf="sig.prioriteIA"
+                    class="prio-pill prio-{{ sig.prioriteIA.toLowerCase() }}">
+                {{ prioriteLabel(sig.prioriteIA) }}
+              </span>
+              <span *ngIf="!sig.prioriteIA" class="ms-ia-val" style="color:var(--ink-3,#8A95A3)">
+                Non évaluée
+              </span>
+            </div>
+            <div class="ms-ia-item" *ngIf="sig.confidenceIA">
+              <span class="ms-ia-label">Confiance</span>
+              <span class="ms-ia-val">{{ (sig.confidenceIA * 100).toFixed(0) }}%</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="ms-card-footer">
+            <div class="ms-card-meta">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"
+                   viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>{{ formatDate(sig.dateSignalement) }}</span>
+            </div>
+
+            <!-- Bouton détails -->
+            <button class="btn-detail" (click)="openPopup(sig); $event.stopPropagation()" title="Voir les détails">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Détails
+            </button>
+
+            <!-- Bouton vote -->
+            <button
+              class="btn-vote"
+              [id]="'ms-vote-btn-' + sig.id"
+              [class.voted]="votedIds.has(sig.id)"
+              [class.voting]="votingIds.has(sig.id)"
+              [disabled]="votedIds.has(sig.id)"
+              (click)="voter(sig); $event.stopPropagation()">
+
+              <svg [id]="'ms-vi-' + sig.id"
+                   width="13" height="13" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+                <polyline *ngIf="!votedIds.has(sig.id)" points="18 15 12 9 6 15"/>
+                <polyline *ngIf="votedIds.has(sig.id)"  points="20 6 9 17 4 12"/>
+              </svg>
+
+              <span [id]="'ms-vc-' + sig.id">{{ sig.votes ?? 0 }}</span>
+
+              <span class="vote-label">
+                {{ votedIds.has(sig.id) ? 'Voté' : 'Voter' }}
+              </span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ PAGINATION ══════════════════════════════════════ -->
+      <div class="ms-pagination" *ngIf="pageCount > 1">
+        <button class="ms-page-btn"
+                [disabled]="currentPage === 0"
+                (click)="currentPage = currentPage - 1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="ms-page-btn"
+                *ngFor="let p of [].constructor(pageCount); let i = index"
+                [class.ms-page-btn--active]="currentPage === i"
+                (click)="currentPage = i">{{ i + 1 }}</button>
+        <button class="ms-page-btn"
+                [disabled]="currentPage === pageCount - 1"
+                (click)="currentPage = currentPage + 1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- ══ VIDE ══════════════════════════════════════════ -->
+      <div class="ms-empty" *ngIf="filtered.length === 0">
+        <div class="ms-empty-icon">📭</div>
+        <p class="ms-empty-title">Aucun signalement trouvé</p>
+        <p class="ms-empty-sub">
+          {{ searchQuery
+            ? 'Aucun résultat pour « ' + searchQuery + ' ».'
+            : 'Vous n\'avez pas encore soumis de signalement.' }}
+        </p>
+        <button class="btn-new" (click)="goNew()" *ngIf="!searchQuery">
+          Faire un signalement
+        </button>
+      </div>
+
+    </ng-container>
+  </div>
+</div>
+
+<!-- ══ DETAIL POPUP ══════════════════════════════════════════ -->
+<app-signalement-detail-popup
+  [sig]="selectedSig"
+  (closed)="closePopup()">
+</app-signalement-detail-popup>

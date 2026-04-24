@@ -1,7 +1,7 @@
 .points-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 /* ── Loading ────────────────────────────────────────────── */
@@ -285,4 +285,48 @@
 .ph-link:hover {
   background: rgba(255,255,255,.14);
   color: white; transform: translateY(-2px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════════════════════ */
+:host-context(html.dark) .tl-card {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .tl-card:hover {
+  border-color: rgba(255,255,255,.14);
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+:host-context(html.dark) .tl-icon-wrap {
+  background: #161B22;
+  border-color: rgba(255,255,255,.08);
+}
+:host-context(html.dark) .tl-title {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .tl-desc {
+  color: #A8B8D0;
+}
+:host-context(html.dark) .tl-date {
+  color: #586880;
+}
+:host-context(html.dark) .section-count {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+  color: #586880;
+}
+:host-context(html.dark) .pt-section-title,
+:host-context(html.dark) .hist-title {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .tl-empty {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .tl-empty-title {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .tl-empty-sub {
+  color: #586880;
 }

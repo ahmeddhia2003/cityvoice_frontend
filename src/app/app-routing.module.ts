@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import {LandingComponent} from './features/landing/landing.component';
+import {AdminScanComponent} from './features/evenement/components/admin-scan/admin-scan.component';
 
 const routes: Routes = [
 
@@ -29,16 +30,16 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'signalements',
+    path: 'signaler',
     loadChildren: () =>
       import('./features/signalement/signalement.module').then(m => m.SignalementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'evenements',
     loadChildren: () =>
       import('./features/evenement/evenement.module').then(m => m.EvenementModule),
-    canActivate: [AuthGuard],
+    //canActivate: [AuthGuard],
   },
   {
     path: 'projets',
@@ -52,6 +53,7 @@ const routes: Routes = [
       import('./features/actualite/actualite.module').then(m => m.ActualiteModule),
     canActivate: [AuthGuard],
   },
+  
   {
     path: 'personnel',
     loadChildren: () =>
@@ -69,6 +71,23 @@ const routes: Routes = [
     path: 'user',
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/user/user.module').then(m => m.UserModule)
+  },
+  {
+    path: 'chef',
+    canActivate: [AuthGuard],
+    data: { role: 'CHEF_EQUIPE' },
+    loadChildren: () =>
+      import('./features/chef-equipe/chef-equipe.module').then(m => m.ChefEquipeModule),
+  },
+  {
+    path: 'mes-signalements',
+    redirectTo: 'signaler/mes-signalements',
+    pathMatch: 'full'
+  },
+  {
+    path: 'signalement/voice',
+    redirectTo: 'signaler/voice',
+    pathMatch: 'full'
   },
 
   { path: '**', redirectTo: '' },

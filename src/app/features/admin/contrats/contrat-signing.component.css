@@ -1,0 +1,230 @@
+/* ══════════════════════════════════════════════════════════
+   CONTRAT SIGNING — Palette Madina
+   ══════════════════════════════════════════════════════════ */
+
+.cs-page { background: var(--cream,#F7F4EF); min-height: 100vh; padding: 80px 20px 60px; }
+
+/* ── Loader ── */
+.cs-loader { display:flex; flex-direction:column; align-items:center; gap:14px; margin-top:80px; color:var(--ink-2,#6B7280); }
+.cs-spinner { width:36px; height:36px; border:3px solid #e2e2e2; border-top-color:var(--coral,#E8532A); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Error ── */
+.cs-error { display:flex; align-items:center; gap:16px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; padding:20px 24px; max-width:600px; margin:80px auto; color:#991B1B; }
+
+/* ── Success banner ── */
+.cs-success-banner { background:linear-gradient(135deg,#0D9B76,#059669); color:#fff; border-radius:16px; padding:40px; text-align:center; max-width:700px; margin:80px auto; }
+.cs-success-icon { font-size:48px; margin-bottom:12px; }
+.cs-success-banner p { font-size:17px; margin-bottom:20px; }
+
+/* ── Header ── */
+.cs-header { display:flex; align-items:center; gap:12px; max-width:900px; margin:0 auto 20px; }
+.cs-back { display:flex; align-items:center; gap:6px; background:none; border:none; cursor:pointer; color:var(--ink-2,#6B7280); font-size:14px; font-family:var(--fb); padding:6px 10px; border-radius:8px; transition:background .15s; }
+.cs-back:hover { background:rgba(0,0,0,.05); }
+.cs-header-center { flex:1; text-align:center; }
+.cs-numero { font-size:18px; font-weight:700; color:var(--navy,#0C1F3F); letter-spacing:.5px; }
+.cs-statut { display:inline-block; font-size:12px; font-weight:600; padding:3px 10px; border-radius:20px; margin-top:4px; }
+.statut-en_attente_signature { background:#FEF3C7; color:#92400E; }
+.statut-accepte   { background:#D1FAE5; color:#065F46; }
+.statut-refuse    { background:#FEE2E2; color:#991B1B; }
+.statut-reassigne { background:#E0E7FF; color:#3730A3; }
+
+.cs-pdf-btn { white-space:nowrap; }
+
+/* ── Buttons ── */
+.cs-btn { display:inline-flex; align-items:center; gap:7px; padding:10px 20px; border-radius:10px; font-size:14px; font-weight:600; font-family:var(--fb); cursor:pointer; transition:all .18s; border:none; }
+.cs-btn-primary  { background:var(--navy,#0C1F3F); color:#fff; }
+.cs-btn-primary:hover { background:#1a3a60; }
+.cs-btn-outline  { background:transparent; border:1.5px solid var(--navy,#0C1F3F); color:var(--navy,#0C1F3F); }
+.cs-btn-outline:hover { background:rgba(12,31,63,.06); }
+.cs-btn-accept   { background:var(--teal,#0D9B76); color:#fff; }
+.cs-btn-accept:hover { background:#0a7d5f; }
+.cs-btn-accept:disabled { opacity:.45; cursor:not-allowed; }
+.cs-btn-refuse   { background:#EF4444; color:#fff; }
+.cs-btn-refuse:hover { background:#dc2626; }
+.cs-btn-refuse:disabled { opacity:.45; cursor:not-allowed; }
+.cs-btn-ghost    { background:none; border:1px solid #e5e5e5; color:var(--ink-2,#6B7280); }
+.cs-btn-ghost:hover { background:#f5f5f5; }
+
+/* ══ DOCUMENT ══ */
+.cs-document {
+  position:relative;
+  max-width:900px; margin:0 auto 24px;
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 4px 30px rgba(12,31,63,.10);
+  padding:40px 48px;
+  overflow:hidden;
+}
+
+/* Filigrane */
+.cs-watermark {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-30deg);
+  font-size:96px; font-weight:900; opacity:.04; color:var(--teal,#0D9B76);
+  pointer-events:none; user-select:none; white-space:nowrap; letter-spacing:4px;
+}
+.cs-watermark--refused { color:#EF4444; }
+
+/* ── En-tête document ── */
+.cs-doc-header { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:20px; margin-bottom:8px; }
+.cs-doc-logo { display:flex; justify-content:center; }
+.cs-doc-title-block { text-align:center; }
+.cs-doc-title { font-size:18px; font-weight:800; color:var(--navy,#0C1F3F); letter-spacing:.4px; margin:0 0 4px; text-transform:uppercase; }
+.cs-doc-sub { font-size:11px; color:var(--ink-2,#6B7280); margin:0; }
+.cs-doc-meta { text-align:right; display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-2,#6B7280); }
+.cs-doc-meta strong { color:var(--navy,#0C1F3F); }
+.cs-divider { height:3px; background:linear-gradient(90deg,var(--coral,#E8532A),var(--navy,#0C1F3F)); border-radius:2px; margin:16px 0 20px; }
+
+/* ── Préambule ── */
+.cs-preambule { font-size:13px; color:#4B5563; line-height:1.7; border-left:3px solid var(--coral,#E8532A); padding-left:14px; margin-bottom:24px; }
+
+/* ── Articles ── */
+.cs-article { margin-bottom:22px; border:1px solid #F0EDE8; border-radius:10px; overflow:hidden; }
+.cs-article-title {
+  background:var(--navy,#0C1F3F); color:#fff;
+  font-size:12px; font-weight:700; letter-spacing:.6px;
+  padding:8px 16px; text-transform:uppercase;
+}
+.cs-article-body { padding:16px; }
+
+/* ── Grille champs ── */
+.cs-field-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
+.cs-field { display:flex; flex-direction:column; gap:2px; border-bottom:1px solid #F5F3EF; padding-bottom:8px; }
+.cs-field span { font-size:10.5px; color:var(--ink-2,#6B7280); text-transform:uppercase; letter-spacing:.4px; }
+.cs-field strong { font-size:13.5px; color:var(--navy,#0C1F3F); }
+
+.cs-desc-block { margin-top:14px; }
+.cs-desc-block span { font-size:10.5px; color:var(--ink-2,#6B7280); text-transform:uppercase; letter-spacing:.4px; display:block; margin-bottom:4px; }
+.cs-desc-block p { font-size:13px; color:#374151; line-height:1.65; background:#FAFAF8; padding:10px 14px; border-radius:8px; border-left:3px solid var(--coral,#E8532A); }
+
+/* ── Obligations ── */
+.cs-obligations p { font-size:12.5px; color:#374151; line-height:1.6; padding:4px 0; border-bottom:1px dashed #F0EDE8; }
+.cs-obligations p:last-child { border:none; }
+.cs-obligations strong { color:var(--coral,#E8532A); }
+
+/* ── Priorité badges ── */
+.prio-badge { padding:2px 10px; border-radius:20px; font-size:12px; font-weight:700; }
+.prio-urgente { background:#FEE2E2; color:#991B1B; }
+.prio-haute   { background:#FFEDD5; color:#9A3412; }
+.prio-moyenne { background:#FEF3C7; color:#92400E; }
+.prio-faible  { background:#F3F4F6; color:#374151; }
+
+/* ── Signatures ── */
+.cs-article--signatures .cs-article-body { padding:0; }
+.cs-signatures-grid { display:grid; grid-template-columns:1fr 1fr; }
+.cs-sig-block { padding:20px 24px; }
+.cs-sig-block:first-child { border-right:1px solid #F0EDE8; }
+.cs-sig-role { font-size:11px; font-weight:700; color:var(--navy,#0C1F3F); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
+.cs-sig-stamp {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:14px 0 10px;
+  padding:14px;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at center, rgba(232,83,42,0.035) 0%, transparent 70%),
+    repeating-linear-gradient(
+      135deg,
+      rgba(12,31,63,0.018) 0 8px,
+      transparent 8px 16px
+    );
+}
+.cs-cachet {
+  filter:drop-shadow(0 3px 10px rgba(12,31,63,.18));
+  transform: rotate(-5deg);
+  transition: transform .25s ease;
+}
+.cs-cachet:hover { transform: rotate(-1deg) scale(1.03); }
+
+.cs-sig-canvas-area {
+  border:1.5px dashed #CBD5E1; border-radius:8px;
+  min-height:100px; display:flex; align-items:center; justify-content:center;
+  background:#FAFAFA; position:relative; overflow:hidden;
+}
+.cs-canvas { display:block; cursor:crosshair; touch-action:none; }
+.cs-sig-placeholder { color:#9CA3AF; font-size:12px; }
+.cs-sig-done { color:var(--teal,#0D9B76); font-weight:700; font-size:13px; }
+.cs-sig-refused { color:#EF4444; font-size:12px; padding:8px; text-align:center; }
+.cs-sig-date { font-size:11px; color:var(--ink-2,#6B7280); margin-top:10px; }
+
+/* ══ PANNEAU ACTIONS ══ */
+.cs-actions-panel {
+  max-width:900px; margin:0 auto 40px;
+  background:#fff; border-radius:16px;
+  box-shadow:0 4px 20px rgba(12,31,63,.08);
+  padding:28px 32px;
+}
+.cs-action-hint { text-align:center; font-size:13px; color:var(--ink-2,#6B7280); margin-bottom:16px; }
+.cs-action-btns { display:flex; justify-content:center; gap:14px; }
+
+.cs-sign-panel h3, .cs-refuse-panel h3 { font-size:15px; font-weight:700; color:var(--navy,#0C1F3F); margin:0 0 8px; }
+.cs-sign-hint, .cs-refuse-hint { font-size:12px; color:var(--ink-2,#6B7280); margin-bottom:14px; }
+.cs-refuse-hint { color:#D97706; }
+.cs-sign-actions { display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.cs-motif-input { width:100%; border:1.5px solid #E5E7EB; border-radius:10px; padding:10px 14px; font-size:13px; font-family:var(--fb); resize:vertical; margin-bottom:10px; outline:none; transition:border .15s; }
+.cs-motif-input:focus { border-color:var(--coral,#E8532A); }
+
+.cs-submitting { display:flex; align-items:center; justify-content:center; gap:12px; color:var(--ink-2,#6B7280); font-size:14px; padding:10px; }
+
+.cs-already-done { max-width:900px; margin:0 auto; text-align:center; padding:24px; background:#fff; border-radius:16px; }
+.cs-already-done p { font-size:15px; color:#4B5563; margin-bottom:16px; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .cs-document { padding:24px 20px; }
+  .cs-doc-header { grid-template-columns:1fr; text-align:center; }
+  .cs-field-grid { grid-template-columns:1fr; }
+  .cs-signatures-grid { grid-template-columns:1fr; }
+  .cs-sig-block:first-child { border-right:none; border-bottom:1px solid #F0EDE8; }
+  .cs-action-btns { flex-direction:column; align-items:stretch; }
+}
+@keyframes pin-pulse {
+  0%   { transform: scale(1);   opacity: .5; }
+  70%  { transform: scale(1.8); opacity: 0;  }
+  100% { transform: scale(1.8); opacity: 0;  }
+}
+/* ── Admin read-only banner ───────────────────────────── */
+.cs-admin-readonly-banner {
+  max-width: 900px;
+  margin: 24px auto 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #F0F9FF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 14px;
+  padding: 18px 22px;
+}
+
+.cs-readonly-icon {
+  width: 44px;
+  height: 44px;
+  background: #0284C7;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cs-readonly-body strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0C4A6E;
+  margin-bottom: 4px;
+}
+
+.cs-readonly-body p {
+  font-size: 13.5px;
+  color: #0369A1;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cs-readonly-body em {
+  font-style: normal;
+  font-weight: 600;
+}

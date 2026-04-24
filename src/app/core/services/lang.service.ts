@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { I18nService } from './i18n.service';
 
 export type Lang = 'fr' | 'en';
 
@@ -11,6 +12,7 @@ export interface Translations {
   nav_testi: string;
   nav_login: string;
   nav_report: string;
+  nav_events: string;
 
   // Hero
   hero_badge: string;
@@ -82,6 +84,7 @@ export interface Translations {
 const FR: Translations = {
   nav_how:'Comment ça marche', nav_impact:'Impact', nav_map:'Carte', nav_testi:'Témoignages',
   nav_login:'Se connecter', nav_report:'Signaler',
+  nav_events: 'Événements',
 
   hero_badge:'Plateforme officielle · Tunis',
   hero_title1:'Ensemble', hero_title2:'améliorons', hero_title3a:'notre ', hero_title3b:'ville.',
@@ -122,6 +125,7 @@ const FR: Translations = {
 const EN: Translations = {
   nav_how:'How it works', nav_impact:'Impact', nav_map:'Map', nav_testi:'Testimonials',
   nav_login:'Sign in', nav_report:'Report',
+  nav_events: 'Events',
 
   hero_badge:'Official platform · Tunis',
   hero_title1:'Together', hero_title2:'let\'s improve', hero_title3a:'our ', hero_title3b:'city.',
@@ -161,12 +165,15 @@ const EN: Translations = {
 
 @Injectable({ providedIn: 'root' })
 export class LangService {
+  constructor(private i18n: I18nService) {}
   private _lang = new BehaviorSubject<Lang>('fr');
   lang$ = this._lang.asObservable();
 
   get current(): Lang { return this._lang.value; }
   get t(): Translations { return this._lang.value === 'fr' ? FR : EN; }
 
-  switch(lang: Lang): void { this._lang.next(lang); }
+  switch(lang: Lang): void { this._lang.next(lang); 
+    this.i18n.set(lang as any); 
+  }
   toggle(): void { this._lang.next(this._lang.value === 'fr' ? 'en' : 'fr'); }
 }

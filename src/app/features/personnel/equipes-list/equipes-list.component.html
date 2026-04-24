@@ -1,0 +1,1045 @@
+<app-navbar></app-navbar>
+
+<!-- ══ SOUS-NAVBAR ══════════════════════════════════════════ -->
+<div class="sub-nav">
+  <div class="sub-nav-inner">
+
+    <button class="snav-item" [class.active]="activeSection==='equipes'" (click)="setTab('equipes')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Mes équipes
+    </button>
+
+    <!-- Onglet Contrats visible seulement pour CHEF_EQUIPE -->
+    <button *ngIf="isChef" class="snav-item" [class.active]="activeSection==='contrats'" (click)="setTab('contrats')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Contrats
+      <span class="snav-badge" *ngIf="contratsEnAttente.length > 0">{{ contratsEnAttente.length }}</span>
+    </button>
+
+    <!-- Ressources pour les non-chefs -->
+    <button *ngIf="!isChef" class="snav-item" [class.active]="activeSection==='ressources'" (click)="setTab('ressources')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Ressources
+    </button>
+
+    <button class="snav-item" [class.active]="activeSection==='signalements'" (click)="setTab('signalements')">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Signalements
+    </button>
+
+  </div>
+</div>
+
+<div class="equipes-shell">
+
+  <!-- ══ SECTION ÉQUIPES ══════════════════════════════════════ -->
+  <div id="equipes" class="tab-section" *ngIf="activeSection==='equipes'">
+
+    <!-- HERO -->
+    <div class="equipes-hero">
+      <div class="hero-geo"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <span class="eyebrow-dot"></span>
+          {{ isChef ? 'Activité — Chef d\'équipe' : 'Tableau de bord équipes' }}
+        </div>
+        <h1 class="hero-title">{{ isChef ? 'Mon Activité' : 'Mes Équipes' }}</h1>
+        <p class="hero-sub">{{ isChef ? 'Vue centralisée : équipe, contrats et signalements' : 'Gérez et suivez vos équipes terrain en temps réel' }}</p>
+
+        <div class="hero-stats">
+          <div class="hstat">
+            <div class="hstat-num">{{ equipes.length }}</div>
+            <div class="hstat-lbl">Équipe{{ equipes.length > 1 ? 's' : '' }}</div>
+          </div>
+          <div class="hstat-sep"></div>
+          <div class="hstat">
+            <div class="hstat-num">{{ totalMembres }}</div>
+            <div class="hstat-lbl">Membres</div>
+          </div>
+          <ng-container *ngIf="isChef">
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <div class="hstat-num" style="color:#FBBF24">{{ contratsEnAttente.length }}</div>
+              <div class="hstat-lbl">À signer</div>
+            </div>
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <div class="hstat-num" style="color:#FB923C">{{ signalements.length }}</div>
+              <div class="hstat-lbl">Signalements</div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!isChef">
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <div class="hstat-num" style="color:#4ADE80">{{ countByEtat('LIBRE') }}</div>
+              <div class="hstat-lbl">Libres</div>
+            </div>
+            <div class="hstat-sep"></div>
+            <div class="hstat">
+              <div class="hstat-num" style="color:#FB923C">{{ countByEtat('EN_EXECUTION') }}</div>
+              <div class="hstat-lbl">En mission</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input class="search-input" type="text" placeholder="Rechercher une équipe…"
+            [(ngModel)]="searchTerm" (input)="applyFilters()"/>
+        </div>
+        <div class="filter-tabs">
+          <button class="ftab" [class.active]="filterEtat===''" (click)="setFilter('')">Toutes</button>
+          <button class="ftab" [class.active]="filterEtat==='LIBRE'" (click)="setFilter('LIBRE')">
+            <span class="ftab-dot" style="background:#4ADE80"></span>Libres
+          </button>
+          <button class="ftab" [class.active]="filterEtat==='EN_EXECUTION'" (click)="setFilter('EN_EXECUTION')">
+            <span class="ftab-dot" style="background:#FB923C"></span>En mission
+          </button>
+          <button class="ftab" [class.active]="filterEtat==='EN_ATTENTE'" (click)="setFilter('EN_ATTENTE')">
+            <span class="ftab-dot" style="background:#94A3B8"></span>En attente
+          </button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <span class="result-pill">{{ filtered.length }} résultat{{ filtered.length > 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+
+    <!-- LOADING SKELETON -->
+    <div class="skeleton-grid" *ngIf="loading">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" *ngIf="!loading && filtered.length === 0">
+      <div class="empty-icon">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <p>Aucune équipe trouvée</p>
+      <span>Modifiez vos filtres ou vérifiez votre configuration</span>
+    </div>
+
+    <!-- GRID DES ÉQUIPES -->
+    <div class="equipes-grid" *ngIf="!loading && filtered.length > 0">
+      <div class="equipe-card" *ngFor="let e of filtered; let i = index; trackBy: trackById"
+           [style.animation-delay]="(i * 0.06) + 's'"
+           (click)="selectEquipe(e)" [class.selected]="selectedId === e.id">
+        <div class="card-bar" [style.background]="etatGradient(e.etat)"></div>
+
+        <div class="card-header">
+          <div class="card-avatar" [style.background]="avatarBg(e.specialite)">{{ initiales(e.name) }}</div>
+          <div class="card-head-info">
+            <h3 class="card-name">{{ e.name }}</h3>
+            <div class="card-specialite">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              {{ e.specialite }}
+            </div>
+          </div>
+          <div class="etat-badge" [ngClass]="etatClass(e.etat)">
+            <span class="etat-dot"></span>{{ etatLabel(e.etat) }}
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <div class="card-body">
+          <div class="membres-info">
+            <div class="membres-avatars">
+              <div class="mini-avatar" *ngFor="let m of (e.membresEquipe || []).slice(0,4)"
+                   [title]="m.nom || ''" [style.background]="avatarBg(m.nom || '')">
+                {{ (m.nom || '?')[0].toUpperCase() }}
+              </div>
+              <div class="mini-avatar mini-more" *ngIf="(e.membresEquipe?.length || 0) > 4">
+                +{{ (e.membresEquipe?.length || 0) - 4 }}
+              </div>
+            </div>
+            <span class="membres-count">
+              {{ e.membresEquipe?.length || 0 }} membre{{ (e.membresEquipe?.length || 0) > 1 ? 's' : '' }}
+            </span>
+          </div>
+          <div class="membres-bar-wrap">
+            <div class="membres-bar">
+              <div class="membres-bar-fill" [style.width.%]="membresPercent(e)" [style.background]="etatGradient(e.etat)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn-detail" (click)="$event.stopPropagation(); voirDetail(e)">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Voir détails
+          </button>
+          <div class="card-footer-actions" *ngIf="!isChef">
+            <button class="icon-btn" title="Modifier" (click)="$event.stopPropagation(); modifier(e)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="icon-btn icon-btn--del" title="Supprimer" (click)="$event.stopPropagation(); supprimer(e)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- FIN SECTION ÉQUIPES -->
+
+  <!-- ══ SECTION CONTRATS (chef seulement) ═══════════════════ -->
+  <div id="contrats" class="tab-section tab-section--contrats" *ngIf="activeSection==='contrats' && isChef">
+
+    <!-- ── LISTE ─────────────────────────────────────────────── -->
+    <ng-container *ngIf="!selectedContrat">
+
+      <!-- Hero Contrats -->
+      <div class="section-hero section-hero--contrats">
+        <div class="section-hero-geo"></div>
+        <div class="section-hero-content">
+          <div class="section-hero-eyebrow">
+            <span class="eyebrow-dot eyebrow-dot--yellow"></span>
+            Gestion des contrats
+          </div>
+          <h1 class="section-hero-title">Mes Contrats</h1>
+          <p class="section-hero-sub">Cliquez sur un contrat pour voir le document complet et signer</p>
+          <div class="section-hero-kpis" *ngIf="!contratsLoading">
+            <div class="sh-kpi">
+              <div class="sh-kpi-num" style="color:#FCD34D">{{ contratsEnAttente.length }}</div>
+              <div class="sh-kpi-lbl">À signer</div>
+            </div>
+            <div class="sh-kpi-sep"></div>
+            <div class="sh-kpi">
+              <div class="sh-kpi-num" style="color:#34D399">{{ contratsAcceptes.length }}</div>
+              <div class="sh-kpi-lbl">Acceptés</div>
+            </div>
+            <div class="sh-kpi-sep"></div>
+            <div class="sh-kpi">
+              <div class="sh-kpi-num">{{ contrats.length }}</div>
+              <div class="sh-kpi-lbl">Total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body">
+
+      <!-- Stats -->
+      <div class="contrat-stats-row" *ngIf="!contratsLoading">
+        <div class="cstat cstat--attente">
+          <div class="cstat-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="cstat-info"><div class="cstat-num">{{ contratsEnAttente.length }}</div><div class="cstat-lbl">À signer</div></div>
+        </div>
+        <div class="cstat cstat--ok">
+          <div class="cstat-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="cstat-info"><div class="cstat-num">{{ contratsAcceptes.length }}</div><div class="cstat-lbl">Acceptés</div></div>
+        </div>
+        <div class="cstat cstat--total">
+          <div class="cstat-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div class="cstat-info"><div class="cstat-num">{{ contrats.length }}</div><div class="cstat-lbl">Total</div></div>
+        </div>
+      </div>
+
+      <div class="section-loading" *ngIf="contratsLoading"><div class="spinner"></div><span>Chargement…</span></div>
+      <div class="section-error" *ngIf="contratsError">⚠️ {{ contratsError }}</div>
+
+      <!-- Barre recherche + filtres statut -->
+      <div class="el-sig-toolbar" *ngIf="!contratsLoading && contrats.length > 0">
+        <div class="el-sig-search">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Rechercher par numéro, équipe, adresse…"
+            [value]="contratSearch" (input)="setContratSearch($any($event.target).value)" class="el-sig-search-input" />
+          <button *ngIf="contratSearch" (click)="setContratSearch('')" class="el-sig-search-clear">✕</button>
+        </div>
+        <div class="sig-filter-bar">
+          <button class="sftab" [class.active]="contratFilter==='TOUS'" (click)="setContratFilter('TOUS')">Tous ({{ contrats.length }})</button>
+          <button class="sftab" [class.active]="contratFilter==='EN_ATTENTE_SIGNATURE'" (click)="setContratFilter('EN_ATTENTE_SIGNATURE')">
+            <span class="sftab-dot" style="background:#FBBF24"></span>À signer ({{ contratsEnAttente.length }})
+          </button>
+          <button class="sftab" [class.active]="contratFilter==='ACCEPTE'" (click)="setContratFilter('ACCEPTE')">
+            <span class="sftab-dot" style="background:#34D399"></span>Acceptés ({{ contratsAcceptes.length }})
+          </button>
+          <button class="sftab" [class.active]="contratFilter==='REFUSE'" (click)="setContratFilter('REFUSE')">
+            <span class="sftab-dot" style="background:#F87171"></span>Refusés
+          </button>
+        </div>
+      </div>
+
+      <div class="el-results-row" *ngIf="!contratsLoading && contrats.length > 0">
+        <span>{{ contratsFiltered.length }} contrat{{ contratsFiltered.length !== 1 ? 's' : '' }}</span>
+        <span *ngIf="contratSearch"> pour « {{ contratSearch }} »</span>
+      </div>
+
+      <div class="placeholder-card" *ngIf="!contratsLoading && !contratsError && contrats.length === 0">
+        <div class="placeholder-icon-wrap" style="background:rgba(251,191,36,0.08)">
+          <svg width="28" height="28" fill="none" stroke="#FBBF24" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <p class="placeholder-title">Aucun contrat en attente</p>
+        <span class="placeholder-sub">Les contrats apparaîtront ici après assignation par l'IA</span>
+      </div>
+
+      <div class="placeholder-card" *ngIf="!contratsLoading && contrats.length > 0 && contratsFiltered.length === 0">
+        <p class="placeholder-title">Aucun résultat pour ces critères</p>
+        <button class="sftab active" style="margin-top:10px" (click)="setContratFilter('TOUS'); setContratSearch('')">Réinitialiser</button>
+      </div>
+
+      <!-- Contrats clickables -->
+      <div class="el-contrat-list" *ngIf="!contratsLoading && contratsPaged.length > 0">
+        <div class="el-contrat-item" *ngFor="let c of contratsPaged; trackBy: trackById"
+          [class.el-ci--pending]="c.statut==='EN_ATTENTE_SIGNATURE'"
+          [class.el-ci--accepted]="c.statut==='ACCEPTE'"
+          [class.el-ci--refused]="c.statut==='REFUSE'"
+          (click)="openContrat(c)">
+
+          <div class="el-ci-stripe"></div>
+          <div class="el-ci-pulse" *ngIf="c.statut==='EN_ATTENTE_SIGNATURE'"></div>
+
+          <div class="el-ci-body">
+            <div class="el-ci-top">
+              <div class="el-ci-num">{{ c.numeroContrat }}</div>
+              <span class="el-ci-badge" [ngClass]="statutContratClass(c.statut)">{{ statutContratLabel(c.statut) }}</span>
+              <svg width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24" style="margin-left:auto">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </div>
+            <div class="el-ci-equipe">
+              <div class="el-ci-eq-av" [style.background]="avatarBg(c.equipeCode)">{{ initiales(c.equipeLabel) }}</div>
+              <div>
+                <div class="el-ci-eq-name">{{ c.equipeLabel }}</div>
+                <div class="el-ci-eq-code">{{ c.equipeCode?.toUpperCase() }}</div>
+              </div>
+            </div>
+            <div class="el-ci-sig" *ngIf="c.signalement">
+              <span class="el-ci-sig-type">{{ typeFullLabel(c.signalement.type) }}</span>
+              <p class="el-ci-sig-desc">{{ (c.signalement.description||'')|slice:0:100 }}{{ (c.signalement.description||'').length>100?'…':'' }}</p>
+              <div class="el-ci-meta">
+                <span *ngIf="c.delaiEstimeHeures">⏱ {{ c.delaiEstimeHeures }}h</span>
+                <span>📅 {{ timeAgo(c.dateCreation) }}</span>
+              </div>
+            </div>
+            <div class="el-ci-hint" *ngIf="c.statut==='EN_ATTENTE_SIGNATURE'">
+              👆 Cliquez pour voir le contrat complet et signer
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination contrats -->
+      <div class="el-pagination" *ngIf="contratsPageCount > 1">
+        <button class="el-page-btn" [disabled]="contratPage === 0" (click)="contratPage = contratPage - 1">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="el-page-btn" *ngFor="let p of [].constructor(contratsPageCount); let i = index"
+          [class.el-page-btn--active]="contratPage === i" (click)="contratPage = i">{{ i + 1 }}</button>
+        <button class="el-page-btn" [disabled]="contratPage === contratsPageCount - 1" (click)="contratPage = contratPage + 1">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      </div><!-- /section-body -->
+    </ng-container>
+
+    <!-- ── VUE DOCUMENT COMPLET ──────────────────────────────── -->
+    <ng-container *ngIf="selectedContrat">
+      <div class="el-doc-wrapper">
+
+        <!-- Topbar -->
+        <div class="el-doc-topbar">
+          <button class="el-back-btn" (click)="closeContrat()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Mes contrats
+          </button>
+          <button class="el-pdf-btn" (click)="exportPdf()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </button>
+        </div>
+
+        <!-- Document -->
+        <div class="el-doc">
+
+          <!-- En-tête officiel -->
+          <div class="el-doc-header">
+            <div class="el-doc-brand">
+              <div class="el-doc-logo">M</div>
+              <div>
+                <div class="el-doc-city">MADINA</div>
+                <div class="el-doc-subtitle">Municipalité de Madina — Plateforme CityVoice</div>
+              </div>
+            </div>
+            <div class="el-doc-ref">
+              <div class="el-doc-num">{{ selectedContrat.numeroContrat }}</div>
+              <div class="el-doc-date">Émis le {{ selectedContrat.dateCreation | date:'dd/MM/yyyy' }}</div>
+              <div class="el-doc-tent" *ngIf="selectedContrat.tentative > 1">Tentative {{ selectedContrat.tentative }}</div>
+            </div>
+          </div>
+
+          <!-- Titre + statut -->
+          <div class="el-doc-titlerow">
+            <h2 class="el-doc-title">CONTRAT DE MISSION DE TRAVAUX</h2>
+            <span class="el-doc-statut" [ngClass]="statutContratClass(selectedContrat.statut)">
+              {{ selectedContrat.statut==='EN_ATTENTE_SIGNATURE' ? '⏳ En attente de signature' :
+                 selectedContrat.statut==='ACCEPTE' ? '✅ Accepté' :
+                 selectedContrat.statut==='REFUSE' ? '❌ Refusé' : selectedContrat.statut }}
+            </span>
+          </div>
+
+          <!-- Préambule -->
+          <div class="el-doc-preambule">
+            La Municipalité de Madina, agissant dans le cadre de sa mission de service public urbain,
+            confie par le présent contrat la réalisation des travaux décrits ci-dessous à l'équipe
+            désignée par le système d'intelligence artificielle CityVoice, en tenant compte de la
+            spécialisation technique, de la proximité géographique et de la disponibilité opérationnelle.
+          </div>
+
+          <!-- ART. 1 — Équipe -->
+          <div class="el-doc-section">
+            <div class="el-doc-section-header">ART. 1 — ÉQUIPE ASSIGNÉE</div>
+            <div class="el-doc-grid">
+              <div class="el-doc-field"><span class="el-df-lbl">ÉQUIPE</span><span class="el-df-val el-df-val--bold">{{ selectedContrat.equipeLabel }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">CODE</span><span class="el-df-val">{{ selectedContrat.equipeCode?.toUpperCase() }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">CHEF D'ÉQUIPE</span><span class="el-df-val">{{ selectedContrat.chefEquipeId || "En attente d'attribution" }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">DÉLAI D'INTERVENTION</span><span class="el-df-val">{{ selectedContrat.delaiEstimeHeures ? selectedContrat.delaiEstimeHeures + 'h' : '—' }}</span></div>
+            </div>
+          </div>
+
+          <!-- ART. 2 — Signalement -->
+          <div class="el-doc-section" *ngIf="selectedContrat.signalement">
+            <div class="el-doc-section-header">ART. 2 — DÉTAILS DU SIGNALEMENT</div>
+            <div class="el-doc-grid">
+              <div class="el-doc-field"><span class="el-df-lbl">DATE</span><span class="el-df-val">{{ selectedContrat.signalement.dateSignalement | date:'dd/MM/yyyy' }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">TYPE</span><span class="el-df-val el-df-val--bold">{{ typeFullLabel(selectedContrat.signalement.type) }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">ADRESSE</span><span class="el-df-val">{{ selectedContrat.signalement.adresse || '—' }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">PRIORITÉ</span>
+                <span class="el-df-val el-prio-badge"
+                  [class.el-prio--urgente]="(selectedContrat.signalement.prioriteIA||selectedContrat.signalement.prioriteCitoyen)==='URGENTE'"
+                  [class.el-prio--haute]="(selectedContrat.signalement.prioriteIA||selectedContrat.signalement.prioriteCitoyen)==='HAUTE'"
+                  [class.el-prio--moyenne]="(selectedContrat.signalement.prioriteIA||selectedContrat.signalement.prioriteCitoyen)==='MOYENNE'">
+                  {{ selectedContrat.signalement.prioriteIA || selectedContrat.signalement.prioriteCitoyen || '—' }}
+                </span>
+              </div>
+            </div>
+            <div class="el-doc-desc-block">
+              <div class="el-doc-desc-lbl">DESCRIPTION</div>
+              <div class="el-doc-desc-text">{{ selectedContrat.signalement.description || '—' }}</div>
+            </div>
+            <div class="el-doc-photos" *ngIf="selectedContrat.signalement.mediaUrls?.length">
+              <div class="el-doc-desc-lbl">PHOTOS</div>
+              <div class="el-photo-row">
+                <a *ngFor="let url of selectedContrat.signalement.mediaUrls | slice:0:4"
+                  [href]="url" target="_blank" class="el-photo-thumb">
+                  <img [src]="url" alt="Photo" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ART. 3 — Obligations -->
+          <div class="el-doc-section">
+            <div class="el-doc-section-header">ART. 3 — OBLIGATIONS DE L'ÉQUIPE</div>
+            <ul class="el-obligations">
+              <li>Prendre en charge l'intervention dans un délai de {{ selectedContrat.delaiEstimeHeures || 48 }}h à compter de l'acceptation.</li>
+              <li>Signaler tout obstacle imprévu à la direction technique dans les 24h.</li>
+              <li>Fournir un rapport d'intervention à la clôture du chantier.</li>
+              <li>Respecter les normes de sécurité et les réglementations en vigueur.</li>
+            </ul>
+          </div>
+
+          <!-- ART. 4 — Signatures -->
+          <div class="el-doc-section" *ngIf="selectedContrat.statut==='EN_ATTENTE_SIGNATURE'">
+            <div class="el-doc-section-header">ART. 4 — SIGNATURE</div>
+
+            <!-- Choix initial -->
+            <div class="el-sign-choices" *ngIf="!inlineSignMode && !inlineRefusMode">
+              <p class="el-sign-hint">Veuillez prendre connaissance du contrat ci-dessus avant de signer ou refuser.</p>
+              <div class="el-sign-btns">
+                <button class="el-btn-sign" (click)="openInlineSign()">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                  Signer et accepter
+                </button>
+                <button class="el-btn-refuse" (click)="openInlineRefus()">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Refuser
+                </button>
+              </div>
+            </div>
+
+            <!-- Panneau signature inline -->
+            <div class="el-inline-sign-panel" *ngIf="inlineSignMode">
+              <div class="el-sign-grid">
+                <div class="el-sign-left">
+                  <div class="el-sign-label">Cachet municipal</div>
+                  <div class="el-cachet-wrap">
+                    <svg width="150" height="150" viewBox="0 0 200 200" class="el-cachet" xmlns="http://www.w3.org/2000/svg">
+                      <!-- Halo doux -->
+                      <circle cx="100" cy="100" r="96" fill="rgba(12,31,63,0.025)"/>
+                      <!-- Cercle extérieur épais -->
+                      <circle cx="100" cy="100" r="90" fill="none" stroke="#0C1F3F" stroke-width="3.5"/>
+                      <!-- Cercle intermédiaire -->
+                      <circle cx="100" cy="100" r="84" fill="none" stroke="#0C1F3F" stroke-width="1"/>
+                      <!-- Cercle intérieur -->
+                      <circle cx="100" cy="100" r="62" fill="none" stroke="#0C1F3F" stroke-width="0.8"/>
+
+                      <!-- Textes circulaires -->
+                      <defs>
+                        <path id="elArcTop"    d="M 24,100 a76,76 0 0,1 152,0" fill="none"/>
+                        <path id="elArcBottom" d="M 24,100 a76,76 0 0,0 152,0" fill="none"/>
+                      </defs>
+                      <text font-size="11" font-family="Arial, sans-serif" font-weight="700" fill="#0C1F3F" letter-spacing="3">
+                        <textPath href="#elArcTop" startOffset="50%" text-anchor="middle">MUNICIPALITÉ DE MADINA</textPath>
+                      </text>
+                      <text font-size="9" font-family="Arial, sans-serif" font-weight="600" fill="#0C1F3F" letter-spacing="2">
+                        <textPath href="#elArcBottom" startOffset="50%" text-anchor="middle">★ RÉPUBLIQUE TUNISIENNE ★ CITYVOICE ★</textPath>
+                      </text>
+
+                      <!-- Étoiles cardinales -->
+                      <text x="18" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+                      <text x="182" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+
+                      <!-- Bloc central -->
+                      <text x="100" y="86" text-anchor="middle" font-size="22" font-weight="800" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="2">MADINA</text>
+                      <text x="100" y="106" text-anchor="middle" font-size="20" fill="#E8532A" font-weight="700">★</text>
+                      <text x="100" y="122" text-anchor="middle" font-size="9" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="3">OFFICIEL</text>
+
+                      <!-- Numéro + date -->
+                      <line x1="58" y1="135" x2="142" y2="135" stroke="#0C1F3F" stroke-width="0.4" opacity="0.4"/>
+                      <text x="100" y="146" text-anchor="middle" font-size="7" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="0.8">
+                        N° {{ selectedContrat.numeroContrat?.slice(-12) }}
+                      </text>
+                      <text x="100" y="156" text-anchor="middle" font-size="6.5" fill="#4B5563" font-family="Arial, sans-serif">
+                        {{ selectedContrat.dateCreation | date:'dd/MM/yyyy' }}
+                      </text>
+                    </svg>
+                  </div>
+                </div>
+                <div class="el-sign-right">
+                  <div class="el-sign-label">Votre signature</div>
+                  <div class="el-canvas-wrap">
+                    <canvas class="el-inline-canvas" width="440" height="150"></canvas>
+                    <button class="el-canvas-clear" (click)="clearSignature()">Effacer</button>
+                  </div>
+                </div>
+              </div>
+              <div class="el-sign-actions">
+                <button class="el-btn-cancel" (click)="inlineSignMode=false">Annuler</button>
+                <button class="el-btn-confirm" [disabled]="!signatureData || actionLoading" (click)="accepterContratDetail()">
+                  <span *ngIf="!actionLoading">✓ Confirmer la signature</span>
+                  <span *ngIf="actionLoading">Validation…</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Panneau refus inline -->
+            <div class="el-inline-refuse-panel" *ngIf="inlineRefusMode">
+              <div class="el-refuse-warn">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Le contrat sera automatiquement réassigné à une autre équipe disponible.
+              </div>
+              <textarea class="el-refuse-ta" [(ngModel)]="motifRefus" rows="3" placeholder="Motif du refus (optionnel)…"></textarea>
+              <div class="el-sign-actions">
+                <button class="el-btn-cancel" (click)="inlineRefusMode=false">Annuler</button>
+                <button class="el-btn-danger" [disabled]="actionLoading" (click)="refuserContratDetail()">
+                  <span *ngIf="!actionLoading">Confirmer le refus</span>
+                  <span *ngIf="actionLoading">Refus en cours…</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bannière accepté -->
+          <div class="el-done-banner el-done-banner--ok" *ngIf="selectedContrat.statut==='ACCEPTE'">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Contrat accepté et signé — Intervention EN COURS
+          </div>
+
+          <!-- Bannière refusé -->
+          <div class="el-done-banner el-done-banner--refused" *ngIf="selectedContrat.statut==='REFUSE'">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Contrat refusé
+            <span *ngIf="selectedContrat.motifRefus"> — {{ selectedContrat.motifRefus }}</span>
+          </div>
+
+          <!-- Footer document -->
+          <div class="el-doc-footer">
+            Madina — Plateforme CityVoice © 2025 — Document généré automatiquement par intelligence artificielle
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+  <!-- FIN SECTION CONTRATS -->
+
+  <!-- ══ SECTION RESSOURCES (non-chefs) ══════════════════════ -->
+  <div id="ressources" class="section-block tab-section" *ngIf="activeSection==='ressources' && !isChef">
+    <div class="section-header">
+      <div class="section-eyebrow">
+        <span class="section-dot" style="background:#3B82F6"></span>
+        Gestion des ressources
+      </div>
+      <h2 class="section-title">Ressources</h2>
+      <p class="section-sub">Matériel et équipements disponibles pour vos équipes</p>
+    </div>
+    <div class="placeholder-card">
+      <div class="placeholder-icon-wrap" style="background:rgba(59,130,246,0.08)">
+        <svg width="28" height="28" fill="none" stroke="#3B82F6" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <p class="placeholder-title">Aucune ressource assignée</p>
+      <span class="placeholder-sub">Les ressources apparaîtront ici une fois assignées à vos équipes</span>
+    </div>
+  </div>
+
+  <!-- ══ SECTION SIGNALEMENTS ═════════════════════════════════ -->
+  <div id="signalements" class="tab-section tab-section--sigs" *ngIf="activeSection==='signalements'">
+
+    <!-- ── LISTE ──────────────────────────────────────────────── -->
+    <ng-container *ngIf="!selectedSignalement">
+
+      <!-- Hero Signalements -->
+      <div class="section-hero section-hero--sigs">
+        <div class="section-hero-geo"></div>
+        <div class="section-hero-content">
+          <div class="section-hero-eyebrow">
+            <span class="eyebrow-dot eyebrow-dot--orange"></span>
+            Incidents terrain
+          </div>
+          <h1 class="section-hero-title">Signalements {{ isChef ? 'de mon équipe' : '' }}</h1>
+          <p class="section-hero-sub">{{ isChef ? 'Cliquez sur un signalement pour voir tous les détails' : 'Incidents assignés à vos équipes' }}</p>
+          <div class="section-hero-kpis" *ngIf="isChef && signalements.length">
+            <div class="sh-kpi">
+              <div class="sh-kpi-num" style="color:#60A5FA">{{ sigEnCours }}</div>
+              <div class="sh-kpi-lbl">En cours</div>
+            </div>
+            <div class="sh-kpi-sep"></div>
+            <div class="sh-kpi">
+              <div class="sh-kpi-num" style="color:#34D399">{{ sigResolus }}</div>
+              <div class="sh-kpi-lbl">Résolus</div>
+            </div>
+            <div class="sh-kpi-sep" *ngIf="sigUrgents > 0"></div>
+            <div class="sh-kpi" *ngIf="sigUrgents > 0">
+              <div class="sh-kpi-num" style="color:#F87171">{{ sigUrgents }}</div>
+              <div class="sh-kpi-lbl">Urgents</div>
+            </div>
+            <div class="sh-kpi-sep"></div>
+            <div class="sh-kpi">
+              <div class="sh-kpi-num">{{ signalements.length }}</div>
+              <div class="sh-kpi-lbl">Total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body">
+
+      <!-- KPI Stats (chef seulement) -->
+      <div class="el-sig-kpis" *ngIf="isChef && signalements.length">
+        <div class="el-sig-kpi el-sig-kpi--blue">
+          <span class="el-sig-kpi-num">{{ sigEnCours }}</span>
+          <span class="el-sig-kpi-lbl">En cours</span>
+        </div>
+        <div class="el-sig-kpi el-sig-kpi--green">
+          <span class="el-sig-kpi-num">{{ sigResolus }}</span>
+          <span class="el-sig-kpi-lbl">Résolus</span>
+        </div>
+        <div class="el-sig-kpi el-sig-kpi--orange" *ngIf="sigUrgents > 0">
+          <span class="el-sig-kpi-num">{{ sigUrgents }}</span>
+          <span class="el-sig-kpi-lbl">Urgents</span>
+        </div>
+        <div class="el-sig-kpi el-sig-kpi--muted">
+          <span class="el-sig-kpi-num">{{ signalements.length }}</span>
+          <span class="el-sig-kpi-lbl">Total</span>
+        </div>
+      </div>
+
+      <!-- Barre de recherche + filtres -->
+      <div class="el-sig-toolbar" *ngIf="isChef">
+        <div class="el-sig-search">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Rechercher par type, adresse, description…"
+            [value]="sigSearch" (input)="setSigSearch($any($event.target).value)" class="el-sig-search-input" />
+          <button *ngIf="sigSearch" (click)="setSigSearch('')" class="el-sig-search-clear">✕</button>
+        </div>
+        <div class="sig-filter-bar">
+          <button class="sftab" [class.active]="sigFilter===''" (click)="setSigFilter('')">Tous</button>
+          <button class="sftab" [class.active]="sigFilter==='EN_COURS'" (click)="setSigFilter('EN_COURS')">
+            <span class="sftab-dot ss-encours-dot"></span>En cours ({{ countSig('EN_COURS') }})
+          </button>
+          <button class="sftab" [class.active]="sigFilter==='RESOLU'" (click)="setSigFilter('RESOLU')">
+            <span class="sftab-dot ss-resolu-dot"></span>Résolus ({{ countSig('RESOLU') }})
+          </button>
+        </div>
+      </div>
+
+      <div class="section-loading" *ngIf="isChef && sigLoading"><div class="spinner"></div><span>Chargement…</span></div>
+
+      <!-- Résultats count -->
+      <div class="el-results-row" *ngIf="isChef && !sigLoading && signalements.length > 0">
+        <span>{{ filteredSig.length }} résultat{{ filteredSig.length !== 1 ? 's' : '' }}</span>
+        <span *ngIf="sigSearch"> pour « {{ sigSearch }} »</span>
+      </div>
+
+      <!-- Grille signalements cliquables -->
+      <div class="el-sig-grid" *ngIf="isChef && !sigLoading && filteredSig.length > 0">
+        <div class="el-sig-card" *ngFor="let s of sigPaged; trackBy: trackById"
+          [class.el-sig-card--urgente]="s.prioriteIA==='URGENTE'||s.prioriteCitoyen==='URGENTE'"
+          [class.el-sig-card--encours]="s.statut==='EN_COURS'"
+          [class.el-sig-card--resolu]="s.statut==='RESOLU'"
+          (click)="openSignalement(s)">
+
+          <div class="el-sig-accent"
+            [class.el-accent--urgente]="s.prioriteIA==='URGENTE'"
+            [class.el-accent--haute]="s.prioriteIA==='HAUTE'"
+            [class.el-accent--moyenne]="s.prioriteIA==='MOYENNE'"
+            [class.el-accent--resolu]="s.statut==='RESOLU'">
+          </div>
+
+          <div class="el-sig-top">
+            <span class="el-sig-type">{{ typeFullLabel(s.type) }}</span>
+            <span class="el-sig-statut" [ngClass]="statutSigClass(s.statut)">{{ statutSigLabel(s.statut) }}</span>
+          </div>
+
+          <div class="el-sig-prio-row" *ngIf="s.prioriteIA||s.prioriteCitoyen">
+            <span class="el-sig-prio" [ngClass]="'pr-'+(s.prioriteIA||s.prioriteCitoyen||'').toLowerCase()">
+              {{ s.prioriteIA || s.prioriteCitoyen }}
+            </span>
+            <span class="el-sig-ia-conf" *ngIf="s.confidenceIA">IA {{ (s.confidenceIA*100).toFixed(0) }}%</span>
+          </div>
+
+          <p class="el-sig-desc">{{ (s.description||'')|slice:0:120 }}{{ (s.description||'').length>120?'…':'' }}</p>
+
+          <div class="el-sig-addr" *ngIf="s.adresse">
+            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/></svg>
+            {{ s.adresse | slice:0:50 }}
+          </div>
+
+          <div class="el-sig-photos" *ngIf="s.mediaUrls?.length">
+            <img *ngFor="let u of s.mediaUrls | slice:0:3" [src]="u" alt="photo" class="el-sig-photo-thumb" />
+            <span *ngIf="s.mediaUrls.length > 3" class="el-sig-photo-more">+{{ s.mediaUrls.length-3 }}</span>
+          </div>
+
+          <div class="el-sig-footer">
+            <span class="el-sig-time">{{ timeAgo(s.dateSignalement) }}</span>
+            <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination signalements -->
+      <div class="el-pagination" *ngIf="sigPageCount > 1">
+        <button class="el-page-btn" [disabled]="sigPage === 0" (click)="sigPage = sigPage - 1">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="el-page-btn" *ngFor="let p of [].constructor(sigPageCount); let i = index"
+          [class.el-page-btn--active]="sigPage === i" (click)="sigPage = i">{{ i + 1 }}</button>
+        <button class="el-page-btn" [disabled]="sigPage === sigPageCount - 1" (click)="sigPage = sigPage + 1">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="placeholder-card" *ngIf="isChef && !sigLoading && filteredSig.length === 0">
+        <div class="placeholder-icon-wrap" style="background:rgba(232,83,42,0.08)">
+          <svg width="28" height="28" fill="none" stroke="#E8532A" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+        </div>
+        <p class="placeholder-title">{{ sigSearch ? 'Aucun résultat pour « '+sigSearch+' »' : 'Aucun signalement pour votre équipe' }}</p>
+        <span class="placeholder-sub">{{ sigSearch ? '' : 'Les signalements assignés apparaîtront ici' }}</span>
+      </div>
+
+      <div class="placeholder-card" *ngIf="!isChef">
+        <div class="placeholder-icon-wrap" style="background:rgba(232,83,42,0.08)">
+          <svg width="28" height="28" fill="none" stroke="#E8532A" stroke-width="1.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+        </div>
+        <p class="placeholder-title">Aucun signalement en cours</p>
+      </div>
+
+      </div><!-- /section-body -->
+    </ng-container>
+
+    <!-- ── VUE DÉTAIL SIGNALEMENT ─────────────────────────────── -->
+    <ng-container *ngIf="selectedSignalement">
+      <div class="el-doc-wrapper">
+        <div class="el-doc-topbar">
+          <button class="el-back-btn" (click)="closeSignalement()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Signalements
+          </button>
+          <button class="el-btn-sign" *ngIf="selectedSignalement.statut==='EN_COURS'" (click)="openResolutionFromDetail()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Marquer résolu
+          </button>
+        </div>
+
+        <div class="el-doc">
+          <div class="el-doc-header">
+            <div class="el-doc-brand">
+              <div class="el-doc-logo">M</div>
+              <div><div class="el-doc-city">MADINA</div><div class="el-doc-subtitle">Municipalité — CityVoice</div></div>
+            </div>
+            <div class="el-doc-ref">
+              <div class="el-doc-num">{{ typeFullLabel(selectedSignalement.type) }}</div>
+              <div class="el-doc-date">{{ selectedSignalement.dateSignalement | date:'dd/MM/yyyy' }}</div>
+            </div>
+          </div>
+
+          <div class="el-doc-titlerow">
+            <h2 class="el-doc-title">{{ typeFullLabel(selectedSignalement.type) }}</h2>
+            <span class="el-doc-statut" [ngClass]="statutSigClass(selectedSignalement.statut)">{{ statutSigLabel(selectedSignalement.statut) }}</span>
+          </div>
+
+          <div class="el-doc-section">
+            <div class="el-doc-section-header">1. INFORMATIONS GÉNÉRALES</div>
+            <div class="el-doc-grid">
+              <div class="el-doc-field"><span class="el-df-lbl">TYPE</span><span class="el-df-val el-df-val--bold">{{ typeFullLabel(selectedSignalement.type) }}</span></div>
+              <div class="el-doc-field"><span class="el-df-lbl">STATUT</span>
+                <span class="el-sig-statut" [ngClass]="statutSigClass(selectedSignalement.statut)">{{ statutSigLabel(selectedSignalement.statut) }}</span>
+              </div>
+              <div class="el-doc-field"><span class="el-df-lbl">DATE</span><span class="el-df-val">{{ selectedSignalement.dateSignalement | date:'dd/MM/yyyy HH:mm' }}</span></div>
+            </div>
+          </div>
+
+          <div class="el-doc-section">
+            <div class="el-doc-section-header">2. LOCALISATION</div>
+            <div class="el-doc-grid">
+              <div class="el-doc-field" *ngIf="selectedSignalement.adresse"><span class="el-df-lbl">ADRESSE</span><span class="el-df-val">{{ selectedSignalement.adresse }}</span></div>
+              <div class="el-doc-field" *ngIf="selectedSignalement.latitude"><span class="el-df-lbl">GPS</span>
+                <span class="el-df-val">
+                  {{ selectedSignalement.latitude | number:'1.4-6' }}, {{ selectedSignalement.longitude | number:'1.4-6' }}
+                  &nbsp;<a [href]="'https://maps.google.com/?q='+selectedSignalement.latitude+','+selectedSignalement.longitude" target="_blank" style="color:#3B82F6;font-size:11px">Google Maps ↗</a>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="el-doc-section">
+            <div class="el-doc-section-header">3. ANALYSE IA</div>
+            <div class="el-doc-grid">
+              <div class="el-doc-field" *ngIf="selectedSignalement.prioriteIA">
+                <span class="el-df-lbl">PRIORITÉ IA</span>
+                <span class="el-df-val el-prio-badge" [class.el-prio--urgente]="selectedSignalement.prioriteIA==='URGENTE'" [class.el-prio--haute]="selectedSignalement.prioriteIA==='HAUTE'">{{ selectedSignalement.prioriteIA }}</span>
+              </div>
+              <div class="el-doc-field" *ngIf="selectedSignalement.confidenceIA">
+                <span class="el-df-lbl">CONFIANCE IA</span>
+                <span class="el-df-val">{{ (selectedSignalement.confidenceIA*100).toFixed(0) }}%</span>
+              </div>
+            </div>
+            <div class="el-doc-desc-block">
+              <div class="el-doc-desc-lbl">DESCRIPTION</div>
+              <div class="el-doc-desc-text">{{ selectedSignalement.description || '—' }}</div>
+            </div>
+          </div>
+
+          <div class="el-doc-section" *ngIf="selectedSignalement.mediaUrls?.length">
+            <div class="el-doc-section-header">4. PHOTOS</div>
+            <div class="el-photo-row">
+              <a *ngFor="let u of selectedSignalement.mediaUrls" [href]="u" target="_blank" class="el-photo-thumb">
+                <img [src]="u" alt="photo" />
+              </a>
+            </div>
+          </div>
+
+          <div class="el-doc-section" *ngIf="selectedSignalement.statut==='EN_COURS'">
+            <div class="el-doc-section-header">5. ACTION</div>
+            <div class="el-action-body">
+              <p>Ce signalement est en cours d'intervention. Marquez-le comme résolu une fois les travaux terminés.</p>
+              <button class="el-btn-sign" style="font-size:14px;padding:12px 28px" (click)="openResolutionFromDetail()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Marquer ce signalement comme résolu
+              </button>
+            </div>
+          </div>
+
+          <div class="el-done-banner el-done-banner--ok" *ngIf="selectedSignalement.statut==='RESOLU'">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Signalement résolu — Intervention terminée
+          </div>
+
+          <div class="el-doc-footer">Madina — Plateforme CityVoice © 2025 — Document généré automatiquement</div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+  <!-- FIN SECTION SIGNALEMENTS -->
+
+  <!-- ══ DETAIL PANEL equipe (slide-in) ═══════════════════════ -->
+  <div class="detail-overlay" *ngIf="selectedEquipe" (click)="closeDetail()">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
+      <div class="detail-header" [style.background]="etatGradient(selectedEquipe.etat)">
+        <div class="detail-avatar">{{ initiales(selectedEquipe.name) }}</div>
+        <div class="detail-head-info">
+          <h2 class="detail-name">{{ selectedEquipe.name }}</h2>
+          <div class="detail-specialite">{{ selectedEquipe.specialite }}</div>
+        </div>
+        <button class="detail-close" (click)="closeDetail()">
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-section">
+          <div class="ds-label">Statut</div>
+          <div class="etat-badge" [ngClass]="etatClass(selectedEquipe.etat)" style="width:fit-content">
+            <span class="etat-dot"></span>{{ etatLabel(selectedEquipe.etat) }}
+          </div>
+        </div>
+        <div class="detail-section">
+          <div class="ds-label">Membres ({{ selectedEquipe.membresEquipe?.length || 0 }})</div>
+          <div class="membres-list">
+            <div class="membre-row" *ngFor="let m of selectedEquipe.membresEquipe">
+              <div class="membre-av" [style.background]="avatarBg(m.nom || '')">{{ (m.nom || '?')[0].toUpperCase() }}</div>
+              <div class="membre-info">
+                <div class="membre-nom">{{ m.nom }}</div>
+                <div class="membre-role">{{ m.fonction || 'Membre' }}</div>
+              </div>
+            </div>
+            <div class="no-membres" *ngIf="!selectedEquipe.membresEquipe?.length">Aucun membre</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-footer">
+        <button class="btn-modifier" (click)="modifier(selectedEquipe)" *ngIf="!isChef">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Modifier
+        </button>
+        <button class="btn-close-panel" (click)="closeDetail()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ MODAL SIGNATURE ═══════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="signatureMode" (click)="closeSignature()">
+  <div class="modal-panel act-sign-panel" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Signer le contrat</h3>
+      <div class="modal-sub">{{ signatureMode?.numeroContrat }}</div>
+    </div>
+
+    <div class="modal-body">
+      <div class="sign-info-row" *ngIf="signatureMode?.signalement">
+        <div class="si-item">
+          <span class="si-lbl">Signalement</span>
+          <span class="si-val">{{ typeFullLabel(signatureMode!.signalement.type) }}</span>
+        </div>
+        <div class="si-item" *ngIf="signatureMode?.delaiEstimeHeures">
+          <span class="si-lbl">Délai estimé</span>
+          <span class="si-val">{{ signatureMode!.delaiEstimeHeures }}h</span>
+        </div>
+        <div class="si-item">
+          <span class="si-lbl">Équipe</span>
+          <span class="si-val">{{ signatureMode!.equipeLabel }}</span>
+        </div>
+      </div>
+
+      <div class="sign-area-wrap">
+        <div class="sign-area-label">Dessinez votre signature ci-dessous :</div>
+        <canvas id="act-sign-canvas" class="sign-canvas" width="480" height="140"></canvas>
+        <button class="btn-clear-sign" (click)="clearSignature()">Effacer</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeSignature()" [disabled]="actionLoading">Annuler</button>
+      <button class="btn-confirm" (click)="accepterContrat()" [disabled]="actionLoading">
+        <svg *ngIf="!actionLoading" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <div *ngIf="actionLoading" class="btn-spinner"></div>
+        {{ actionLoading ? 'Validation…' : 'Valider la signature' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL REFUS ═══════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="refusMode" (click)="closeRefus()">
+  <div class="modal-panel act-refuse-panel" (click)="$event.stopPropagation()">
+    <div class="modal-header modal-header--danger">
+      <h3>Refuser le contrat</h3>
+      <div class="modal-sub">{{ refusMode?.numeroContrat }}</div>
+    </div>
+    <div class="modal-body">
+      <p class="refuse-info">Le contrat sera réassigné automatiquement à une équipe disponible.</p>
+      <div class="field-wrap">
+        <label class="field-lbl">Motif du refus (optionnel)</label>
+        <textarea class="field-ta" [(ngModel)]="motifRefus" rows="3"
+                  placeholder="Ex: équipe indisponible, surcharge de travail…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeRefus()" [disabled]="actionLoading">Annuler</button>
+      <button class="btn-danger" (click)="refuserContrat()" [disabled]="actionLoading">
+        <div *ngIf="actionLoading" class="btn-spinner"></div>
+        {{ actionLoading ? 'Refus en cours…' : 'Confirmer le refus' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-chef-resolution-modal
+  *ngIf="resolutionSig"
+  [signalement]="resolutionSig"
+  (closed)="onResolutionModalClosed()"
+  (resolved)="onResolutionModalResolved()"
+  (notifyError)="showToast($event, 'error')">
+</app-chef-resolution-modal>
+
+<!-- ══ TOAST ═════════════════════════════════════════════════ -->
+<div class="act-toast" *ngIf="toast" [ngClass]="'act-toast--' + toastType">
+  <svg *ngIf="toastType==='success'" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <svg *ngIf="toastType==='error'" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+  </svg>
+  {{ toastMsg }}
+</div>

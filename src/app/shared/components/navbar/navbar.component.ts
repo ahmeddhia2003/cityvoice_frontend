@@ -2,21 +2,19 @@ import {
   Component, HostListener, AfterViewInit,
   ElementRef, OnInit, OnDestroy
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { LangService, Lang } from '../../../core/services/lang.service';
 import { SoundService } from '../../../core/services/sound.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService } from '../../../core/services/user.service';
+import { NotificationService, AppNotification } from '../../../core/services/notification.service';
+import { ThemeService } from '../../../core/services/theme.service';
+import { AutoTranslateService } from '../../../core/services/auto-translate.service';
+import { EvenementNotificationService } from '../../../core/services/evenement-notification.service';
+import { EvenementNotification } from '../../../features/evenement/models/evenement-notification.model';
 declare const gsap: any;
-
-export interface Notification {
-  id: number;
-  type: 'resolved' | 'progress' | 'badge' | 'info';
-  message: string;
-  time: string;
-  read: boolean;
-}
 
 @Component({
   selector: 'app-navbar',
@@ -24,13 +22,14 @@ export interface Notification {
   styleUrls: ['./navbar.component.css'],
 })
 export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
-  scrolled     = false;
-  notifsOpen   = false;
+  scrolled = false;
+  isHomePage = true;
+  notifsOpen = false;
   userMenuOpen = false;
 
   // Auth
   isAuthenticated = false;
-  authLoading     = true;   // ← nouveau : état de chargement
+  authLoading = true;
   currentUser: any = null;
 
   // Toast
@@ -40,24 +39,29 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   private toastTimeout: any;
 
   private authSub!: Subscription;
+  private notifSub!: Subscription;
+  private incomingNotifSub!: Subscription;
+  private seenNotifIds = new Set<number>();
+  private notificationsHydrated = false;
+  //notif evenement
+  evNotifications: EvenementNotification[] = [];
+  evNonLues = 0;
 
-  notifications: Notification[] = [
-    { id:1, type:'resolved', message:'Votre signalement "Trou chaussée – Av. Bourguiba" a été résolu.', time:'il y a 2h', read:false },
-    { id:2, type:'progress', message:'L\'équipe Voirie Nord a pris en charge votre signalement.',        time:'il y a 5h', read:false },
-    { id:3, type:'badge',    message:'Vous avez obtenu le badge "Sentinelle de la ville" 🏅',            time:'hier',      read:false },
-    { id:4, type:'info',     message:'Nouvel événement : Plantation d\'arbres – Parc El Menzah.',        time:'il y a 2j', read:true  },
-    { id:5, type:'resolved', message:'Le lampadaire cassé rue de la Liberté a été réparé.',              time:'il y a 3j', read:true  },
-  ];
+  notifications: AppNotification[] = [];
 
-  get unreadCount(): number { return this.notifications.filter(n => !n.read).length; }
+  get unreadCount(): number { return this.notifSvc.unreadCount; }
 
   constructor(
     public lang: LangService,
     public sound: SoundService,
+    public theme: ThemeService,
     private authService: AuthService,
     private userService: UserService,
+    public notifSvc: NotificationService,
+    public autoTranslate: AutoTranslateService,
     private el: ElementRef,
     private router: Router,
+    public notifService: EvenementNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +69,24 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateAuthState();
     });
     this.updateAuthState();
+
+    this.notifSub = this.notifSvc.notifs$.subscribe(notifs => {
+      this.notifications = notifs;
+      this.handleNotificationPopup(notifs);
+    });
+
+    this.incomingNotifSub = this.notifSvc.incomingNotifs$.subscribe(notif => {
+      if (notif.lu) return;
+      this.showToast(notif.message, 'success');
+      this.sound.notification();
+    });
+
+    this.isHomePage = this.router.url === '/';
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e: any) => {
+      this.isHomePage = (e.urlAfterRedirects ?? e.url) === '/';
+    });
   }
 
   private updateAuthState(): void {
@@ -72,7 +94,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     const user = this.authService.getCurrentUser();
 
     if (this.isAuthenticated && user) {
-      this.authLoading = true;  // commence le chargement
+      this.authLoading = true;
       this.userService.getById(user.userId).subscribe({
         next: (fullUser) => {
           this.currentUser = {
@@ -84,8 +106,17 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
             photo:  fullUser.photo || null,
             telephone: fullUser.telephone || null,
           };
-          this.authLoading = false;  // chargement terminé
+          this.authLoading = false;
           this.animateUserIn();
+          this.notifSvc.init();
+          // notif
+          this.notifService.init(user.userId);
+          this.notifService.getNotifications().subscribe(notifs => {
+            this.evNotifications = notifs;
+          });
+          this.notifService.getNonLues().subscribe(count => {
+            this.evNonLues = count;
+          });
         },
         error: () => {
           this.currentUser = {
@@ -99,11 +130,23 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
           };
           this.authLoading = false;
           this.animateUserIn();
+          this.notifSvc.init();
+          // notif
+          this.notifService.init(user.userId);
+          this.notifService.getNotifications().subscribe(notifs => {
+            this.evNotifications = notifs;
+          });
+          this.notifService.getNonLues().subscribe(count => {
+            this.evNonLues = count;
+          });
         }
       });
     } else {
-      this.currentUser  = null;
-      this.authLoading  = false;
+      this.currentUser = null;
+      this.authLoading = false;
+      this.notificationsHydrated = false;
+      this.seenNotifIds.clear();
+      this.notifSvc.destroy();
     }
   }
 
@@ -132,6 +175,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.authSub?.unsubscribe();
+    this.notifSub?.unsubscribe();
+    this.incomingNotifSub?.unsubscribe();
+    this.notifSvc.destroy();
     if (this.toastTimeout) clearTimeout(this.toastTimeout);
   }
 
@@ -160,18 +206,54 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   toggleUserMenu(): void { this.userMenuOpen = !this.userMenuOpen; this.sound.nav(); }
   closeUserMenu():  void { this.userMenuOpen = false; }
 
-  readNotif(n: Notification): void  { n.read = true; }
+  readNotif(n: AppNotification): void {
+    this.notifSvc.marquerLue(n);
+    if (n.lien) this.router.navigate([n.lien]);
+  }
+
+  //notif
+  readNotiftass(n: EvenementNotification): void {
+    if (!n.lu) {
+      this.notifService.marquerLue(n.id);
+    }
+  }
+
   markAllRead(e: Event): void {
     e.stopPropagation();
-    this.notifications.forEach(n => n.read = true);
+    this.notifSvc.marquerToutesLues();
+    const user = this.authService.getCurrentUser();
+    if (user?.userId) {
+      this.notifService.marquerToutesLues(user.userId);
+    }
     this.sound.toggle2(true);
   }
 
-  setLang(l: Lang): void { this.sound.nav(); this.lang.switch(l); }
+  notifIconType(type: string): 'resolved' | 'progress' | 'badge' | 'info' {
+    return NotificationService.iconType(type);
+  }
+
+  notifTimeAgo(dateStr: string): string {
+    return NotificationService.timeAgo(dateStr);
+  }
+
+  setLang(l: Lang): void {
+    this.sound.nav();
+    // Conserver la synchronisation avec le LangService existant (textes i18n manuels)
+    this.lang.switch(l);
+    // Traduction AUTOMATIQUE du reste de la page via l'API
+    this.autoTranslate.switch(l).catch(err =>
+      console.warn('[navbar] auto-translate failed', err)
+    );
+  }
 
   toggleSound(): void {
     this.sound.toggle();
     if (this.sound.isEnabled) this.sound.click();
+  }
+
+  toggleTheme(event: MouseEvent): void {
+    this.sound.nav();
+    this.theme.toggle(event.currentTarget as HTMLElement);
   }
 
   onBtnClick(): void { this.sound.click(); }
@@ -244,6 +326,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private doLogout(): void {
+    this.notifService.deconnecter();
     this.authService.logout();
     this.userMenuOpen = false;
     this.sound.success();
@@ -264,11 +347,13 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => { this.toast = false; }, 3000);
         return;
       }
+
       gsap.killTweensOf(el);
       gsap.fromTo(el,
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0,  duration: .4, ease: 'back.out(1.6)' }
       );
+
       if (this.toastTimeout) clearTimeout(this.toastTimeout);
       this.toastTimeout = setTimeout(() => {
         gsap.to(el, {
@@ -277,5 +362,29 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       }, 3000);
     }, 50);
+  }
+
+  private handleNotificationPopup(notifs: AppNotification[]): void {
+    if (!this.notificationsHydrated) {
+      this.seenNotifIds = new Set(notifs.map(n => n.id));
+      this.notificationsHydrated = true;
+      return;
+    }
+
+    const newUnread = notifs.filter(n => !this.seenNotifIds.has(n.id) && !n.lu);
+    notifs.forEach(n => this.seenNotifIds.add(n.id));
+
+    if (newUnread.length === 0) return;
+
+    const latest = newUnread.sort((a, b) =>
+      new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime()
+    )[0];
+
+    this.showToast(latest.message, 'success');
+    this.sound.notification();
+  }
+
+  isChefEquipe(): boolean {
+    return this.currentUser?.role === 'CHEF_EQUIPE';
   }
 }

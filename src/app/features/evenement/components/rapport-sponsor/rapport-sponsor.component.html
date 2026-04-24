@@ -1,0 +1,132 @@
+<div class="rp-shell">
+
+  <!-- Header -->
+  <div class="rp-header">
+    <div>
+      <h1 class="rp-title">📊 Rapports Hebdomadaires Sponsors</h1>
+      <p class="rp-sub">Générés automatiquement chaque lundi à 8h00</p>
+    </div>
+    <button class="btn btn-primary"
+            [disabled]="generationLoading"
+            (click)="genererRapport()">
+      <span *ngIf="generationLoading" class="rp-spinner"></span>
+      <svg *ngIf="!generationLoading" width="14" height="14" fill="none"
+           stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+      </svg>
+      {{ generationLoading ? 'Génération...' : 'Générer maintenant' }}
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="succes" class="rp-alert rp-alert-success">{{ succes }}</div>
+  <div *ngIf="erreur" class="rp-alert rp-alert-danger">{{ erreur }}</div>
+
+  <!-- Dernier rapport -->
+  <div class="rp-last-card" *ngIf="dernierRapport">
+    <div class="rp-last-header">
+      <div>
+        <div class="rp-last-label">Dernier rapport généré</div>
+        <div class="rp-last-periode">{{ dernierRapport.periode }}</div>
+        <div class="rp-last-date">
+          {{ dernierRapport.dateCreation | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+      </div>
+      <div class="rp-last-actions">
+        <button class="btn btn-outline"
+                (click)="previewPdf(dernierRapport)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          Aperçu
+        </button>
+        <button class="btn btn-primary"
+                (click)="telechargerPdf(dernierRapport)">
+          <svg width="14" height="14" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Télécharger PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Analyse Ollama -->
+    <div class="rp-analyse" *ngIf="dernierRapport.analyseOllama">
+      <div class="rp-analyse-label">🤖 Analyse AI (Ollama)</div>
+      <p class="rp-analyse-text">{{ dernierRapport.analyseOllama }}</p>
+    </div>
+  </div>
+
+  <!-- Historique -->
+  <div class="rp-historique">
+    <h2 class="rp-section-title">📁 Historique des rapports</h2>
+
+    <div *ngIf="loading" class="rp-loading">
+      <div class="rp-spinner"></div>
+      <span>Chargement...</span>
+    </div>
+
+    <div *ngIf="!loading && rapports.length === 0" class="rp-empty">
+      <div style="font-size:48px">📊</div>
+      <p>Aucun rapport généré pour le moment</p>
+      <p style="font-size:13px;color:var(--ink3)">
+        Cliquez sur "Générer maintenant" pour créer le premier rapport
+      </p>
+    </div>
+
+    <div class="rp-table-wrap" *ngIf="!loading && rapports.length > 0">
+      <table class="rp-table">
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th>Date génération</th>
+            <th>Statut email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of rapports">
+            <td class="rp-td-periode">{{ r.periode }}</td>
+            <td>{{ r.dateCreation | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="rp-badge"
+                    [class.badge-teal]="r.envoye"
+                    [class.badge-coral]="!r.envoye">
+                {{ r.envoye ? '✅ Envoyé' : '⏳ En attente' }}
+              </span>
+            </td>
+            <td>
+              <div class="rp-actions">
+                <button class="rp-btn rp-btn-preview"
+                        (click)="previewPdf(r)"
+                        title="Aperçu PDF">
+                  <svg width="13" height="13" fill="none" stroke="currentColor"
+                       stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="rp-btn rp-btn-download"
+                        (click)="telechargerPdf(r)"
+                        title="Télécharger PDF">
+                  <svg width="13" height="13" fill="none" stroke="currentColor"
+                       stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

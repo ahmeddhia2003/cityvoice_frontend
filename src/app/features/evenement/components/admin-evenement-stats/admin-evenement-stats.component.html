@@ -1,0 +1,206 @@
+<div class="stats-page">
+
+  <!-- Header -->
+  <div class="stats-header">
+    <div>
+      <div class="stats-title">
+        {{ 'adm.stats.title' | t }} <em>{{ 'adm.stats.title.em' | t }}</em>
+      </div>
+      <div class="stats-sub">{{ 'adm.stats.sub' | t }}</div>
+    </div>
+    <button class="btn-back" (click)="retour()">
+      {{ 'adm.stats.retour' | t }}
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="ae-loading" *ngIf="loading">
+    <div class="ae-spinner"></div>
+    <span>{{ 'adm.stats.loading' | t }}</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- KPIs Row 1 -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--ka:#E8532A; animation-delay:0.1s">
+        <div class="kpi-header">
+          <div class="kpi-icon">📅</div>
+          <div class="kpi-trend">Total</div>
+        </div>
+        <div class="kpi-num">{{ totalEvenements }}</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.ev' | t }}</div>
+      </div>
+      <div class="kpi-card" style="--ka:#0D9B76; animation-delay:0.2s">
+        <div class="kpi-header">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-trend" style="background:rgba(13,155,118,.1);color:#0D9B76">
+            Actifs
+          </div>
+        </div>
+        <div class="kpi-num">{{ evenementsPublies }}</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.publies' | t }}</div>
+      </div>
+      <div class="kpi-card" style="--ka:#3B82F6; animation-delay:0.3s">
+        <div class="kpi-header">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-trend" style="background:#eff6ff;color:#3B82F6">Total</div>
+        </div>
+        <div class="kpi-num">{{ totalInscrits }}</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.partici' | t }}</div>
+      </div>
+      <div class="kpi-card" style="--ka:#C9973E; animation-delay:0.4s">
+        <div class="kpi-header">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-trend" style="background:rgba(201,151,62,.1);color:#C9973E">
+            TND
+          </div>
+        </div>
+        <div class="kpi-num">{{ totalRevenus | number:'1.0-0' }}</div>
+        <div class="kpi-label">{{ 'adm.stats.kpi.revenus' | t }}</div>
+      </div>
+    </div>
+
+    <!-- KPIs Row 2 -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--ka:#7C3AED; animation-delay:0.5s">
+        <div class="kpi-header">
+          <div class="kpi-icon">📊</div>
+          <div class="kpi-trend" style="background:#f5f3ff;color:#7C3AED">Moyen</div>
+        </div>
+        <div class="kpi-num">{{ tauxRemplissage }}%</div>
+        <div class="kpi-progress">
+          <div class="kpi-progress-fill"
+               [style.width.%]="tauxRemplissage"
+               [style.background]="tauxRemplissage > 80 ? '#E8532A' :
+                                   tauxRemplissage > 50 ? '#C9973E' : '#0D9B76'">
+          </div>
+        </div>
+        <div class="kpi-label">Taux de remplissage</div>
+      </div>
+      <div class="kpi-card" style="--ka:#EC4899; animation-delay:0.6s">
+        <div class="kpi-header">
+          <div class="kpi-icon">🗓️</div>
+          <div class="kpi-trend" style="background:#fdf2f8;color:#EC4899">7 jours</div>
+        </div>
+        <div class="kpi-num">{{ evenementsCetteSemaine.length }}</div>
+        <div class="kpi-label">Événements cette semaine</div>
+      </div>
+      <div class="kpi-card" style="--ka:#0C1F3F; animation-delay:0.7s">
+        <div class="kpi-header">
+          <div class="kpi-icon">🗺️</div>
+          <div class="kpi-trend" style="background:#f0f4ff;color:#0C1F3F">Top</div>
+        </div>
+        <div class="kpi-num kpi-num-sm">{{ topZone || 'N/A' }}</div>
+        <div class="kpi-label">Zone la plus active</div>
+      </div>
+      <div class="kpi-card" style="--ka:#0D9B76; animation-delay:0.8s">
+        <div class="kpi-header">
+          <div class="kpi-icon">🏛️</div>
+          <div class="kpi-trend"
+               style="background:rgba(13,155,118,.1);color:#0D9B76">Top</div>
+        </div>
+        <div class="kpi-num kpi-num-sm">{{ topTypeLieu || 'N/A' }}</div>
+        <div class="kpi-label">Type de lieu dominant</div>
+      </div>
+    </div>
+
+    <!-- Tendance pleine largeur -->
+    <div class="chart-card chart-full fade-in" style="animation-delay:0.3s">
+      <div class="chart-title">
+        📈 Évolution <em>inscriptions & événements par mois</em>
+      </div>
+      <div style="height:260px">
+        <canvas id="tendance-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-grid">
+      <div class="chart-card fade-in" style="animation-delay:0.4s">
+        <div class="chart-title">
+          {{ 'adm.stats.chart.type' | t }}
+          <em>{{ 'adm.stats.chart.type.em' | t }}</em>
+        </div>
+        <div style="height:240px"><canvas id="type-chart"></canvas></div>
+      </div>
+      <div class="chart-card fade-in" style="animation-delay:0.5s">
+        <div class="chart-title">
+          {{ 'adm.stats.chart.type' | t }}
+          <em>{{ 'adm.stats.chart.statut.em' | t }}</em>
+        </div>
+        <div style="height:240px"><canvas id="statut-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-grid">
+      <div class="chart-card fade-in" style="animation-delay:0.6s">
+        <div class="chart-title">
+          🗺️ Événements <em>par zone géographique</em>
+        </div>
+        <div style="height:240px"><canvas id="zones-chart"></canvas></div>
+      </div>
+      <div class="chart-card fade-in" style="animation-delay:0.7s">
+        <div class="chart-title">🏛️ Répartition <em>par type de lieu</em></div>
+        <div style="height:240px"><canvas id="type-lieu-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Top 5 -->
+    <div class="chart-card chart-full fade-in" style="animation-delay:0.8s">
+      <div class="chart-title">
+        {{ 'adm.stats.chart.top5' | t }}
+        <em>{{ 'adm.stats.chart.top5.em' | t }}</em>
+      </div>
+      <div style="height:240px"><canvas id="inscrits-chart"></canvas></div>
+    </div>
+
+    <!-- Événements cette semaine -->
+    <div class="chart-card chart-full fade-in"
+         *ngIf="evenementsCetteSemaine.length > 0"
+         style="animation-delay:0.9s">
+      <div class="chart-title">🗓️ Événements <em>cette semaine</em></div>
+      <div class="semaine-list">
+        <div class="semaine-item"
+             *ngFor="let ev of evenementsCetteSemaine; let i = index"
+             [style.animation-delay]="(i * 0.08) + 's'">
+          <div class="semaine-date">
+            {{ ev.dateDebut | date:'EEE dd MMM' }}
+          </div>
+          <div class="semaine-info">
+            <div class="semaine-titre">{{ ev.titre }}</div>
+            <div class="semaine-meta">
+              📍 {{ ev.lieu }}
+              <span *ngIf="ev.typeLieu"> · 🏛️ {{ ev.typeLieu }}</span>
+              <span *ngIf="ev.zone"> · 🗺️ {{ ev.zone }}</span>
+            </div>
+          </div>
+          <div class="semaine-inscrits">
+            👥 {{ ev.nbInscrits || 0 }}
+            <span *ngIf="ev.capaciteMax" style="color:#8888A8">
+              / {{ ev.capaciteMax }}
+            </span>
+          </div>
+          <span class="semaine-badge"
+                [style.background]="ev.estPayant ? '#FEF3C7' : '#D1FAE5'"
+                [style.color]="ev.estPayant ? '#C9973E' : '#0D9B76'">
+            {{ ev.estPayant ? (ev.prix + ' TND') : 'Gratuit' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vide si pas d'events cette semaine -->
+    <div class="chart-card chart-full fade-in"
+         *ngIf="evenementsCetteSemaine.length === 0"
+         style="animation-delay:0.9s">
+      <div class="chart-title">🗓️ Événements <em>cette semaine</em></div>
+      <div class="empty-semaine">
+        <span style="font-size:32px">🗓️</span>
+        <p>Aucun événement prévu cette semaine</p>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

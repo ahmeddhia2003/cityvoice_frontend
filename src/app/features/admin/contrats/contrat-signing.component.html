@@ -1,0 +1,267 @@
+<div class="cs-page">
+
+  <!-- LOADING -->
+  <div class="cs-loader" *ngIf="loading">
+    <div class="cs-spinner"></div>
+    <p>Chargement du contrat…</p>
+  </div>
+
+  <!-- ERROR -->
+  <div class="cs-error" *ngIf="error && !loading">
+    <span>⚠️ {{ error }}</span>
+    <button class="cs-btn cs-btn-outline" (click)="goBack()">← Retour</button>
+  </div>
+
+  <!-- CONTRAT CHARGÉ -->
+  <ng-container *ngIf="!loading">
+  <ng-container *ngIf="contrat">
+
+    <!-- ══ SUCCÈS ══ -->
+    <div class="cs-success-banner" *ngIf="action === 'done'">
+      <div class="cs-success-icon">✅</div>
+      <p>{{ successMsg }}</p>
+      <button class="cs-btn cs-btn-primary" (click)="goBack()">← Retour aux signalements</button>
+    </div>
+
+    <ng-container *ngIf="action !== 'done'">
+
+      <!-- ── En-tête ── -->
+      <div class="cs-header">
+        <button class="cs-back" (click)="goBack()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          Retour
+        </button>
+        <div class="cs-header-center">
+          <div class="cs-numero">{{ contrat.numeroContrat }}</div>
+          <div class="cs-statut" [ngClass]="'statut-' + contrat.statut.toLowerCase()">
+            {{ statutLabel(contrat.statut) }}
+          </div>
+        </div>
+        <button class="cs-btn cs-btn-outline cs-pdf-btn" (click)="exportPdf()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/>
+          </svg>
+          Télécharger PDF
+        </button>
+      </div>
+
+      <!-- ══ CONTRAT DOCUMENT ══ -->
+      <div class="cs-document">
+
+        <!-- Watermark OFFICIEL -->
+        <div class="cs-watermark" *ngIf="contrat.statut === 'ACCEPTE'">SIGNÉ</div>
+        <div class="cs-watermark cs-watermark--refused" *ngIf="contrat.statut === 'REFUSE'">REFUSÉ</div>
+
+        <!-- ── En-tête document ── -->
+        <div class="cs-doc-header">
+          <div class="cs-doc-logo">
+            <!-- Cachet SVG Madina -->
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <!-- Cercle extérieur -->
+              <circle cx="40" cy="40" r="38" fill="none" stroke="#0C1F3F" stroke-width="2.5"/>
+              <!-- Cercle intérieur -->
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#0C1F3F" stroke-width="1"/>
+              <!-- Texte circulaire haut -->
+              <path id="topArc" d="M 10,40 a30,30 0 0,1 60,0" fill="none"/>
+              <text font-size="6" font-family="Arial" font-weight="bold" fill="#0C1F3F" letter-spacing="1.2">
+                <textPath href="#topArc" startOffset="5%">• MUNICIPALITÉ DE MADINA •</textPath>
+              </text>
+              <!-- Texte circulaire bas -->
+              <path id="botArc" d="M 10,40 a30,30 0 0,0 60,0" fill="none"/>
+              <text font-size="6" font-family="Arial" fill="#0C1F3F" letter-spacing="1">
+                <textPath href="#botArc" startOffset="10%">• TUNISIE • CITYVOICE •</textPath>
+              </text>
+              <!-- Contenu central -->
+              <text x="40" y="33" text-anchor="middle" font-size="9" font-weight="bold" fill="#0C1F3F" font-family="Arial">MADINA</text>
+              <text x="40" y="43" text-anchor="middle" font-size="14" fill="#E8532A">★</text>
+              <text x="40" y="53" text-anchor="middle" font-size="6.5" fill="#0C1F3F" font-family="Arial" letter-spacing="1">OFFICIEL</text>
+            </svg>
+          </div>
+          <div class="cs-doc-title-block">
+            <h1 class="cs-doc-title">CONTRAT DE MISSION DE TRAVAUX</h1>
+            <p class="cs-doc-sub">Municipalité de Madina — Plateforme CityVoice</p>
+          </div>
+          <div class="cs-doc-meta">
+            <div><span>N°</span> <strong>{{ contrat.numeroContrat }}</strong></div>
+            <div><span>Émis le</span> <strong>{{ contrat.dateCreation | date:'dd/MM/yyyy' }}</strong></div>
+            <div><span>Tentative</span> <strong>{{ contrat.tentative }}</strong></div>
+          </div>
+        </div>
+
+        <!-- Ligne décorative -->
+        <div class="cs-divider"></div>
+
+        <!-- ── Préambule ── -->
+        <p class="cs-preambule">
+          La Municipalité de Madina, agissant dans le cadre de sa mission de service public urbain,
+          confie par le présent contrat la réalisation des travaux décrits ci-dessous à l'équipe
+          désignée par le système d'intelligence artificielle CityVoice, en tenant compte de la
+          spécialisation technique, de la proximité géographique et de la disponibilité opérationnelle.
+        </p>
+
+        <!-- ── Article 1 : Équipe ── -->
+        <div class="cs-article">
+          <div class="cs-article-title">Art. 1 — Équipe Assignée</div>
+          <div class="cs-article-body">
+            <div class="cs-field-grid">
+              <div class="cs-field"><span>Équipe</span><strong>{{ contrat.equipeLabel }}</strong></div>
+              <div class="cs-field"><span>Code</span><strong>{{ contrat.equipeCode | uppercase }}</strong></div>
+              <div class="cs-field"><span>Chef d'équipe</span>
+                <strong>{{ contrat.chefEquipeNom ?? contrat.chefEquipeId ?? 'À attribuer' }}</strong>
+              </div>
+              <div class="cs-field"><span>Délai d'intervention</span>
+                <strong>{{ contrat.delaiEstimeHeures ? contrat.delaiEstimeHeures + 'h' : '48h' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Article 2 : Signalement ── -->
+        <div class="cs-article">
+          <div class="cs-article-title">Art. 2 — Détails du Signalement</div>
+          <div class="cs-article-body">
+            <div class="cs-field-grid">
+              <div class="cs-field"><span>Référence</span><strong>#{{ contrat.signalement?.id }}</strong></div>
+              <div class="cs-field"><span>Type</span><strong>{{ typeLabel(contrat.signalement?.type ?? '') }}</strong></div>
+              <div class="cs-field"><span>Adresse</span><strong>{{ contrat.signalement?.adresse || '—' }}</strong></div>
+              <div class="cs-field">
+                <span>Priorité</span>
+                <strong class="prio-badge" [ngClass]="prioriteClass(contrat.signalement?.prioriteCitoyen ?? '')">
+                  {{ contrat.signalement?.prioriteCitoyen }}
+                </strong>
+              </div>
+              <div class="cs-field"><span>Confiance IA</span><strong>{{ (contrat.signalement?.confidenceIA ?? 0) * 100 | number:'1.0-0' }}%</strong></div>
+            </div>
+            <div class="cs-desc-block">
+              <span>Description</span>
+              <p>{{ contrat.signalement?.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Article 3 : Obligations ── -->
+        <div class="cs-article">
+          <div class="cs-article-title">Art. 3 — Obligations de l'Équipe</div>
+          <div class="cs-article-body cs-obligations">
+            <p>• Prendre en charge l'intervention dans un délai de <strong>{{ contrat.signalement?.delaiEstimeHeures ?? contrat.delaiEstimeHeures ?? 48 }}h</strong> à compter de l'acceptation du présent contrat.</p>
+            <p>• Signaler tout obstacle ou difficulté imprévue à la direction technique dans les 24h.</p>
+            <p>• Fournir un rapport d'intervention complet à la clôture du chantier.</p>
+            <p>• Respecter les normes de sécurité, les règles de l'art et les réglementations en vigueur.</p>
+            <p>• En cas d'impossibilité d'exécution, notifier la Municipalité dans les meilleurs délais pour réaffectation.</p>
+          </div>
+        </div>
+
+        <!-- ── Article 4 : Signatures ── -->
+        <div class="cs-article cs-article--signatures">
+          <div class="cs-article-title">Art. 4 — Signatures</div>
+          <div class="cs-signatures-grid">
+            <!-- Côté Municipalité -->
+            <div class="cs-sig-block">
+              <div class="cs-sig-role">Pour la Municipalité de Madina</div>
+              <div class="cs-sig-stamp">
+                <!-- Cachet SVG officiel — haute résolution -->
+                <svg width="150" height="150" viewBox="0 0 200 200" class="cs-cachet" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Halo doux -->
+                  <circle cx="100" cy="100" r="96" fill="rgba(12,31,63,0.025)"/>
+                  <!-- Cercle extérieur épais -->
+                  <circle cx="100" cy="100" r="90" fill="none" stroke="#0C1F3F" stroke-width="3.5"/>
+                  <!-- Cercle intermédiaire (double trait) -->
+                  <circle cx="100" cy="100" r="84" fill="none" stroke="#0C1F3F" stroke-width="1"/>
+                  <!-- Cercle intérieur -->
+                  <circle cx="100" cy="100" r="62" fill="none" stroke="#0C1F3F" stroke-width="0.8"/>
+
+                  <!-- Texte circulaire haut -->
+                  <defs>
+                    <path id="arcTop"    d="M 24,100 a76,76 0 0,1 152,0" fill="none"/>
+                    <path id="arcBottom" d="M 24,100 a76,76 0 0,0 152,0" fill="none"/>
+                  </defs>
+                  <text font-size="11" font-family="Arial, sans-serif" font-weight="700" fill="#0C1F3F" letter-spacing="3">
+                    <textPath href="#arcTop" startOffset="50%" text-anchor="middle">MUNICIPALITÉ DE MADINA</textPath>
+                  </text>
+                  <text font-size="9" font-family="Arial, sans-serif" font-weight="600" fill="#0C1F3F" letter-spacing="2">
+                    <textPath href="#arcBottom" startOffset="50%" text-anchor="middle">★ RÉPUBLIQUE TUNISIENNE ★ CITYVOICE ★</textPath>
+                  </text>
+
+                  <!-- Étoiles cardinales (gauche / droite) -->
+                  <text x="18" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+                  <text x="182" y="106" text-anchor="middle" font-size="14" fill="#E8532A" font-weight="700">★</text>
+
+                  <!-- Bloc central -->
+                  <text x="100" y="86" text-anchor="middle" font-size="22" font-weight="800" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="2">MADINA</text>
+                  <text x="100" y="106" text-anchor="middle" font-size="20" fill="#E8532A" font-weight="700">★</text>
+                  <text x="100" y="122" text-anchor="middle" font-size="9" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="3">OFFICIEL</text>
+
+                  <!-- Numéro + date dans le cercle intérieur -->
+                  <line x1="58" y1="135" x2="142" y2="135" stroke="#0C1F3F" stroke-width="0.4" opacity="0.4"/>
+                  <text x="100" y="146" text-anchor="middle" font-size="7" font-weight="700" fill="#0C1F3F" font-family="Arial, sans-serif" letter-spacing="0.8">
+                    N° {{ contrat.numeroContrat?.slice(-12) }}
+                  </text>
+                  <text x="100" y="156" text-anchor="middle" font-size="6.5" fill="#4B5563" font-family="Arial, sans-serif">
+                    {{ contrat.dateCreation | date:'dd/MM/yyyy' }}
+                  </text>
+                </svg>
+              </div>
+              <div class="cs-sig-date">Cachet numérique authentifié</div>
+            </div>
+
+            <!-- Côté Chef d'équipe -->
+            <div class="cs-sig-block">
+              <div class="cs-sig-role">Pour le Chef d'Équipe</div>
+              <div class="cs-sig-canvas-area" [class.signed]="contrat.statut === 'ACCEPTE'">
+                <ng-container *ngIf="contrat.statut === 'ACCEPTE'">
+                  <div class="cs-sig-done">✅ Signé numériquement</div>
+                </ng-container>
+                <ng-container *ngIf="contrat.statut !== 'ACCEPTE' && contrat.statut !== 'REFUSE'">
+                  <canvas #signatureCanvas *ngIf="action === 'signing'"
+                          width="230" height="100" class="cs-canvas"></canvas>
+                  <div class="cs-sig-placeholder" *ngIf="action !== 'signing'">
+                    Zone de signature numérique
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="contrat.statut === 'REFUSE'">
+                  <div class="cs-sig-refused">❌ Refusé — {{ contrat.motifRefus }}</div>
+                </ng-container>
+              </div>
+              <div class="cs-sig-date">Le : {{ (contrat.dateReponse | date:'dd/MM/yyyy') ?? '_______________' }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- fin .cs-document -->
+
+      <!-- ══ PANNEAU ADMIN — lecture seule ══ -->
+      <!-- L'admin consulte le contrat mais ne peut PAS signer ni refuser.
+           Seul le chef d'équipe désigné peut effectuer ces actions depuis son espace. -->
+      <div class="cs-admin-readonly-banner">
+        <div class="cs-readonly-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </div>
+        <div class="cs-readonly-body">
+          <ng-container *ngIf="contrat.statut === 'EN_ATTENTE_SIGNATURE'">
+            <strong>En attente de signature du chef d'équipe</strong>
+            <p>Ce contrat a été envoyé au chef de l'équipe <em>{{ contrat.equipeLabel }}</em>.
+               Seul le chef d'équipe désigné peut signer ou refuser ce contrat depuis son espace personnel.</p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'ACCEPTE'">
+            <strong>Contrat signé et accepté</strong>
+            <p>Ce contrat a été accepté par le chef d'équipe le {{ contrat.dateReponse | date:'dd/MM/yyyy' }}.</p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'REFUSE'">
+            <strong>Contrat refusé — réaffectation automatique</strong>
+            <p>Motif : <em>{{ contrat.motifRefus || 'Non précisé' }}</em></p>
+          </ng-container>
+          <ng-container *ngIf="contrat.statut === 'REASSIGNE'">
+            <strong>Contrat réassigné à une autre équipe</strong>
+            <p>Une nouvelle affectation a été générée automatiquement.</p>
+          </ng-container>
+        </div>
+      </div>
+
+    </ng-container>
+  </ng-container>
+  </ng-container>
+</div>

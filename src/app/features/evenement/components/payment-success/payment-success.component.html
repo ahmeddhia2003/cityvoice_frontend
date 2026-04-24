@@ -1,0 +1,40 @@
+<div class="ps-page">
+  <div class="ps-card" *ngIf="!loading && participant">
+    <div class="ps-icon">🎉</div>
+    <h1 class="ps-title">{{ 'pay.succes.titre' | t }}</h1>
+    <p class="ps-sub">{{ 'pay.succes.sub' | t }}</p>
+
+    <div class="ps-info">
+      <div class="ps-info-row">
+        <span class="ps-info-label">{{ 'pay.succes.participant' | t }}</span>
+        <span class="ps-info-val">{{ participant.nomCitoyen }}</span>
+      </div>
+      <div class="ps-info-row">
+        <span class="ps-info-label">{{ 'pay.succes.email' | t }}</span>
+        <span class="ps-info-val">{{ participant.emailCitoyen }}</span>
+      </div>
+      <div class="ps-info-row">
+        <span class="ps-info-label">{{ 'pay.succes.statut' | t }}</span>
+        <span class="ps-info-val" style="color:#0D9B76">{{ 'pay.succes.paye' | t }}</span>
+      </div>
+    </div>
+
+    <p class="ps-qr-info">
+      {{ 'pay.succes.qr' | t }}
+    </p>
+
+    <button class="btn btn-primary" (click)="retour()">
+      {{ 'pay.succes.retour' | t }}
+    </button>
+  </div>
+
+  <div class="ps-loading" *ngIf="loading">
+    <div class="ps-spinner"></div>
+    <p>{{ 'pay.succes.loading' | t }}</p>
+  </div>
+
+  <div class="ps-error" *ngIf="erreur">
+    <div class="ps-icon">❌</div>
+    <p>{{ erreur }}</p>
+  </div>
+</div>

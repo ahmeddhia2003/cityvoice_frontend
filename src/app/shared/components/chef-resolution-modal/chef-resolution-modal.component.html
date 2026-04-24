@@ -1,0 +1,197 @@
+<div class="crm-root">
+  <div class="ce-modal-overlay ce-modal-overlay--resolution" (click)="onBackdropClick()">
+    <div class="ce-modal ce-modal--resolution" (click)="$event.stopPropagation()">
+      <div class="ce-modal-header ce-modal-header--resolution">
+        <div class="ce-modal-header-text">
+          <h2 class="ce-modal-title ce-modal-title--resolution">Confirmation de résolution</h2>
+          <p class="ce-modal-subtitle">Uploadez la photo après travaux pour validation IA</p>
+        </div>
+        <button type="button" class="ce-modal-close" (click)="tryClose()" aria-label="Fermer">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ce-modal-body ce-modal-body--resolution">
+        <div class="ce-res-form" *ngIf="!resolution.done">
+          <div class="ce-res-compare">
+            <div class="ce-res-col">
+              <div class="ce-res-col-label ce-res-col-label--before">
+                <span class="ce-res-dot"></span> Avant (photo originale)
+              </div>
+              <div class="ce-res-photo-frame" *ngIf="resolution.photoAvant">
+                <img [src]="resolution.photoAvant" alt="Avant" />
+              </div>
+              <div class="ce-res-placeholder" *ngIf="!resolution.photoAvant">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" opacity=".3">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span>Aucune photo</span>
+              </div>
+            </div>
+
+            <div class="ce-res-arrow">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </div>
+
+            <div class="ce-res-col">
+              <div class="ce-res-col-label ce-res-col-label--after">
+                <span class="ce-res-dot ce-res-dot--green"></span> Après résolution
+              </div>
+              <div class="ce-res-photo-frame ce-res-photo-frame--upload" *ngIf="resolution.photoApres">
+                <img [src]="resolution.photoApres" alt="Après" />
+                <button type="button" class="ce-res-remove" (click)="removePhotoApres()">✕</button>
+              </div>
+              <label class="ce-res-upload" *ngIf="!resolution.photoApres" [attr.for]="fileInputId">
+                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" opacity=".5">
+                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                  <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+                </svg>
+                <span>Cliquez pour uploader</span>
+                <small>JPG, PNG — max 5 MB</small>
+                <input [id]="fileInputId" type="file" accept="image/*" (change)="onPhotoApresChange($event)" hidden />
+              </label>
+            </div>
+          </div>
+
+          <div class="ce-res-sig-info">
+            <span class="sig-type-chip">{{ resolution.sigType.replace('_',' ') }}</span>
+            <p class="sig-card-desc" style="margin:8px 0 0">{{ resolution.sigDesc }}</p>
+          </div>
+
+          <div class="ce-field">
+            <label class="ce-field-label">Commentaire (optionnel)</label>
+            <textarea class="ce-textarea" [(ngModel)]="resolution.commentaire" rows="3"
+              placeholder="Décrivez les travaux effectués, matériaux utilisés…"></textarea>
+          </div>
+
+          <button type="button" class="ce-btn-confirm"
+            [disabled]="!resolution.photoApres || resolution.loading"
+            (click)="confirmerResolution()">
+            <span *ngIf="!resolution.loading">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-right:6px">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Confirmer la résolution
+            </span>
+            <span *ngIf="resolution.loading" class="ce-loading-row">
+              <span class="ce-spin ce-spin--sm"></span>
+              Vérification IA en cours…
+            </span>
+          </button>
+        </div>
+
+        <div class="ce-ai-loading" *ngIf="resolution.loading">
+          <div class="ce-loading-orb"><div class="ce-loading-orb-inner"></div></div>
+          <p class="ce-ai-loading-text">L'IA analyse vos photos…</p>
+          <div class="ce-ai-dots"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="ce-res-result" *ngIf="resolution.done">
+          <div class="res-result-card">
+            <div class="res-particles" aria-hidden="true"></div>
+            <div class="res-ribbon" [class.res-ribbon--ok]="resolution.resoluIA" [class.res-ribbon--warn]="!resolution.resoluIA">
+              {{ resolution.resoluIA ? '✓ RÉSOLU' : '⚠ ATTENTION REQUISE' }}
+            </div>
+            <div class="res-status-icon" [class.res-status-icon--ok]="resolution.resoluIA" [class.res-status-icon--warn]="!resolution.resoluIA">
+              <svg class="res-check-icon" *ngIf="resolution.resoluIA" width="40" height="40" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <svg *ngIf="!resolution.resoluIA" width="40" height="40" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h2 class="res-title">{{ resolution.resoluIA ? 'Résolution confirmée ✓' : 'Vérification : attention requise' }}</h2>
+            <div class="res-score-wrap">
+              <div class="res-score-header">
+                <span class="res-score-label">Score de confiance IA</span>
+                <span class="res-score-pct"
+                  [class.score-green]="resolution.confiance >= 75"
+                  [class.score-orange]="resolution.confiance >= 50 && resolution.confiance < 75"
+                  [class.score-red]="resolution.confiance < 50">{{ resolution.confiance }}%</span>
+              </div>
+              <div class="res-score-bar-track">
+                <div class="res-score-bar-fill"
+                  [class.fill-green]="resolution.confiance >= 75"
+                  [class.fill-orange]="resolution.confiance >= 50 && resolution.confiance < 75"
+                  [class.fill-red]="resolution.confiance < 50"></div>
+              </div>
+            </div>
+            <div class="res-section">
+              <div class="res-section-title">Rapport de vérification</div>
+              <p class="res-text">{{ resolution.rapport }}</p>
+            </div>
+            <div class="res-section" *ngIf="resolution.observations">
+              <div class="res-section-title">Observations</div>
+              <p class="res-text">{{ resolution.observations }}</p>
+            </div>
+            <div class="res-compare-section">
+              <div class="res-compare-header">
+                <div class="res-compare-title">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                  Comparaison avant / après
+                </div>
+                <div class="res-compare-sub">Vérification visuelle de l'intervention par l'IA</div>
+              </div>
+              <div class="res-photos">
+                <div class="res-photo-col res-photo-col--avant" *ngIf="resolution.photoAvant">
+                  <div class="res-photo-badge res-photo-badge--avant">
+                    <span class="res-badge-icon">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </span>
+                    Avant
+                    <span class="res-badge-tag">Problème signalé</span>
+                  </div>
+                  <div class="res-photo-frame res-photo-frame--avant">
+                    <img [src]="resolution.photoAvant" class="res-photo-img" alt="Avant"/>
+                    <div class="res-photo-overlay"></div>
+                    <div class="res-photo-corner res-photo-corner--avant">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="res-compare-arrow">
+                  <div class="res-arrow-circle">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </div>
+                  <div class="res-arrow-label">Intervention</div>
+                </div>
+                <div class="res-photo-col res-photo-col--apres" *ngIf="resolution.photoApres">
+                  <div class="res-photo-badge res-photo-badge--apres">
+                    <span class="res-badge-icon">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    Après
+                    <span class="res-badge-tag">Résolution chef</span>
+                  </div>
+                  <div class="res-photo-frame res-photo-frame--apres">
+                    <img [src]="resolution.photoApres" class="res-photo-img" alt="Après"/>
+                    <div class="res-photo-overlay"></div>
+                    <div class="res-photo-corner res-photo-corner--apres">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="res-compare-footer" *ngIf="resolution.confiance != null">
+                <span class="res-compare-dot" [class.dot-green]="resolution.confiance >= 75" [class.dot-orange]="resolution.confiance >= 50 && resolution.confiance < 75" [class.dot-red]="resolution.confiance < 50"></span>
+                <span class="res-compare-foot-text">Analyse IA : {{ resolution.confiance }}% de confiance sur la résolution visuelle</span>
+              </div>
+            </div>
+            <button type="button" class="ce-back-btn res-back-btn" style="margin-top:24px" (click)="closeAfterSuccess()">← Fermer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 .pp-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 .pp-loading {
@@ -187,4 +187,102 @@
 .pp-bio-text {
   font-size: 13.5px; color: rgba(255,255,255,.7);
   line-height: 1.65; margin: 0; font-style: italic;
+}
+
+/* ── Avatar pip ─────────────────────────────────────────── */
+.pp-avatar-wrap { position: relative; flex-shrink: 0; }
+
+.pp-trust-pip {
+  position: absolute; bottom: -4px; right: -4px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #0C1F3F; border: 2px solid rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+
+/* ── Tags ───────────────────────────────────────────────── */
+.pp-tags {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 8px;
+}
+.pp-trust-tag {
+  font-size: 12px; font-weight: 700;
+  background: rgba(255,255,255,.08);
+  padding: 3px 10px; border-radius: 20px;
+  color: rgba(255,255,255,.7);
+}
+
+/* ── Meta list ──────────────────────────────────────────── */
+.pp-meta-list {
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+}
+.pp-meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: rgba(255,255,255,.4);
+}
+.pp-meta-item svg { opacity: .6; flex-shrink: 0; }
+
+/* ── Stats bar ──────────────────────────────────────────── */
+.pp-stats-bar {
+  background: #0C1F3F;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.pp-stats-inner {
+  max-width: 860px; margin: 0 auto;
+  padding: 16px 40px;
+  display: flex; align-items: center; gap: 0;
+}
+.psb-item { flex: 1; text-align: center; }
+.psb-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700;
+  color: #F7F4EF; line-height: 1; margin-bottom: 4px;
+}
+.psb-label {
+  font-size: 10.5px; color: rgba(255,255,255,.35);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.psb-sep {
+  width: 1px; height: 36px;
+  background: rgba(255,255,255,.1); flex-shrink: 0; margin: 0 8px;
+}
+
+/* ── Section header ─────────────────────────────────────── */
+.pp-section-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 18px;
+}
+.pp-section-count {
+  font-size: 12px; color: #9CA3AF;
+  background: rgba(12,31,63,.05);
+  padding: 2px 10px; border-radius: 20px;
+  border: 1px solid rgba(12,31,63,.07);
+}
+
+/* ── Info grid ──────────────────────────────────────────── */
+.pp-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.pp-info-item {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pp-info-label {
+  font-size: 10.5px; font-weight: 700;
+  color: #9CA3AF; letter-spacing: .07em; text-transform: uppercase;
+}
+.pp-info-value {
+  font-size: 13.5px; color: #0C1F3F; font-weight: 500;
+}
+.pp-role-inline {
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .pp-stats-inner { padding: 14px 24px; }
+  .pp-body { padding: 24px 24px 60px; }
 }

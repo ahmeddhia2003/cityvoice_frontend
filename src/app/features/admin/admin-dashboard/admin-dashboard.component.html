@@ -1,4 +1,23 @@
- <!-- KPI Row -->
+ <!-- Dashboard Actions -->
+      <div class="dash-actions-row">
+        <div class="dash-welcome">
+          <span class="dash-welcome-title">Tableau de bord</span>
+          <span class="dash-welcome-sub">Vue en temps réel · Tunis</span>
+        </div>
+        <button class="btn-rapport" (click)="telechargerRapport()" [disabled]="rapportLoading">
+          <span class="btn-rapport-icon" *ngIf="!rapportLoading">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </span>
+          <span class="btn-rapport-spinner" *ngIf="rapportLoading">⏳</span>
+          {{ rapportLoading ? 'Génération...' : 'Rapport PDF mensuel' }}
+        </button>
+      </div>
+
+      <!-- KPI Row -->
       <div class="kpi-row">
 
         <div class="kpi-card" style="--ka:var(--coral);--kb:var(--coral-l)">
@@ -23,48 +42,66 @@
 
         <div class="kpi-card" style="--ka:var(--blue);--kb:var(--blue-l)">
           <div class="kpi-header">
-            <div class="kpi-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
-            <div class="kpi-trend t-up">↑ 41%</div>
+            <div class="kpi-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+            <div class="kpi-trend t-up">Actifs</div>
           </div>
           <div class="kpi-num">{{ kpi3 | number }}</div>
-          <div class="kpi-label">Citoyens actifs</div>
+          <div class="kpi-label">Signalements en cours</div>
           <div class="kpi-spark"><canvas id="spark3"></canvas></div>
         </div>
 
         <div class="kpi-card" style="--ka:var(--gold);--kb:var(--gold-l)">
           <div class="kpi-header">
-            <div class="kpi-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-            <div class="kpi-trend t-down">↓ 8%</div>
+            <div class="kpi-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="kpi-trend t-up">Taux</div>
           </div>
-          <div class="kpi-num">{{ kpi4 }}<span style="font-size:.52em;vertical-align:super">h</span></div>
-          <div class="kpi-label">Délai moyen résolution</div>
+          <div class="kpi-num">{{ kpi4 }}<span style="font-size:.52em;vertical-align:super">%</span></div>
+          <div class="kpi-label">Taux de résolution</div>
           <div class="kpi-spark"><canvas id="spark4"></canvas></div>
         </div>
       </div>
 
-      <!-- Map + Feed -->
-      <div class="grid-2-1">
-
-        <div class="dash-card map-card">
-          <div class="map-head">
-            <div class="map-head-row">
-              <div>
-                <div class="card-title">Carte des signalements</div>
-                <div class="card-sub">Tunis · 159 signalements actifs</div>
-              </div>
+      <!-- ═══ Carte plein écran ═══ -->
+      <div class="dash-card map-card map-fullwidth">
+        <div class="map-head">
+          <div class="map-head-row">
+            <div>
+              <div class="card-title">Carte des signalements</div>
+              <div class="card-sub">Tunis · {{ (stats['total'] ?? 0) }} signalements</div>
             </div>
-            <div class="map-filters">
-              <button class="mf-btn" [class.active]="mapFilter==='all'"      (click)="setMapFilter('all')">Tous</button>
-              <button class="mf-btn" [class.active]="mapFilter==='urgent'"   (click)="setMapFilter('urgent')">Urgents</button>
-              <button class="mf-btn" [class.active]="mapFilter==='progress'" (click)="setMapFilter('progress')">En cours</button>
-              <button class="mf-btn" [class.active]="mapFilter==='resolved'" (click)="setMapFilter('resolved')">Résolus</button>
+            <button class="card-action" (click)="goToSignalements()">Gérer →</button>
+          </div>
+          <div class="map-filters">
+            <button class="mf-btn" [class.active]="mapFilter==='all'"      (click)="setMapFilter('all')">Tous ({{ stats['total'] ?? 0 }})</button>
+            <button class="mf-btn" [class.active]="mapFilter==='pending'"  (click)="setMapFilter('pending')">En attente ({{ stats['enAttente'] ?? 0 }})</button>
+            <button class="mf-btn" [class.active]="mapFilter==='progress'" (click)="setMapFilter('progress')">En cours ({{ stats['enCours'] ?? 0 }})</button>
+            <button class="mf-btn" [class.active]="mapFilter==='resolved'" (click)="setMapFilter('resolved')">Résolus ({{ stats['resolus'] ?? 0 }})</button>
+          </div>
+        </div>
+        <div class="map-el map-el-large" #mapEl></div>
+        <div class="map-legend">
+          <div class="ml-chip"><span class="ml-dot" style="background:var(--coral)"></span>En attente {{ stats['enAttente'] ?? 0 }}</div>
+          <div class="ml-chip"><span class="ml-dot" style="background:var(--blue)"></span>En cours {{ stats['enCours'] ?? 0 }}</div>
+          <div class="ml-chip"><span class="ml-dot" style="background:var(--teal)"></span>Résolus {{ stats['resolus'] ?? 0 }}</div>
+          <div class="ml-chip ml-chip-total"><span class="ml-dot" style="background:var(--navy)"></span>Total {{ stats['total'] ?? 0 }}</div>
+        </div>
+      </div>
+
+      <!-- ═══ Évolution + Feed ═══ -->
+      <div class="grid-2-1">
+        <div class="dash-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Évolution <em>des signalements</em></div>
+              <div class="card-sub">30 derniers jours</div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:center">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-3)"><span style="width:9px;height:9px;border-radius:50%;background:var(--coral);display:inline-block"></span>Signalés</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-3)"><span style="width:9px;height:9px;border-radius:50%;background:var(--teal);display:inline-block"></span>Résolus</div>
             </div>
           </div>
-          <div class="map-el" #mapEl></div>
-          <div class="map-legend">
-            <div class="ml-chip"><span class="ml-dot" style="background:var(--coral)"></span>En attente 47</div>
-            <div class="ml-chip"><span class="ml-dot" style="background:var(--blue)"></span>En cours 23</div>
-            <div class="ml-chip"><span class="ml-dot" style="background:var(--teal)"></span>Résolus 89</div>
+          <div class="card-body">
+            <div style="height:200px"><canvas id="trend-chart"></canvas></div>
           </div>
         </div>
 
@@ -95,24 +132,8 @@
         </div>
       </div>
 
-      <!-- Charts -->
+      <!-- ═══ Donut + AI + Équipes ═══ -->
       <div class="grid-3">
-        <div class="dash-card" style="grid-column:span 2">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Évolution <em>des signalements</em></div>
-              <div class="card-sub">30 derniers jours</div>
-            </div>
-            <div style="display:flex;gap:14px;align-items:center">
-              <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-3)"><span style="width:9px;height:9px;border-radius:50%;background:var(--coral);display:inline-block"></span>Signalés</div>
-              <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-3)"><span style="width:9px;height:9px;border-radius:50%;background:var(--teal);display:inline-block"></span>Résolus</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div style="height:180px"><canvas id="trend-chart"></canvas></div>
-          </div>
-        </div>
-
         <div class="dash-card">
           <div class="card-header">
             <div>
@@ -123,32 +144,32 @@
           <div class="card-body">
             <div style="height:140px"><canvas id="donut-chart"></canvas></div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
-              <div *ngFor="let cat of [['Chaussée','#E8532A',34],['Éclairage','#C9973E',22],['Eau','#3B82F6',18],['Déchets','#7C3AED',14],['Autres','#0D9B76',12]]"
+              <div *ngFor="let cat of typeStats"
                    style="display:flex;align-items:center;justify-content:space-between">
                 <div style="display:flex;align-items:center;gap:6px">
-                  <span [style.background]="cat[1]" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span>
-                  <span style="font-size:11.5px;color:var(--ink-2)">{{ cat[0] }}</span>
+                  <span [style.background]="cat.color" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span>
+                  <span style="font-size:11.5px;color:var(--ink-2)">{{ cat.label }}</span>
                 </div>
-                <span style="font-size:11.5px;font-weight:700;color:var(--navy)">{{ cat[2] }}%</span>
+                <span style="font-size:11.5px;font-weight:700;color:var(--navy)">{{ cat.pct }}%</span>
+              </div>
+              <div *ngIf="typeStats.length === 0" style="font-size:11.5px;color:var(--ink-3);text-align:center;padding:8px">
+                Chargement…
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- AI + Teams -->
-      <div class="grid-1-2">
         <div class="dash-card">
           <div class="card-header">
             <div>
               <div class="card-title">File <em>IA</em></div>
-              <div class="card-sub">Analyse en attente</div>
+              <div class="card-sub">En attente d'affectation</div>
             </div>
-            <span style="background:var(--coral);color:#fff;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700">5</span>
+            <span style="background:var(--coral);color:#fff;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:700">{{ aiItems.length }}</span>
           </div>
           <div class="card-body">
             <div class="ai-item" *ngFor="let a of aiItems"
-                 (click)="sound.nav()">
+                 (click)="goToSignalements()" style="cursor:pointer">
               <span class="ai-emoji">{{ a.emoji }}</span>
               <div style="flex:1;min-width:0">
                 <div class="ai-type">{{ a.type }}</div>
@@ -161,6 +182,52 @@
                 {{ a.prio==='high' ? 'Haute' : a.prio==='med' ? 'Moyenne' : 'Faible' }}
               </span>
             </div>
+            <div *ngIf="aiItems.length === 0" style="text-align:center;padding:24px 0;color:var(--ink-3);font-size:13px">
+              ✅ Aucun signalement en attente
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Satisfaction <em>citoyenne</em></div>
+              <div class="card-sub">Taux de résolution</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="gauge-wrap">
+              <canvas id="gauge-chart" width="160" height="100"></canvas>
+              <div class="gauge-num">{{ gaugeNum }}%</div>
+              <div class="gauge-lbl">résolus</div>
+            </div>
+            <div style="margin-top:14px">
+              <div class="mini-stat"><span class="ms-label">Score NPS</span><span class="ms-val" style="color:var(--teal)">+72</span></div>
+              <div class="mini-stat"><span class="ms-label">Signalements urgents</span><span class="ms-val" style="color:var(--coral)">{{ urgentCount }}</span></div>
+              <div class="mini-stat"><span class="ms-label">Précision IA</span><span class="ms-val" style="color:var(--gold)">94.2%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Équipes + Heatmap ═══ -->
+      <div class="grid-1-2" style="grid-template-columns:1fr 2fr">
+        <div class="dash-card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Heatmap <em>d'activité</em></div>
+              <div class="card-sub">12 derniers mois</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="heatmap">
+              <div class="hm-cell" *ngFor="let v of heatCells; trackBy: trackByIndex"
+                   [style.opacity]="heatOpacity(v)">
+              </div>
+            </div>
+            <div class="hm-labels">
+              <span *ngFor="let m of ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc']">{{ m }}</span>
+            </div>
           </div>
         </div>
 
@@ -170,7 +237,7 @@
               <div class="card-title">Performance <em>des équipes</em></div>
               <div class="card-sub">Ce mois · 5 équipes</div>
             </div>
-            <button class="card-action" (click)="sound.nav()">Voir tout →</button>
+            <button class="card-action" (click)="goToSignalements()">Voir tout →</button>
           </div>
           <table class="dash-table">
             <thead><tr>
@@ -178,7 +245,7 @@
               <th>Taux résolution</th><th>Délai</th><th>Statut</th>
             </tr></thead>
             <tbody>
-            <tr *ngFor="let t of teams" (click)="sound.nav()">
+            <tr *ngFor="let t of teams" (click)="goToSignalements()" style="cursor:pointer">
               <td>
                 <div class="td-team">
                   <div class="td-av" [style.background]="t.color+'1A'" [style.color]="t.color">{{ t.av }}</div>
@@ -203,48 +270,5 @@
             </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- Heatmap + Gauge -->
-      <div class="grid-2-1">
-        <div class="dash-card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Heatmap <em>d'activité</em></div>
-              <div class="card-sub">12 derniers mois</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="heatmap">
-              <div class="hm-cell" *ngFor="let v of heatCells; trackBy: trackByIndex"
-                   [style.opacity]="heatOpacity(v)">
-              </div>
-            </div>
-            <div class="hm-labels">
-              <span *ngFor="let m of ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc']">{{ m }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="dash-card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Satisfaction <em>citoyenne</em></div>
-              <div class="card-sub">Ce mois</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="gauge-wrap">
-              <canvas id="gauge-chart" width="160" height="100"></canvas>
-              <div class="gauge-num">{{ gaugeNum }}%</div>
-              <div class="gauge-lbl">résolus sous 48h</div>
-            </div>
-            <div style="margin-top:14px">
-              <div class="mini-stat"><span class="ms-label">Score NPS</span><span class="ms-val" style="color:var(--teal)">+72</span></div>
-              <div class="mini-stat"><span class="ms-label">Signalements urgents</span><span class="ms-val" style="color:var(--coral)">8</span></div>
-              <div class="mini-stat"><span class="ms-label">Précision IA</span><span class="ms-val" style="color:var(--gold)">94.2%</span></div>
-            </div>
-          </div>
         </div>
       </div>

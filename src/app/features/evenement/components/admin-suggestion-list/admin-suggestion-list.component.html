@@ -1,0 +1,211 @@
+<div class="as-page">
+
+  <!-- Header -->
+  <div class="as-header">
+    <div>
+      <div class="as-title">{{ 'adm.sug.title' | t }} <em>{{ 'adm.sug.title.em' | t }}</em></div>
+      <div class="as-sub">{{ suggestions.length }} {{ 'adm.sug.sub' | t }}</div>
+    </div>
+  </div>
+
+  <!-- Alertes -->
+  <div class="ae-alert ae-alert-success" *ngIf="succes">{{ succes }}</div>
+  <div class="ae-alert ae-alert-error"   *ngIf="erreur">{{ erreur }}</div>
+
+  <!-- Filtres -->
+  <div class="as-filters">
+    <button class="as-filter-btn" [class.active]="filtreStatut === ''"
+            (click)="sound.nav(); filtreStatut = ''; appliquerFiltre()">
+      {{ 'adm.sug.filtre.toutes' | t }} ({{ suggestions.length }})
+    </button>
+    <button class="as-filter-btn" [class.active]="filtreStatut === 'SOUMISE'"
+            (click)="sound.nav(); filtreStatut = 'SOUMISE'; appliquerFiltre()">
+      {{ 'adm.sug.filtre.soumises' | t }} ({{ countStatut('SOUMISE') }})
+    </button>
+    <button class="as-filter-btn" [class.active]="filtreStatut === 'ACCEPTEE'"
+            (click)="sound.nav(); filtreStatut = 'ACCEPTEE'; appliquerFiltre()">
+      {{ 'adm.sug.filtre.acceptees' | t }}
+    </button>
+    <button class="as-filter-btn" [class.active]="filtreStatut === 'REJETEE'"
+            (click)="sound.nav(); filtreStatut = 'REJETEE'; appliquerFiltre()">
+      {{ 'adm.sug.filtre.rejetees' | t }}
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="ae-loading" *ngIf="loading">
+    <div class="ae-spinner"></div>
+  </div>
+
+  <!-- Liste -->
+  <div class="as-list" *ngIf="!loading">
+
+    <div class="as-empty" *ngIf="suggestionsFiltrees.length === 0">
+      <div style="font-size:32px">💡</div>
+      <p>{{ 'adm.sug.empty' | t }}</p>
+    </div>
+
+    <div class="as-card" *ngFor="let s of suggestionsFiltrees">
+
+      <!-- Card header -->
+      <div class="as-card-header">
+        <div class="as-card-left">
+          <span class="ms-statut-badge" [ngClass]="getStatutClass(s.statut || '')">
+            {{ getStatutLabel(s.statut || '') }}
+          </span>
+          <span class="as-type-badge" *ngIf="s.typeSouhaite">{{ s.typeSouhaite }}</span>
+        </div>
+        <span class="as-date">{{ s.soumisLe | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <!-- Titre + description -->
+      <h3 class="as-card-titre">{{ s.titre }}</h3>
+      <p class="as-card-desc" *ngIf="s.description">{{ s.description }}</p>
+
+      <!-- Meta -->
+      <div class="as-meta">
+        <span *ngIf="s.lieuSouhaite">📍 {{ s.lieuSouhaite }}</span>
+        <span *ngIf="s.dateSouhaitee">📅 {{ s.dateSouhaitee | date:'dd/MM/yyyy' }}</span>
+        <span *ngIf="s.emailCitoyen">✉️ {{ s.emailCitoyen }}</span>
+      </div>
+
+      <!-- Commentaire admin -->
+      <div class="as-commentaire" *ngIf="s.commentaireAdmin">
+        <strong>{{ 'adm.sug.commentaire' | t }}</strong> {{ s.commentaireAdmin }}
+      </div>
+
+      <!-- Résultat analyse AI -->
+      <div class="as-analyse" *ngIf="analyses[s.id!]">
+        <div class="as-analyse-header">
+          <span class="as-analyse-title">{{ 'adm.sug.analyse.titre' | t }}</span>
+          <div class="as-score-wrap">
+            <div class="as-score-bar">
+              <div class="as-score-fill"
+                   [style.width.%]="analyses[s.id!].scorePertinence"
+                   [style.background]="getScoreColor(analyses[s.id!].scorePertinence)">
+              </div>
+            </div>
+            <span class="as-score-num"
+                  [style.color]="getScoreColor(analyses[s.id!].scorePertinence)">
+              {{ analyses[s.id!].scorePertinence }}/100
+            </span>
+          </div>
+        </div>
+        <div class="as-analyse-grid">
+          <div class="as-analyse-item">
+            <span class="as-analyse-label">{{ 'adm.sug.analyse.impact' | t }}</span>
+            <span class="as-analyse-val">{{ analyses[s.id!].niveauImpact }}</span>
+          </div>
+          <div class="as-analyse-item">
+            <span class="as-analyse-label">{{ 'adm.sug.analyse.partici' | t }}</span>
+            <span class="as-analyse-val">{{ analyses[s.id!].estimationParticipation }}</span>
+          </div>
+          <div class="as-analyse-item">
+            <span class="as-analyse-label">{{ 'adm.sug.analyse.categorie' | t }}</span>
+            <span class="as-analyse-val">{{ analyses[s.id!].categorieImpact }}</span>
+          </div>
+          <div class="as-analyse-item">
+            <span class="as-analyse-label">{{ 'adm.sug.analyse.reco' | t }}</span>
+            <span class="as-analyse-val as-recommandation"
+                  [class.rec-creer]="analyses[s.id!].recommandation === 'CRÉER'"
+                  [class.rec-rejeter]="analyses[s.id!].recommandation === 'REJETER'"
+                  [class.rec-attendre]="analyses[s.id!].recommandation === 'ATTENDRE'">
+              {{ analyses[s.id!].recommandation }}
+            </span>
+          </div>
+        </div>
+        <div class="as-justification">
+          <p><strong>🇫🇷</strong> {{ analyses[s.id!].justificationFr }}</p>
+          <p><strong>🇬🇧</strong> {{ analyses[s.id!].justificationEn }}</p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="as-actions" *ngIf="s.statut === 'SOUMISE'">
+        <button class="as-btn-ai"
+                (click)="analyser(s.id!)"
+                [disabled]="analyseEnCours === s.id">
+          <span *ngIf="analyseEnCours === s.id" class="ae-spinner-sm"></span>
+          <span *ngIf="analyseEnCours !== s.id">🤖</span>
+          {{ analyseEnCours === s.id ? ('adm.sug.btn.analyse.encours' | t) : ('adm.sug.btn.analyser' | t) }}
+        </button>
+        <button class="as-btn-accept" 
+                (click)="accepter(s)"
+                [disabled]="justificationEnCours === s.id">
+          <span *ngIf="justificationEnCours === s.id" 
+                class="ae-spinner-sm"></span>
+          <svg *ngIf="justificationEnCours !== s.id"
+              width="13" height="13" fill="none" stroke="currentColor"
+              stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ justificationEnCours === s.id ? '🤖 Génération IA...' : ('adm.sug.btn.accepter' | t) }}
+        </button>
+        <button class="as-btn-reject" (click)="ouvrirRejet(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          {{ 'adm.sug.btn.rejeter' | t }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal rejet -->
+  <div class="ms-modal-overlay" *ngIf="commentaireModal"
+      (click)="commentaireModal = null">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+
+      <div class="ms-modal-header">
+        <h3>{{ 'adm.sug.modal.titre' | t }}</h3>
+        <button class="ms-modal-close"
+                (click)="sound.nav(); commentaireModal = null">✕</button>
+      </div>
+
+      <div style="margin-bottom: 16px">
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:12px">
+          {{ 'adm.sug.modal.desc' | t }}
+        </p>
+
+        <!-- ✅ Indicateur génération IA -->
+        <div *ngIf="justificationEnCours === commentaireModal.id"
+            style="display:flex; align-items:center; gap:8px;
+                    font-size:13px; color:#8888A8; margin-bottom:10px;
+                    font-style:italic;">
+          <span class="ae-spinner-sm"></span>
+          🤖 Génération justification IA en cours...
+        </div>
+
+        <!-- ✅ Badge IA si justification générée -->
+        <div *ngIf="justifications[commentaireModal.id!] &&
+                    justificationEnCours !== commentaireModal.id"
+            style="font-size:11px; color:#0D9B76; margin-bottom:6px;
+                    font-weight:600;">
+          ✅ Justification générée par Llama3.2 IA
+        </div>
+
+        <textarea class="ev-textarea"
+                  [(ngModel)]="commentaire"
+                  [placeholder]="'adm.sug.modal.ph' | t"
+                  rows="5"></textarea>
+      </div>
+
+      <div class="ms-modal-footer">
+        <button class="btn btn-outline"
+                (click)="sound.nav(); commentaireModal = null">
+          {{ 'adm.sug.modal.annuler' | t }}
+        </button>
+        <button class="btn btn-danger"
+                (click)="confirmerRejet()"
+                [disabled]="justificationEnCours === commentaireModal.id">
+          {{ 'adm.sug.modal.confirmer' | t }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

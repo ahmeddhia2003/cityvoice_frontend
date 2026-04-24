@@ -1,0 +1,225 @@
+<div class="ev-shell">
+
+  <div class="ms-header-row">
+    <button class="btn btn-back" (click)="retour()">
+      <svg width="16" height="16" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      {{ 'ms.retour' | t }}
+    </button>
+    <button class="btn btn-primary" (click)="allerSuggestion()">
+      <svg width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2.5" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      {{ 'ms.nouvelle' | t }}
+    </button>
+  </div>
+
+  <div class="ms-title-section">
+    <h1 class="ms-title">{{ 'ms.title' | t }} <em>{{ 'ms.title.em' | t }}</em></h1>
+    <p class="ms-sub">{{ 'ms.sub' | t }}</p>
+  </div>
+
+  <!-- Alertes -->
+  <div class="ev-alert ev-alert-success" *ngIf="succes">{{ succes }}</div>
+  <div class="ev-alert ev-alert-danger"  *ngIf="erreur">{{ erreur }}</div>
+
+  <!-- Loading -->
+  <div class="ms-loading" *ngIf="loading">
+    <div class="ev-spinner"></div>
+    <p>{{ 'ms.loading' | t }}</p>
+  </div>
+
+  <!-- Vide -->
+  <div class="ms-empty" *ngIf="!loading && suggestions.length === 0">
+    <div class="ms-empty-icon">💡</div>
+    <h3>{{ 'ms.empty.title' | t }}</h3>
+    <p>{{ 'ms.empty.sub' | t }}</p>
+    <button class="btn btn-primary" (click)="allerSuggestion()">
+      {{ 'ms.empty.btn' | t }}
+    </button>
+  </div>
+
+  <!-- Liste suggestions -->
+  <div class="ms-list" *ngIf="!loading && suggestions.length > 0">
+    <div class="ms-card" *ngFor="let s of suggestions">
+
+      <div class="ms-card-header">
+        <div class="ms-card-left">
+          <span class="ms-statut-badge" [ngClass]="getStatutClass(s.statut || '')">
+            {{ getStatutIcon(s.statut || '') }} {{ getStatutLabel(s.statut || '') }}
+          </span>
+          <span class="ms-type-badge" *ngIf="s.typeSouhaite">{{ s.typeSouhaite }}</span>
+        </div>
+        <div class="ms-card-date">
+          {{ 'ms.soumise.le' | t }} {{ s.soumisLe | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+
+      <h3 class="ms-card-titre">{{ s.titre }}</h3>
+      <p class="ms-card-desc" *ngIf="s.description">{{ s.description }}</p>
+
+      <div class="ms-card-meta">
+        <span *ngIf="s.lieuSouhaite">
+          <svg width="12" height="12" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ s.lieuSouhaite }}
+        </span>
+        <span *ngIf="s.dateSouhaitee">
+          <svg width="12" height="12" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {{ s.dateSouhaitee | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+
+      <!-- Commentaire admin -->
+      <div class="ms-commentaire" *ngIf="s.commentaireAdmin">
+        <div class="ms-commentaire-label">{{ 'ms.commentaire.label' | t }}</div>
+        <div class="ms-commentaire-text">{{ s.commentaireAdmin }}</div>
+      </div>
+
+      <!-- Actions -->
+      <div class="ms-card-actions" *ngIf="peutModifier(s)">
+        <button class="ms-btn-edit" (click)="ouvrirEdition(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          {{ 'ms.btn.modifier' | t }}
+        </button>
+        <button class="ms-btn-delete" (click)="supprimer(s.id!)">
+          <svg width="13" height="13" fill="none" stroke="currentColor"
+               stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+          </svg>
+          {{ 'ms.btn.supprimer' | t }}
+        </button>
+      </div>
+
+      <div class="ms-traitee-info" *ngIf="!peutModifier(s)">
+        <svg width="13" height="13" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+        </svg>
+        {{ 'ms.traitee.info' | t }}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal édition -->
+  <div class="ms-modal-overlay" *ngIf="suggestionEnEdition" (click)="fermerEdition()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+
+      <div class="ms-modal-header">
+        <h3>{{ 'ms.modal.titre' | t }}</h3>
+        <button class="ms-modal-close" (click)="fermerEdition()">✕</button>
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="sauvegarder()" class="ms-modal-form">
+
+        <!-- Titre -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ms.form.titre' | t }}</label>
+          <input type="text" class="ev-input" formControlName="titre"
+                 [class.ev-input-error]="editForm.get('titre')?.invalid
+                   && editForm.get('titre')?.touched">
+          <span class="ev-field-error"
+                *ngIf="editForm.get('titre')?.errors?.['required']
+                  && editForm.get('titre')?.touched">
+            {{ 'ms.err.titre.required' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="editForm.get('titre')?.errors?.['minlength']
+                  && editForm.get('titre')?.touched">
+            {{ 'ms.err.titre.min' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="editForm.get('titre')?.errors?.['maxlength']
+                  && editForm.get('titre')?.touched">
+            {{ 'ms.err.titre.max' | t }}
+          </span>
+        </div>
+
+        <!-- Description -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ms.form.description' | t }}</label>
+          <textarea class="ev-textarea" formControlName="description" rows="3"
+                    [class.ev-input-error]="editForm.get('description')?.invalid
+                      && editForm.get('description')?.touched"></textarea>
+          <span class="ev-field-error"
+                *ngIf="editForm.get('description')?.errors?.['minlength']
+                  && editForm.get('description')?.touched">
+            {{ 'ms.err.desc.min' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="editForm.get('description')?.errors?.['maxlength']
+                  && editForm.get('description')?.touched">
+            {{ 'ms.err.desc.max' | t }}
+          </span>
+        </div>
+
+        <!-- Type + Lieu -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ms.form.type' | t }}</label>
+            <select class="ev-select-input" formControlName="typeSouhaite">
+              <option value="">{{ 'ms.form.select' | t }}</option>
+              <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'ms.form.lieu' | t }}</label>
+            <input type="text" class="ev-input" formControlName="lieuSouhaite"
+                   [class.ev-input-error]="editForm.get('lieuSouhaite')?.invalid
+                     && editForm.get('lieuSouhaite')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="editForm.get('lieuSouhaite')?.errors?.['minlength']
+                    && editForm.get('lieuSouhaite')?.touched">
+              {{ 'ms.err.lieu.min' | t }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'ms.form.date' | t }}</label>
+          <input type="date" class="ev-input" formControlName="dateSouhaitee"
+                 [class.ev-input-error]="editForm.get('dateSouhaitee')?.invalid
+                   && editForm.get('dateSouhaitee')?.touched">
+          <span class="ev-field-error"
+                *ngIf="editForm.get('dateSouhaitee')?.errors?.['datePasse']
+                  && editForm.get('dateSouhaitee')?.touched">
+            {{ 'ms.err.date.passe' | t }}
+          </span>
+        </div>
+
+        <div class="ms-modal-footer">
+          <button type="button" class="btn btn-outline" (click)="fermerEdition()">
+            {{ 'ms.form.annuler' | t }}
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="editForm.invalid || editLoading">
+            <span *ngIf="editLoading" class="ev-btn-spinner"></span>
+            {{ 'ms.form.sauvegarder' | t }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

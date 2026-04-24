@@ -1,0 +1,95 @@
+<div class="bp-card">
+  <div class="bp-header">
+    <h3>{{ 'bp.titre' | t }}</h3>
+    <p>{{ 'bp.sous.titre' | t }}</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="predire()" class="bp-form">
+    <button type="submit" class="bp-btn" [disabled]="loading">
+      <span *ngIf="!loading">{{ 'bp.btn.estimer' | t }}</span>
+      <span *ngIf="loading">{{ 'bp.loading' | t }}</span>
+    </button>
+  </form>
+
+  <div class="bp-error" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="bp-result" *ngIf="prediction">
+
+    <!-- Budget principal -->
+    <div class="bp-main">
+      <div class="bp-main-label">{{ 'bp.budget.recommande' | t }}</div>
+      <div class="bp-main-value">{{ prediction.budget_recommande | number }} TND</div>
+    </div>
+
+    <!-- Fourchette -->
+    <div class="bp-range">
+      <div class="bp-range-header">
+        <span>{{ 'bp.fourchette' | t }}</span>
+        <span>{{ prediction.fourchette_min | number }} — {{ prediction.fourchette_max | number }} TND</span>
+      </div>
+      <div class="bp-range-bar">
+        <div class="bp-range-fill"></div>
+        <div class="bp-range-cursor" [style.left.%]="getBarWidth()">
+          <div class="bp-range-tooltip">{{ prediction.budget_recommande | number }} TND</div>
+        </div>
+      </div>
+      <div class="bp-range-labels">
+        <span>{{ 'bp.fourchette.min' | t }} : {{ prediction.fourchette_min | number }} TND</span>
+        <span>{{ 'bp.fourchette.max' | t }} : {{ prediction.fourchette_max | number }} TND</span>
+      </div>
+    </div>
+
+    <!-- Décomposition budget -->
+    <div class="bp-decomposition" *ngIf="prediction!.decomposition">
+      <div class="bp-decomp-title">{{ 'bp.decomposition.titre' | t }}</div>
+      <div class="bp-decomp-row">
+        <span>{{ 'bp.logistique' | t }}</span>
+        <span class="bp-decomp-value">
+          {{ prediction!.decomposition.logistique | number }} TND
+        </span>
+      </div>
+      <div class="bp-decomp-row">
+        <span>{{ 'bp.marketing' | t }}</span>
+        <span class="bp-decomp-value">
+          {{ prediction!.decomposition.marketing | number }} TND
+        </span>
+      </div>
+      <div class="bp-decomp-row">
+        <span>{{ 'bp.technique' | t }}</span>
+        <span class="bp-decomp-value">
+          {{ prediction!.decomposition.technique | number }} TND
+        </span>
+      </div>
+    </div>
+
+    <!-- Sponsors + Recette -->
+    <div class="bp-extras">
+      <div class="bp-extra-card" *ngIf="prediction!.nb_sponsors_recommande">
+        <div class="bp-extra-icon">🤝</div>
+        <div class="bp-extra-label">{{ 'bp.sponsors.rec' | t }}</div>
+        <div class="bp-extra-value">{{ prediction!.nb_sponsors_recommande }}</div>
+      </div>
+      <div class="bp-extra-card" *ngIf="prediction!.recette_estimee">
+        <div class="bp-extra-icon">💵</div>
+        <div class="bp-extra-label">{{ 'bp.recette' | t }}</div>
+        <div class="bp-extra-value">
+          {{ prediction!.recette_estimee | number }} TND
+        </div>
+      </div>
+      <div class="bp-extra-card" *ngIf="prediction!.budget_net">
+        <div class="bp-extra-icon">🏦</div>
+        <div class="bp-extra-label">{{ 'bp.budget.net' | t }}</div>
+        <div class="bp-extra-value">
+          {{ prediction!.budget_net | number }} TND
+        </div>
+      </div>
+    </div>
+
+    <!-- Explication -->
+    <div class="bp-explication">
+      <div class="bp-explication-title">{{ 'bp.analyse.titre' | t }}</div>
+      <p>{{ prediction.explication }}</p>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,135 @@
+<div class="scan-page">
+
+  <!-- Header -->
+  <div class="scan-header">
+    <div>
+      <div class="scan-title">{{ 'adm.scan.title' | t }} <em>{{ 'adm.scan.title.em' | t }}</em></div>
+      <div class="scan-sub">{{ 'adm.scan.sub' | t }}</div>
+    </div>
+    <div class="scan-live-chip">
+      <span class="scan-live-dot"></span>
+      {{ 'adm.scan.pret' | t }}
+    </div>
+  </div>
+
+  <!-- Erreur caméra -->
+  <div class="scan-alert scan-alert-error" *ngIf="erreurCamera">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+    </svg>
+    {{ erreurCamera }}
+  </div>
+
+  <div class="scan-layout">
+
+    <!-- Colonne gauche — caméra -->
+    <div class="scan-camera-card">
+
+      <!-- État initial -->
+      <div class="scan-start" *ngIf="!scanActif && !resultat && !verification">
+        <div class="scan-start-icon">📷</div>
+        <h3>{{ 'adm.scan.start.title' | t }}</h3>
+        <p>{{ 'adm.scan.start.desc' | t }}</p>
+        <button class="btn-scan-start" (click)="demarrerScan()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <path d="M14 14h3v3M17 20h3M20 17v3"/>
+          </svg>
+          {{ 'adm.scan.start.btn' | t }}
+        </button>
+      </div>
+
+      <!-- Caméra active -->
+      <div class="scan-camera-wrap" [hidden]="!scanActif">
+        <video #videoEl autoplay playsinline muted class="scan-video"></video>
+        <canvas #canvasEl style="display:none"></canvas>
+        <div class="scan-overlay">
+          <div class="scan-target">
+            <div class="scan-corner tl"></div>
+            <div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div>
+            <div class="scan-corner br"></div>
+            <div class="scan-laser"></div>
+          </div>
+          <p class="scan-hint">{{ 'adm.scan.hint' | t }}</p>
+        </div>
+        <button class="btn-scan-stop" (click)="arreter()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          {{ 'adm.scan.arreter' | t }}
+        </button>
+      </div>
+
+      <!-- Vérification en cours -->
+      <div class="scan-verifying" *ngIf="verification">
+        <div class="scan-spinner"></div>
+        <p>{{ 'adm.scan.verif' | t }}</p>
+      </div>
+
+    </div>
+
+    <!-- Colonne droite — résultat -->
+    <div class="scan-result-col">
+
+      <!-- État vide -->
+      <div class="scan-result-empty" *ngIf="!resultat">
+        <div class="scan-result-empty-icon">🎫</div>
+        <p>{{ 'adm.scan.empty' | t }}</p>
+      </div>
+
+      <!-- Résultat VALIDE -->
+      <div class="scan-result-card scan-valide" *ngIf="resultat?.statut === 'VALIDE'">
+        <div class="scan-result-icon">✅</div>
+        <div class="scan-result-statut">{{ 'adm.scan.valide.statut' | t }}</div>
+        <div class="scan-result-msg">{{ resultat!.message }}</div>
+        <div class="scan-result-info" *ngIf="resultat!.nomCitoyen">
+          <div class="scan-info-row">
+            <span class="scan-info-label">{{ 'adm.scan.info.participant' | t }}</span>
+            <span class="scan-info-val">{{ resultat!.nomCitoyen }}</span>
+          </div>
+          <div class="scan-info-row" *ngIf="resultat!.emailCitoyen">
+            <span class="scan-info-label">{{ 'adm.scan.info.email' | t }}</span>
+            <span class="scan-info-val">{{ resultat!.emailCitoyen }}</span>
+          </div>
+          <div class="scan-info-row" *ngIf="resultat!.nomEvenement">
+            <span class="scan-info-label">{{ 'adm.scan.info.evenement' | t }}</span>
+            <span class="scan-info-val">{{ resultat!.nomEvenement }}</span>
+          </div>
+        </div>
+        <button class="btn-scan-next" (click)="scannerSuivant()">
+          {{ 'adm.scan.suivant' | t }}
+        </button>
+      </div>
+
+      <!-- Résultat DÉJÀ SCANNÉ -->
+      <div class="scan-result-card scan-deja" *ngIf="resultat?.statut === 'DEJA_SCANNE'">
+        <div class="scan-result-icon">⚠️</div>
+        <div class="scan-result-statut">{{ 'adm.scan.deja.statut' | t }}</div>
+        <div class="scan-result-msg">{{ resultat!.message }}</div>
+        <div class="scan-result-info" *ngIf="resultat!.nomCitoyen">
+          <div class="scan-info-row">
+            <span class="scan-info-label">{{ 'adm.scan.info.participant' | t }}</span>
+            <span class="scan-info-val">{{ resultat!.nomCitoyen }}</span>
+          </div>
+        </div>
+        <button class="btn-scan-next" (click)="scannerSuivant()">
+          {{ 'adm.scan.suivant' | t }}
+        </button>
+      </div>
+
+      <!-- Résultat INVALIDE -->
+      <div class="scan-result-card scan-invalide" *ngIf="resultat?.statut === 'INVALIDE'">
+        <div class="scan-result-icon">❌</div>
+        <div class="scan-result-statut">{{ 'adm.scan.invalide.statut' | t }}</div>
+        <div class="scan-result-msg">{{ resultat!.message }}</div>
+        <button class="btn-scan-next" (click)="scannerSuivant()">
+          {{ 'adm.scan.reessayer' | t }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

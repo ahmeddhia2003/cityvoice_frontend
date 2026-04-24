@@ -1,0 +1,138 @@
+<!-- ══ FAB Button ══════════════════════════════════════════════════════════ -->
+<button class="cb-fab"
+        [class.cb-fab--open]="isOpen"
+        [class.cb-fab--alert]="weather?.level"
+        (click)="toggleChat()"
+        [title]="fabTooltip">
+
+  <!-- Chat bubble icon (closed) — speech bubble + sparkle -->
+  <span *ngIf="!isOpen" class="cb-fab-icon-wrap">
+    <!-- Speech bubble -->
+    <svg width="26" height="26" fill="none" viewBox="0 0 24 24">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+            fill="rgba(255,255,255,.25)" stroke="#fff" stroke-width="1.8"
+            stroke-linejoin="round"/>
+      <!-- 3 dots inside bubble -->
+      <circle cx="9"  cy="11" r="1" fill="#fff"/>
+      <circle cx="12" cy="11" r="1" fill="#fff"/>
+      <circle cx="15" cy="11" r="1" fill="#fff"/>
+    </svg>
+    <!-- Sparkle top-right -->
+    <svg class="cb-fab-sparkle" width="12" height="12" viewBox="0 0 24 24" fill="#fff">
+      <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/>
+    </svg>
+  </span>
+
+  <!-- Close icon (open) -->
+  <svg *ngIf="isOpen" class="cb-fab-icon" width="20" height="20" fill="none"
+       stroke="#fff" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+
+  <!-- Weather pulse ring when alert -->
+  <span class="cb-fab-ring" *ngIf="weather?.level && !isOpen"></span>
+</button>
+
+<!-- ══ Chat Panel ══════════════════════════════════════════════════════════ -->
+<div class="cb-panel" [class.cb-panel--visible]="isOpen" *ngIf="isOpen">
+
+  <!-- Header -->
+  <div class="cb-header">
+    <div class="cb-header-avatar">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M8 11V7a4 4 0 018 0v4"/>
+      </svg>
+    </div>
+    <div class="cb-header-info">
+      <span class="cb-header-name">Madina Assistant</span>
+      <span class="cb-header-status">
+        <span class="cb-status-dot"></span>
+        {{ lang.current === 'en' ? 'Online · Smart city AI' : 'En ligne · IA ville intelligente' }}
+      </span>
+    </div>
+    <button class="cb-close-btn" (click)="closeChat()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Body / Messages -->
+  <div class="cb-body" #chatBody>
+
+    <!-- Weather context banner -->
+    <div class="cb-weather-banner" *ngIf="weather?.level">
+      <span>{{ weather!.icon }}</span>
+      <span class="cb-weather-text">{{ weather!.title }}</span>
+    </div>
+
+    <!-- Messages -->
+    <div *ngFor="let msg of messages"
+         class="cb-msg"
+         [class.cb-msg--bot]="msg.from === 'bot'"
+         [class.cb-msg--user]="msg.from === 'user'">
+
+      <!-- Bot avatar -->
+      <div class="cb-msg-avatar" *ngIf="msg.from === 'bot'">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M8 11V7a4 4 0 018 0v4"/>
+        </svg>
+      </div>
+
+      <div class="cb-msg-col">
+        <!-- Bubble -->
+        <div class="cb-bubble" [innerHTML]="formatBold(msg.text)"></div>
+
+        <!-- Quick-reply chips -->
+        <div class="cb-chips" *ngIf="msg.chips && msg.from === 'bot'">
+          <button class="cb-chip"
+                  *ngFor="let chip of msg.chips"
+                  (click)="onChipClick(chip)">
+            {{ chip }}
+          </button>
+        </div>
+
+        <span class="cb-time">{{ formatTime(msg.time) }}</span>
+      </div>
+    </div>
+
+    <!-- Typing indicator -->
+    <div class="cb-msg cb-msg--bot" *ngIf="typing">
+      <div class="cb-msg-avatar">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+          <path d="M8 11V7a4 4 0 018 0v4"/>
+        </svg>
+      </div>
+      <div class="cb-typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer / Input -->
+  <div class="cb-footer">
+    <input #chatInput
+           class="cb-input"
+           type="text"
+           [(ngModel)]="inputText"
+           (keydown)="onEnter($event)"
+           [placeholder]="lang.current === 'en' ? 'Ask me anything…' : 'Posez votre question…'"
+           maxlength="200">
+    <button class="cb-send-btn"
+            [class.cb-send-btn--active]="inputText.trim().length > 0"
+            (click)="send()"
+            [disabled]="!inputText.trim()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+
+</div>

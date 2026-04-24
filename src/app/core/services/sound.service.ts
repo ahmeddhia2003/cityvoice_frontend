@@ -13,6 +13,10 @@ export class SoundService {
     if (!this.ctx) {
       this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
+    // ← Résumer si suspendu (après interaction utilisateur)
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
     return this.ctx;
   }
 
@@ -70,6 +74,31 @@ export class SoundService {
         gain.gain.linearRampToValueAtTime(.07, t + .01);
         gain.gain.exponentialRampToValueAtTime(.001, t + .24);
         osc.start(t); osc.stop(t + .24);
+      });
+    } catch {}
+  }
+
+  notification(): void {
+    if (!this._enabled) return;
+    try {
+      const ctx = this.audioCtx;
+      [880, 1174].forEach((freq, i) => {
+        const t = ctx.currentTime + i * .08;
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        const flt = ctx.createBiquadFilter();
+        flt.type = 'lowpass';
+        flt.frequency.setValueAtTime(2600, t);
+        osc.connect(flt);
+        flt.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.exponentialRampToValueAtTime(freq * .96, t + .18);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(.06, t + .01);
+        gain.gain.exponentialRampToValueAtTime(.001, t + .22);
+        osc.start(t);
+        osc.stop(t + .22);
       });
     } catch {}
   }

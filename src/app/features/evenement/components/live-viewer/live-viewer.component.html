@@ -1,0 +1,129 @@
+<div class="viewer-page">
+
+  <!-- Banni -->
+  <div class="viewer-banned" *ngIf="isBanned">
+    <div class="banned-icon">🚫</div>
+    <h3>Vous avez été banni de ce live</h3>
+    <p>{{ banReason }}</p>
+    <button class="viewer-back-btn" (click)="retourEvenement()">
+      ← Retour à l'événement
+    </button>
+  </div>
+
+  <!-- Connexion -->
+  <div class="viewer-connecting" *ngIf="connecting && !isBanned">
+    <div class="viewer-spinner"></div>
+    <p>Connexion au live...</p>
+  </div>
+
+  <ng-container *ngIf="!connecting && !isBanned">
+
+    <!-- Header -->
+    <div class="viewer-header" *ngIf="isLive">
+      <span class="viewer-live-badge">🔴 EN DIRECT</span>
+      <span class="viewer-spectateurs">👥 {{ spectateurs }}</span>
+      <button class="viewer-back-btn-sm" (click)="retourEvenement()">
+        ← Retour
+      </button>
+    </div>
+
+    <!-- En attente -->
+    <div class="viewer-waiting" *ngIf="!isLive && !liveStopped">
+      <div class="viewer-waiting-icon">📡</div>
+      <h3>Le live n'a pas encore commencé</h3>
+      <p>Restez connecté, la diffusion démarrera bientôt...</p>
+      <div class="viewer-pulse"></div>
+      <button class="viewer-back-btn" (click)="retourEvenement()">
+        ← Retour à l'événement
+      </button>
+    </div>
+
+    <!-- Terminé -->
+    <div class="viewer-ended" *ngIf="liveStopped">
+      <div class="viewer-ended-icon">⏹️</div>
+      <h3>Le live est terminé</h3>
+      <p>Merci d'avoir suivi la diffusion !</p>
+      <button class="viewer-back-btn" (click)="retourEvenement()">
+        ← Retour à l'événement
+      </button>
+    </div>
+
+    <!-- Live actif -->
+    <div class="viewer-body" *ngIf="isLive && !liveStopped">
+
+      <!-- Vidéo -->
+      <div class="viewer-video-section">
+        <div class="viewer-video-container">
+          <video #remoteVideo class="viewer-video"
+                 autoplay playsinline>
+          </video>
+          <div class="viewer-indicator">
+            <span class="live-dot"></span> EN DIRECT
+          </div>
+          <button class="fullscreen-btn"
+                  (click)="toggleFullscreen()"
+                  title="Plein écran">
+            🔲
+          </button>
+        </div>
+
+        <!-- Message épinglé -->
+        <div class="viewer-pinned" *ngIf="pinnedMessage">
+          <span>📌</span>
+          <span class="viewer-pinned-text">{{ pinnedMessage.message }}</span>
+          <span class="viewer-pinned-author">— {{ pinnedMessage.userName }}</span>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="viewer-chat">
+        <div class="viewer-chat-header">
+          💬 Chat
+          <span class="questions-mode" *ngIf="questionsOnly">
+            ❓ Questions uniquement
+          </span>
+        </div>
+
+        <div class="viewer-chat-messages" id="viewer-chat-messages">
+          <div *ngFor="let msg of chatMessages"
+               class="vchat-msg"
+               [class.vchat-system]="msg.type === 'system'"
+               [class.vchat-admin]="msg.role === 'admin'">
+
+            <ng-container *ngIf="msg.type === 'system'">
+              <span class="vchat-system-text">{{ msg.message }}</span>
+            </ng-container>
+
+            <ng-container *ngIf="msg.type !== 'system'">
+              <div class="vchat-header">
+                <span class="vchat-name"
+                      [class.vchat-admin-name]="msg.role === 'admin'">
+                  {{ msg.role === 'admin' ? '👑 ' : '' }}{{ msg.userName }}
+                </span>
+                <span class="vchat-time">{{ msg.time }}</span>
+              </div>
+              <div class="vchat-text">{{ msg.message }}</div>
+            </ng-container>
+          </div>
+
+          <div *ngIf="chatMessages.length === 0" class="vchat-empty">
+            Soyez le premier à écrire !
+          </div>
+        </div>
+
+        <div class="viewer-chat-input" *ngIf="!isBanned">
+          <input type="text"
+                 [(ngModel)]="newMessage"
+                 (keydown)="onEnter($event)"
+                 [placeholder]="questionsOnly ?
+                   'Posez une question (se termine par ?)' :
+                   'Votre message...'"
+                 class="vchat-input-field">
+          <button class="vchat-send-btn"
+                  (click)="envoyerMessage()">➤</button>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+</div>

@@ -24,7 +24,6 @@ export interface RegisterRequest {
   photo?: string;
 }
 
-
 // ============================================================
 // SERVICE
 // ============================================================
@@ -33,16 +32,15 @@ export interface RegisterRequest {
 export class AuthService {
 
   // ============================================================
-  // CONSTANTS
+  // 1. PROPRIÉTÉS PRIVÉES - CONSTANTES
   // ============================================================
 
   private readonly AUTH_URL  = `${environment.apiUrl}/api/auth`;
   private readonly TOKEN_KEY = 'cv_token';
   private readonly USER_KEY  = 'cv_user';
 
-
   // ============================================================
-  // STATE SUBJECTS
+  // 2. PROPRIÉTÉS PRIVÉES - ÉTATS (SUBJECTS)
   // ============================================================
 
   // Auth state for navbar refresh
@@ -58,9 +56,8 @@ export class AuthService {
   }>();
   authLoading$ = this.authLoadingSubject.asObservable();
 
-
   // ============================================================
-  // CONSTRUCTOR
+  // 3. CONSTRUCTEUR
   // ============================================================
 
   constructor(
@@ -68,9 +65,8 @@ export class AuthService {
     private router: Router
   ) {}
 
-
   // ============================================================
-  // PRIVATE METHODS
+  // 4. MÉTHODES PRIVÉES - HELPERS INTERNES
   // ============================================================
 
   private setLoading(
@@ -82,9 +78,8 @@ export class AuthService {
     this.authLoadingSubject.next({ loading, message, toastMsg, toastType });
   }
 
-
   // ============================================================
-  // AUTHENTICATION CORE
+  // 5. MÉTHODES PUBLIQUES - AUTHENTIFICATION CORE
   // ============================================================
 
   /**
@@ -94,11 +89,12 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.AUTH_URL}/login`, credentials)
       .pipe(
         tap(res => {
+
           localStorage.setItem(this.TOKEN_KEY, res.token);
           localStorage.setItem(this.USER_KEY, JSON.stringify({
             userId: res.userId,
             role:   res.role,
-            email:  credentials.email,
+            email: credentials.email
           }));
 
           this.setLoading(true, 'Connexion en cours…');
@@ -111,6 +107,8 @@ export class AuthService {
             setTimeout(() => {
               if (res.role === 'ADMIN_VILLE') {
                 this.router.navigate(['/admin']);
+              } else if (res.role === 'CHEF_EQUIPE') {
+                this.router.navigate(['/chef']);
               } else {
                 this.router.navigate(['/landing']);
               }
@@ -146,7 +144,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // NAME CHECKER
+  // 6. MÉTHODES PUBLIQUES - VALIDATION & MODÉRATION
   // ============================================================
 
   screenName(name: string): Observable<{ appropriate: boolean; reason?: string }> {
@@ -170,7 +168,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // PASSWORD MANAGEMENT
+  // 7. MÉTHODES PUBLIQUES - GESTION DES MOTS DE PASSE
   // ============================================================
 
   forgotPassword(email: string): Observable<any> {
@@ -181,9 +179,8 @@ export class AuthService {
     return this.http.post(`${this.AUTH_URL}/reset-password`, { token, password });
   }
 
-
   // ============================================================
-  // EMAIL VERIFICATION
+  // 8. MÉTHODES PUBLIQUES - VÉRIFICATION EMAIL
   // ============================================================
 
   verifyEmail(token: string): Observable<any> {
@@ -194,9 +191,8 @@ export class AuthService {
     return this.http.post(`${this.AUTH_URL}/resend-verification`, { email });
   }
 
-
   // ============================================================
-  // USER PROFILE
+  // 9. MÉTHODES PUBLIQUES - GESTION DU PROFIL
   // ============================================================
 
   updatePhoto(userId: string, base64Photo: string): Observable<any> {
@@ -206,9 +202,8 @@ export class AuthService {
     );
   }
 
-
   // ============================================================
-  // AUTH STATE HELPERS
+  // 10. MÉTHODES PUBLIQUES - ÉTAT D'AUTHENTIFICATION (GETTERS)
   // ============================================================
 
   refreshAuthState(): void {
@@ -227,7 +222,26 @@ export class AuthService {
     const raw = localStorage.getItem(this.USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
-
+  getCurrentUserWithEmail(): { userId: string; role: string; email: string; nom: string } | null {
+    const raw = localStorage.getItem(this.USER_KEY);
+    if (!raw) return null;
+    
+    const user = JSON.parse(raw);
+    
+    if (!user.email) {
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          user.email = payload.sub || '';
+          user.nom = payload.sub?.split('@')[0] || '';
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        } catch (e) {}
+      }
+    }
+    
+    return user;
+  }
   getRole(): string | null {
     return this.getCurrentUser()?.role ?? null;
   }
@@ -239,12 +253,20 @@ export class AuthService {
     setTimeout(() => {
       this.authStateSubject.next();
       this.setLoading(false, undefined, 'Bienvenue sur CityVoice 🎉', 'success');
+      setTimeout(() => {
+        if (role === 'ADMIN_VILLE') {
+          this.router.navigate(['/admin']);
+        } else if (role === 'CHEF_EQUIPE') {
+          this.router.navigate(['/chef']);
+        } else {
+          this.router.navigate(['/landing']);
+        }
+      }, 800);
     }, 1200);
   }
 
-
   // ============================================================
-  // ROLE CHECKERS
+  // 11. MÉTHODES PUBLIQUES - VÉRIFICATIONS DE RÔLES
   // ============================================================
 
   isAdmin(): boolean {
@@ -259,4 +281,14 @@ export class AuthService {
   isCitoyen(): boolean {
     return this.getRole() === 'CITOYEN';
   }
+  canViewCv(): boolean {
+  const role = this.getRole();
+
+  return role !== 'CITOYEN' && role !== 'MEMBRE_EQUIPE';
+}
+getUserId(): string | null {
+  return this.getCurrentUser()?.userId ?? null;
+}
+
+
 }

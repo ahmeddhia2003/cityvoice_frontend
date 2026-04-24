@@ -23,8 +23,14 @@ export class AuthGuard implements CanActivate {
     if (requiredRole) {
       const userRole = this.authService.getRole();
       if (userRole !== requiredRole) {
-        // Rôle insuffisant → rediriger vers dashboard citoyen
-        this.router.navigate(['/dashboard']);
+        // Rôle insuffisant → rediriger selon le rôle réel
+        if (userRole === 'ADMIN_VILLE') {
+          this.router.navigate(['/admin']);
+        } else if (userRole === 'CHEF_EQUIPE') {
+          this.router.navigate(['/chef']);
+        } else {
+          this.router.navigate(['/landing']);
+        }
         return false;
       }
     }

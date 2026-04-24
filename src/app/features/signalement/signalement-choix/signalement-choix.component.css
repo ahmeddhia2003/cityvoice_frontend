@@ -1,0 +1,270 @@
+/* ── Page container ────────────────────────────────────── */
+.choix-page {
+  min-height: 100vh;
+  background: var(--bg, #f8f9fc);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 80px;
+}
+
+/* ── Back link ─────────────────────────────────────────── */
+.choix-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  max-width: 640px;
+  width: 100%;
+  margin-bottom: 32px;
+  color: var(--text-muted, #64748b);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color .2s;
+}
+.choix-back:hover { color: var(--primary, #E8532A); }
+
+/* ── Header ────────────────────────────────────────────── */
+.choix-header {
+  text-align: center;
+  margin-bottom: 48px;
+  max-width: 520px;
+}
+.choix-header__icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E8532A14 0%, #E8532A28 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--primary, #E8532A);
+}
+.choix-header__title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text, #0C1F3F);
+  margin: 0 0 8px;
+  letter-spacing: -.4px;
+}
+.choix-header__sub {
+  font-size: 15px;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* ── Cards wrapper ─────────────────────────────────────── */
+.choix-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 520px;
+}
+
+/* ── Divider ──────────────────────────────────────────── */
+.choix-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  color: var(--text-muted, #94a3b8);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.choix-divider::before,
+.choix-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border, #e2e8f0);
+}
+
+/* ── Card base ─────────────────────────────────────────── */
+.choix-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 24px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .22s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .22s ease,
+              border-color .22s ease;
+  box-shadow: 0 2px 16px rgba(0,0,0,.06);
+  margin: 10px 0;
+}
+.choix-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.12);
+}
+
+/* Animated background shape */
+.choix-card__bg-shape {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  opacity: .05;
+  transition: transform .4s ease, opacity .4s ease;
+}
+.choix-card:hover .choix-card__bg-shape {
+  transform: scale(1.3);
+  opacity: .1;
+}
+
+/* ── Formulaire card ───────────────────────────────────── */
+.choix-card--form { border-color: rgba(232,83,42,.15); }
+.choix-card--form:hover { border-color: #E8532A; }
+.choix-card--form .choix-card__bg-shape { background: #E8532A; }
+.choix-card--form .choix-card__icon-wrap {
+  background: linear-gradient(135deg, #E8532A, #C9973E);
+}
+.choix-card--form .choix-card__arrow { color: #E8532A; }
+
+/* ── Vocal card ────────────────────────────────────────── */
+.choix-card--voice { border-color: rgba(13,155,118,.15); }
+.choix-card--voice:hover { border-color: #0D9B76; }
+.choix-card--voice .choix-card__bg-shape { background: #0D9B76; }
+.choix-card--voice .choix-card__icon-wrap {
+  background: linear-gradient(135deg, #0D9B76, #059669);
+}
+.choix-card--voice .choix-card__arrow { color: #0D9B76; }
+
+/* ── Icon wrap ─────────────────────────────────────────── */
+.choix-card__icon-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,.14);
+}
+
+/* ── Content ───────────────────────────────────────────── */
+.choix-card__content {
+  flex: 1;
+  min-width: 0;
+}
+.choix-card__label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 4px;
+  opacity: .55;
+  color: var(--text, #0C1F3F);
+}
+.choix-card__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text, #0C1F3F);
+  margin: 0 0 6px;
+  letter-spacing: -.2px;
+}
+.choix-card__desc {
+  font-size: 13.5px;
+  color: var(--text-muted, #64748b);
+  margin: 0 0 14px;
+  line-height: 1.55;
+}
+
+/* ── Points ────────────────────────────────────────────── */
+.choix-card__points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.choix-card__points li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+.choix-card--form .choix-card__points li svg  { color: #E8532A; }
+.choix-card--voice .choix-card__points li svg { color: #0D9B76; }
+
+/* ── Flow steps (voice only) ───────────────────────────── */
+.choix-card__flow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.flow-step {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0D9B76;
+  background: rgba(13,155,118,.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.choix-card__flow svg { color: #94a3b8; }
+
+/* ── Arrow ─────────────────────────────────────────────── */
+.choix-card__arrow {
+  flex-shrink: 0;
+  opacity: .35;
+  transition: opacity .2s, transform .2s;
+}
+.choix-card:hover .choix-card__arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* ── Badge Recommandé ──────────────────────────────────── */
+.choix-card__badge {
+  position: absolute;
+  top: 14px;
+  right: 52px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #E8532A;
+  background: rgba(232,83,42,.1);
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+/* ── Dark mode ─────────────────────────────────────────── */
+:host-context(html.dark) .choix-page   { background: #0f172a; }
+:host-context(html.dark) .choix-header__title { color: #f1f5f9; }
+:host-context(html.dark) .choix-card   { background: #1e293b; box-shadow: 0 2px 16px rgba(0,0,0,.3); }
+:host-context(html.dark) .choix-card__title { color: #f1f5f9; }
+:host-context(html.dark) .choix-card__label { color: #94a3b8; }
+:host-context(html.dark) .choix-divider { color: #475569; }
+:host-context(html.dark) .choix-divider::before,
+:host-context(html.dark) .choix-divider::after { background: #334155; }
+:host-context(html.dark) .choix-back { color: #94a3b8; }
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .choix-card { padding: 20px 16px; gap: 14px; }
+  .choix-card__icon-wrap { width: 52px; height: 52px; border-radius: 14px; }
+  .choix-card__title { font-size: 16px; }
+  .choix-header__title { font-size: 22px; }
+  .choix-card__badge { display: none; }
+  .choix-card__flow { display: none; }
+}

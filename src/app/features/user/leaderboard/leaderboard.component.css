@@ -1,7 +1,7 @@
 .lb-shell {
   min-height: 100vh;
   background: #F7F4EF;
-  padding-top: 72px;
+  padding-top: calc(72px + var(--banner-offset, 0px));
 }
 
 .lb-loading {
@@ -251,4 +251,45 @@
   .lb-row          { grid-template-columns: 50px 1fr 100px; }
   .lb-badges       { display: none; }
   .lb-title        { font-size: 32px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════════════════════ */
+:host-context(html.dark) .lb-table-wrap {
+  background: #1C2333;
+  border-color: rgba(255,255,255,.07);
+}
+:host-context(html.dark) .lb-table-header {
+  background: #161B22;
+  border-bottom-color: rgba(255,255,255,.07);
+  color: #586880;
+}
+:host-context(html.dark) .lb-row {
+  border-bottom-color: rgba(255,255,255,.05);
+  color: #E2EAF8;
+}
+:host-context(html.dark) .lb-row:hover {
+  background: rgba(255,255,255,.04);
+}
+:host-context(html.dark) .lb-row--me {
+  background: rgba(232,83,42,.08) !important;
+}
+:host-context(html.dark) .lb-name {
+  color: #E2EAF8;
+}
+:host-context(html.dark) .lb-role {
+  color: #586880;
+}
+:host-context(html.dark) .lb-pts-num {
+  color: #FBBF24;
+}
+:host-context(html.dark) .lb-pts-label {
+  color: #586880;
+}
+:host-context(html.dark) .lb-empty {
+  color: #586880;
+}
+:host-context(html.dark) .lb-rank-text {
+  color: #A8B8D0;
 }

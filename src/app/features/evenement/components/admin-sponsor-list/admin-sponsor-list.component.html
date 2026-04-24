@@ -1,0 +1,515 @@
+<div class="sp-page">
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <div class="sp-header">
+    <div>
+      <div class="sp-title">{{ 'adm.sp.title' | t }} <em>{{ 'adm.sp.title.em' | t }}</em></div>
+      <div class="sp-sub">{{ sponsors.length }} {{ 'adm.sp.sub' | t }}</div>
+    </div>
+    <div class="sp-header-actions">
+      <button class="sp-btn-export" (click)="exportCSV()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        CSV
+      </button>
+      <button class="sp-btn-export" (click)="exportPDF()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        PDF
+      </button>
+      <button class="btn btn-primary" (click)="ouvrirCreation()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        {{ 'adm.sp.nouveau' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Alertes ────────────────────────────────────────── -->
+  <div class="ae-alert ae-alert-success" *ngIf="succes">{{ succes }}</div>
+  <div class="ae-alert ae-alert-error"   *ngIf="erreur">{{ erreur }}</div>
+
+  <!-- ── KPIs ──────────────────────────────────────────── -->
+  <div class="sp-kpi-row">
+    <div class="sp-kpi" style="--ka: var(--navy)">
+      <div class="sp-kpi-icon">🤝</div>
+      <div class="sp-kpi-num">{{ totalSponsors }}</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.total' | t }}</div>
+    </div>
+    <div class="sp-kpi" style="--ka: #0D9B76">
+      <div class="sp-kpi-icon">✅</div>
+      <div class="sp-kpi-num">{{ sponsorsActifs }}</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.actifs' | t }}</div>
+    </div>
+    <div class="sp-kpi" style="--ka: #C9973E">
+      <div class="sp-kpi-icon">🥇</div>
+      <div class="sp-kpi-num">{{ sponsorsPremium }}</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.premium' | t }}</div>
+    </div>
+    <div class="sp-kpi" style="--ka: #6366F1">
+      <div class="sp-kpi-icon">💰</div>
+      <div class="sp-kpi-num">{{ totalMontant | number:'1.0-0' }}</div>
+      <div class="sp-kpi-label">{{ 'adm.sp.kpi.montant' | t }}</div>
+    </div>
+  </div>
+
+  <!-- ── Filtres + vue ─────────────────────────────────── -->
+  <div class="sp-toolbar">
+    <div class="filter-search" style="flex:1; min-width:200px">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [(ngModel)]="recherche"
+             (ngModelChange)="page = 1; appliquerFiltres()"
+             [placeholder]="'adm.sp.filtre.search' | t">
+    </div>
+
+    <select class="filter-select" [(ngModel)]="filtreNiveau"
+            (change)="sound.nav(); appliquerFiltres()">
+      <option value="">{{ 'adm.sp.filtre.niveaux' | t }}</option>
+      <option *ngFor="let n of niveaux" [value]="n">
+        {{ getNiveauIcon(n) }} {{ n }}
+      </option>
+    </select>
+
+    <select class="filter-select" [(ngModel)]="triPar"
+            (change)="sound.nav(); appliquerFiltres()">
+      <option value="nom">{{ 'adm.sp.tri.nom' | t }}</option>
+      <option value="evenements">{{ 'adm.sp.tri.ev' | t }}</option>
+      <option value="niveau">{{ 'adm.sp.tri.niveau' | t }}</option>
+    </select>
+
+    <button class="filter-reset"
+            (click)="sound.nav(); recherche=''; filtreNiveau=''; triPar='nom'; appliquerFiltres()">
+      {{ 'adm.sp.filtre.reset' | t }}
+    </button>
+
+    <button class="sp-tri-btn" (click)="sound.nav(); triDesc = !triDesc; appliquerFiltres()"
+            [title]="triDesc ? 'Décroissant' : 'Croissant'">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline *ngIf="!triDesc" points="19 12 12 19 5 12"/>
+        <polyline *ngIf="triDesc"  points="5 12 12 5 19 12"/>
+      </svg>
+    </button>
+
+    <div class="sp-vue-toggle">
+      <button class="sp-vue-btn" [class.active]="vue === 'grille'"
+              (click)="sound.nav(); vue = 'grille'" title="Vue grille">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+      <button class="sp-vue-btn" [class.active]="vue === 'liste'"
+              (click)="sound.nav(); vue = 'liste'" title="Vue liste">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading ───────────────────────────────────────── -->
+  <div class="ae-loading" *ngIf="loading">
+    <div class="ae-spinner"></div>
+  </div>
+
+  <!-- ── Empty ─────────────────────────────────────────── -->
+  <div class="sp-empty" *ngIf="!loading && sponsorsFiltres.length === 0">
+    <div class="sp-empty-icon">🤝</div>
+    <h3>{{ 'adm.sp.empty.title' | t }}</h3>
+    <p>{{ 'adm.sp.empty.sub' | t }}</p>
+    <button class="btn btn-primary" (click)="ouvrirCreation()">
+      {{ 'adm.sp.empty.btn' | t }}
+    </button>
+  </div>
+
+  <!-- ── Vue GRILLE ────────────────────────────────────── -->
+  <div class="sp-grid" *ngIf="!loading && vue === 'grille' && sponsorsPagines.length > 0">
+    <div class="sp-card" *ngFor="let s of sponsorsPagines; let i = index"
+         [style.animation-delay]="(i * 60) + 'ms'">
+
+      <div class="sp-card-logo">
+        <img *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.nomEntreprise"
+             (error)="$any($event.target).src=''" class="sp-logo-img">
+        <div *ngIf="!s.logoUrl" class="sp-logo-placeholder">
+          {{ s.nomEntreprise.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+
+      <div class="sp-card-body">
+        <h3 class="sp-card-nom">{{ s.nomEntreprise }}</h3>
+        <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="sp-card-site"
+           (click)="$event.stopPropagation()">
+          🌐 {{ s.siteWeb }}
+        </a>
+        <div class="sp-card-badges">
+          <span *ngIf="s.niveauSponsorat" class="sp-niveau-badge"
+                [ngClass]="getNiveauClass(s.niveauSponsorat)">
+            {{ getNiveauIcon(s.niveauSponsorat) }} {{ s.niveauSponsorat }}
+          </span>
+          <span class="sp-ev-badge"
+                [class.sp-ev-none]="!s.evenementIds || s.evenementIds.length === 0">
+            📅 {{ s.evenementIds?.length || 0 }} événement(s)
+          </span>
+        </div>
+        <div class="sp-card-meta" *ngIf="s.secteurActivite || s.tailleEntreprise">
+          <span *ngIf="s.secteurActivite" class="sp-meta-tag">
+            {{ s.secteurActivite === 'TELECOM'        ? ('📡 ' + ('sp.secteur.telecom' | t)) :
+              s.secteurActivite === 'BANQUE'         ? ('🏦 ' + ('sp.secteur.banque' | t)) :
+              s.secteurActivite === 'TECH'           ? ('💻 ' + ('sp.secteur.tech' | t)) :
+              s.secteurActivite === 'GRANDE_SURFACE' ? ('🛒 ' + ('sp.secteur.surface' | t)) :
+              s.secteurActivite === 'SANTE'          ? ('🏥 ' + ('sp.secteur.sante' | t)) :
+              s.secteurActivite === 'EDUCATION'      ? ('🎓 ' + ('sp.secteur.education' | t)) :
+              s.secteurActivite === 'ENERGIE'        ? ('⚡ ' + ('sp.secteur.energie' | t)) :
+              ('📦 ' + ('sp.secteur.autre' | t)) }}
+          </span>
+          <span *ngIf="s.tailleEntreprise" class="sp-meta-tag">
+            {{ s.tailleEntreprise === 'PME'               ? ('🏢 ' + ('sp.taille.pme' | t)) :
+              s.tailleEntreprise === 'GRANDE_ENTREPRISE'  ? ('🏛️ ' + ('sp.taille.grande' | t)) :
+              ('🌍 ' + ('sp.taille.multi' | t)) }}
+          </span>
+          <span *ngIf="s.zoneGeographique" class="sp-meta-tag">
+            {{ s.zoneGeographique === 'TUNIS'         ? '🏙️ Tunis' :
+              s.zoneGeographique === 'SFAX'          ? '🏙️ Sfax' :
+              s.zoneGeographique === 'SOUSSE'        ? '🏖️ Sousse' :
+              s.zoneGeographique === 'NATIONAL'      ? ('🇹🇳 ' + ('sp.zone.national' | t)) :
+              ('🌍 ' + ('sp.zone.international' | t)) }}
+          </span>
+          <span *ngIf="s.actifSponsoring !== undefined" class="sp-meta-tag"
+                [style.color]="s.actifSponsoring ? '#0D9B76' : '#E8532A'">
+            {{ s.actifSponsoring ? ('✅ ' + ('sp.actif.oui' | t)) : ('❌ ' + ('sp.actif.non' | t)) }}
+          </span>
+        </div>
+        <div class="sp-montant" *ngIf="s.montantSponsorat">
+          💰 {{ s.montantSponsorat | number:'1.0-0' }} TND
+        </div>
+      </div>
+
+      <div class="sp-card-actions">
+        <button class="sp-btn sp-btn-link" (click)="ouvrirAssociation(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+          </svg>
+          {{ 'adm.sp.btn.lier' | t }}
+        </button>
+        <button class="sp-btn sp-btn-edit" (click)="ouvrirEdition(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          {{ 'adm.sp.btn.modifier' | t }}
+        </button>
+        <button class="sp-btn sp-btn-delete" (click)="supprimer(s.id!)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+          </svg>
+          {{ 'adm.sp.btn.supprimer' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Vue LISTE ─────────────────────────────────────── -->
+  <div class="sp-liste" *ngIf="!loading && vue === 'liste' && sponsorsPagines.length > 0">
+    <div class="sp-liste-item" *ngFor="let s of sponsorsPagines; let i = index"
+         [style.animation-delay]="(i * 40) + 'ms'">
+
+      <div class="sp-liste-logo">
+        <img *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.nomEntreprise"
+             (error)="$any($event.target).src=''" class="sp-liste-img">
+        <div *ngIf="!s.logoUrl" class="sp-liste-placeholder">
+          {{ s.nomEntreprise.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+
+      <div class="sp-liste-info">
+        <div class="sp-liste-nom">{{ s.nomEntreprise }}</div>
+        <a *ngIf="s.siteWeb" [href]="s.siteWeb" target="_blank" class="sp-card-site"
+           (click)="$event.stopPropagation()">
+          🌐 {{ s.siteWeb }}
+        </a>
+      </div>
+
+      <div class="sp-liste-niveau">
+        <span *ngIf="s.niveauSponsorat" class="sp-niveau-badge"
+              [ngClass]="getNiveauClass(s.niveauSponsorat)">
+          {{ getNiveauIcon(s.niveauSponsorat) }} {{ s.niveauSponsorat }}
+        </span>
+      </div>
+
+      <div class="sp-liste-montant">
+        <span *ngIf="s.montantSponsorat">{{ s.montantSponsorat | number:'1.0-0' }} TND</span>
+        <span *ngIf="!s.montantSponsorat" style="color:var(--ink-3)">—</span>
+      </div>
+
+      <div class="sp-liste-ev">
+        <span class="sp-ev-badge"
+              [class.sp-ev-none]="!s.evenementIds || s.evenementIds.length === 0">
+          📅 {{ s.evenementIds?.length || 0 }}
+        </span>
+      </div>
+
+      <div class="sp-card-actions" style="padding-top:0; border-top:none">
+        <button class="sp-btn sp-btn-link" (click)="ouvrirAssociation(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+          </svg>
+          {{ 'adm.sp.btn.lier' | t }}
+        </button>
+        <button class="sp-btn sp-btn-edit" (click)="ouvrirEdition(s)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          {{ 'adm.sp.btn.modifier' | t }}
+        </button>
+        <button class="sp-btn sp-btn-delete" (click)="supprimer(s.id!)">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6"/>
+          </svg>
+          {{ 'adm.sp.btn.supprimer' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pagination ─────────────────────────────────────── -->
+  <div class="sp-pagination" *ngIf="totalPages > 1">
+    <button class="sp-page-btn" [disabled]="page === 1"
+            (click)="changerPage(page - 1)">←</button>
+    <button class="sp-page-btn" *ngFor="let p of pages"
+            [class.active]="p === page"
+            (click)="changerPage(p)">{{ p }}</button>
+    <button class="sp-page-btn" [disabled]="page === totalPages"
+            (click)="changerPage(page + 1)">→</button>
+  </div>
+
+  <!-- ── Modal création/édition ─────────────────────────── -->
+  <div class="ms-modal-overlay" *ngIf="modalOuvert" (click)="fermerModal()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+      <div class="ms-modal-header">
+        <h3>{{ modeEdition ? ('adm.sp.modal.modifier' | t) : ('adm.sp.modal.nouveau' | t) }}</h3>
+        <button class="ms-modal-close" (click)="fermerModal()">✕</button>
+      </div>
+
+      <form [formGroup]="sponsorForm" (ngSubmit)="sauvegarder()" class="ms-modal-form">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'adm.sp.form.nom' | t }}</label>
+          <input type="text" class="ev-input" formControlName="nomEntreprise"
+                 [placeholder]="'adm.sp.form.nom.ph' | t"
+                 [class.ev-input-error]="sponsorForm.get('nomEntreprise')?.invalid
+                   && sponsorForm.get('nomEntreprise')?.touched">
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('nomEntreprise')?.errors?.['required']
+                  && sponsorForm.get('nomEntreprise')?.touched">
+            {{ 'adm.sp.err.nom.required' | t }}
+          </span>
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('nomEntreprise')?.errors?.['minlength']
+                  && sponsorForm.get('nomEntreprise')?.touched">
+            {{ 'adm.sp.err.nom.min' | t }}
+          </span>
+        </div>
+
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'adm.sp.form.logo' | t }}</label>
+          <input type="text" class="ev-input" formControlName="logoUrl"
+                 [placeholder]="'adm.sp.form.logo.ph' | t"
+                 [class.ev-input-error]="sponsorForm.get('logoUrl')?.invalid
+                   && sponsorForm.get('logoUrl')?.touched">
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('logoUrl')?.errors?.['pattern']
+                  && sponsorForm.get('logoUrl')?.touched">
+            {{ 'adm.sp.err.url' | t }}
+          </span>
+          <small class="ev-field-hint">{{ 'adm.sp.form.logo.hint' | t }}</small>
+        </div>
+
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'adm.sp.form.site' | t }}</label>
+          <input type="text" class="ev-input" formControlName="siteWeb"
+                 [placeholder]="'adm.sp.form.site.ph' | t"
+                 [class.ev-input-error]="sponsorForm.get('siteWeb')?.invalid
+                   && sponsorForm.get('siteWeb')?.touched">
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('siteWeb')?.errors?.['pattern']
+                  && sponsorForm.get('siteWeb')?.touched">
+            {{ 'adm.sp.err.url' | t }}
+          </span>
+        </div>
+        <!-- Secteur d'activité -->
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'sp.secteur' | t }} *</label>
+          <select class="ev-select-input" formControlName="secteurActivite"
+                  [class.ev-input-error]="sponsorForm.get('secteurActivite')?.invalid
+                    && sponsorForm.get('secteurActivite')?.touched">
+            <option value="">-- {{ 'sp.secteur' | t }} --</option>
+            <option value="TELECOM">📡 Télécom</option>
+            <option value="BANQUE">🏦 Banque</option>
+            <option value="TECH">💻 Tech</option>
+            <option value="GRANDE_SURFACE">🛒 Grande surface</option>
+            <option value="SANTE">🏥 Santé</option>
+            <option value="EDUCATION">🎓 Éducation</option>
+            <option value="ENERGIE">⚡ Énergie</option>
+            <option value="AUTRE">📦 Autre</option>
+          </select>
+          <span class="ev-field-error"
+                *ngIf="sponsorForm.get('secteurActivite')?.errors?.['required']
+                  && sponsorForm.get('secteurActivite')?.touched">
+            {{ 'sp.err.secteur' | t }}
+          </span>
+        </div>
+
+        <!-- Taille + Zone -->
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'sp.taille' | t }} *</label>
+            <select class="ev-select-input" formControlName="tailleEntreprise"
+                    [class.ev-input-error]="sponsorForm.get('tailleEntreprise')?.invalid
+                      && sponsorForm.get('tailleEntreprise')?.touched">
+              <option value="">-- {{ 'sp.taille' | t }} --</option>
+              <option value="PME">🏢 PME</option>
+              <option value="GRANDE_ENTREPRISE">🏛️ Grande entreprise</option>
+              <option value="MULTINATIONALE">🌍 Multinationale</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="sponsorForm.get('tailleEntreprise')?.errors?.['required']
+                    && sponsorForm.get('tailleEntreprise')?.touched">
+              {{ 'sp.err.taille' | t }}
+            </span>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'sp.zone.geo' | t }} *</label>
+            <select class="ev-select-input" formControlName="zoneGeographique"
+                    [class.ev-input-error]="sponsorForm.get('zoneGeographique')?.invalid
+                      && sponsorForm.get('zoneGeographique')?.touched">
+              <option value="">-- {{ 'sp.zone.geo' | t }} --</option>
+              <option value="TUNIS">🏙️ Tunis</option>
+              <option value="SFAX">🏙️ Sfax</option>
+              <option value="SOUSSE">🏖️ Sousse</option>
+              <option value="NATIONAL">🇹🇳 National</option>
+              <option value="INTERNATIONAL">🌍 International</option>
+            </select>
+            <span class="ev-field-error"
+                  *ngIf="sponsorForm.get('zoneGeographique')?.errors?.['required']
+                    && sponsorForm.get('zoneGeographique')?.touched">
+              {{ 'sp.err.zone' | t }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Actif sponsoring -->
+        <div class="ev-form-group ev-form-group-check">
+          <label class="ev-label">{{ 'sp.actif' | t }}</label>
+          <label class="ev-toggle">
+            <input type="checkbox" formControlName="actifSponsoring">
+            <span class="ev-toggle-track"></span>
+            <span class="ev-toggle-label">
+              {{ sponsorForm.get('actifSponsoring')?.value
+                 ? ('sp.actif.oui' | t)
+                 : ('sp.actif.non' | t) }}
+            </span>
+          </label>
+        </div>
+        <div class="ms-modal-footer">
+          <button type="button" class="btn btn-outline" (click)="fermerModal()">
+            {{ 'adm.sp.modal.annuler' | t }}
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="sponsorForm.invalid || formLoading">
+            <span *ngIf="formLoading" class="ev-btn-spinner"></span>
+            {{ modeEdition ? ('adm.sp.modal.sauvegarder' | t) : ('adm.sp.modal.creer' | t) }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Modal association ──────────────────────────────── -->
+  <div class="ms-modal-overlay" *ngIf="associationModal" (click)="fermerAssociation()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+      <div class="ms-modal-header">
+        <h3>{{ 'adm.sp.assoc.titre' | t }} {{ associationModal.nomEntreprise }} {{ 'adm.sp.assoc.a' | t }}</h3>
+        <button class="ms-modal-close" (click)="fermerAssociation()">✕</button>
+      </div>
+
+      <form [formGroup]="associationForm" (ngSubmit)="associer()" class="ms-modal-form">
+        <div class="ev-form-group">
+          <label class="ev-label">{{ 'adm.sp.assoc.ev' | t }}</label>
+          <select class="ev-select-input" formControlName="evenementId"
+                  [class.ev-input-error]="associationForm.get('evenementId')?.invalid
+                    && associationForm.get('evenementId')?.touched">
+            <option value="">{{ 'adm.sp.assoc.ev.select' | t }}</option>
+            <option *ngFor="let ev of evenements" [value]="ev.id">{{ ev.titre }}</option>
+          </select>
+          <span class="ev-field-error"
+                *ngIf="associationForm.get('evenementId')?.errors?.['required']
+                  && associationForm.get('evenementId')?.touched">
+            {{ 'adm.sp.assoc.ev.required' | t }}
+          </span>
+        </div>
+
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'adm.sp.assoc.niveau' | t }}</label>
+            <select class="ev-select-input" formControlName="niveauSponsorat">
+              <option *ngFor="let n of niveaux" [value]="n">
+                {{ getNiveauIcon(n) }} {{ n }}
+              </option>
+            </select>
+          </div>
+          <div class="ev-form-group">
+            <label class="ev-label">{{ 'adm.sp.assoc.montant' | t }}</label>
+            <input type="number" class="ev-input"
+                   formControlName="montantSponsorat"
+                   [placeholder]="'adm.sp.assoc.montant.ph' | t"
+                   [class.ev-input-error]="associationForm.get('montantSponsorat')?.invalid
+                     && associationForm.get('montantSponsorat')?.touched">
+            <span class="ev-field-error"
+                  *ngIf="associationForm.get('montantSponsorat')?.errors?.['required']
+                    && associationForm.get('montantSponsorat')?.touched">
+              {{ 'adm.sp.err.montant.req' | t }}
+            </span>
+            <span class="ev-field-error"
+                  *ngIf="associationForm.get('montantSponsorat')?.errors?.['min']
+                    && associationForm.get('montantSponsorat')?.touched">
+              {{ 'adm.sp.err.montant.min' | t }}
+            </span>
+          </div>
+        </div>
+
+        <div class="ms-modal-footer">
+          <button type="button" class="btn btn-outline" (click)="fermerAssociation()">
+            {{ 'adm.sp.modal.annuler' | t }}
+          </button>
+          <button type="submit" class="btn btn-primary"
+                  [disabled]="associationForm.invalid || associationLoading">
+            <span *ngIf="associationLoading" class="ev-btn-spinner"></span>
+            {{ 'adm.sp.assoc.btn' | t }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

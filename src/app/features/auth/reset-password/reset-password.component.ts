@@ -29,6 +29,11 @@ export class ResetPasswordComponent implements OnInit {
   pwdLabel = 'Force du mot de passe';
   pwdColor = '#8888A8';
 
+  //toast
+  toast     = false;
+  toastMsg  = '';
+  toastType: 'success' | 'error' = 'success';
+
   get pwdBars(): string[] {
     const map = ['', 'weak', 'fair', 'good', 'good'];
     return [0,1,2,3].map(i => i < this.pwdScore ? (map[this.pwdScore] ?? '') : '');
@@ -90,9 +95,42 @@ export class ResetPasswordComponent implements OnInit {
         this.loading = false;
         this.sound.toggle2(false);
         if (typeof gsap !== 'undefined') {
-          gsap.to('.auth-submit', { x:[-6,6,-4,4,0], duration:.4, ease:'none' });
+          gsap.to('.auth-submit', { x: [-6,6,-4,4,0], duration: .4, ease: 'none' });
         }
+        const msg = typeof err.error === 'string'
+          ? err.error
+          : 'Token invalide ou expiré';
+        this.showToast(msg, 'error');
       }
     });
+  }
+
+
+
+  showToast(msg: string, type: 'success' | 'error' = 'success'): void {
+    this.toast = false;
+    setTimeout(() => {
+      this.toastMsg  = msg;
+      this.toastType = type;
+      this.toast     = true;
+      setTimeout(() => {
+        if (typeof gsap === 'undefined') {
+          setTimeout(() => { this.toast = false; }, 3000);
+          return;
+        }
+        const el = document.querySelector('.auth-toast');
+        if (!el) return;
+        gsap.killTweensOf(el);
+        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: .4, ease: 'back.out(1.6)' });
+        setTimeout(() => {
+          const toastEl = document.querySelector('.auth-toast');
+          if (!toastEl) return;
+          gsap.to(toastEl, {
+            opacity: 0, y: 30, duration: .35,
+            onComplete: () => { this.toast = false; }
+          });
+        }, 3000);
+      }, 50);
+    }, 50);
   }
 }

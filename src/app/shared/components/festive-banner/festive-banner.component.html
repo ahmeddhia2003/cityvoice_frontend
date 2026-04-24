@@ -1,0 +1,43 @@
+<ng-container *ngIf="holiday && !dismissed">
+
+  <div class="fb-banner"
+       [style.--fb-c]="holiday.color"
+       [style.--fb-ce]="holiday.colorEnd"
+       [style.top.px]="64 + (weatherBannerHeight || 0)">
+
+    <!-- Confetti canvas (rendered behind content) -->
+    <canvas class="fb-confetti" #confettiCanvas></canvas>
+
+    <!-- Content -->
+    <div class="fb-content">
+
+      <!-- Left: big emoji + text -->
+      <div class="fb-left">
+        <div class="fb-emoji" [class.fb-emoji-swing]="holiday.type === 'national'">
+          {{ holiday.emoji }}
+        </div>
+        <div class="fb-text">
+          <div class="fb-title">
+            {{ holiday.name }}
+            <span class="fb-ar">{{ holiday.nameAr }}</span>
+          </div>
+          <div class="fb-msg">{{ holiday.message }}</div>
+          <div class="fb-ops" *ngIf="holiday.opsMessage">
+            {{ holiday.opsMessage }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="fb-right">
+        <button class="fb-share-btn" (click)="shareCivic()">
+          🏙️ Participer
+        </button>
+        <button class="fb-close" (click)="dismiss()" title="Fermer">✕</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</ng-container>
